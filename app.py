@@ -159,7 +159,7 @@ app.layout = html.Div(children=[
                                                                 id='plot-button',
                                                                 children='Plotar',
                                                                 className="btn btn-primary btn-lg",
-                                                                style={'background-color':'#4ed840', 'margin':'20px 0px 20px 0px'}
+                                                                style={'background-color':'#4ed840', 'margin':'20px 0px 20px 0px', 'border-color':'black'}
                                                             )
                                                         ]
                                                     )
@@ -248,14 +248,6 @@ def disable_media_movel_input(selected_filters):
         return False
     else:
         return True
-
-@app.callback(
-    Output('Graph-content','children'),
-    Input('plot-button','n_clicks'),
-    [State('dropdown-analise-geral','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
-)
-def plot_graph_analise_geral(selected_columns, filters, media_movel_subseq):
-    
 
 if __name__ == '__main__':
     app.run_server(debug=True)
