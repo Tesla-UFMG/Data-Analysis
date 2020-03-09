@@ -1,7 +1,7 @@
 .navbar {
     background-color: black;
     width: 100%;
-    height: 100px;;
+    height: 100px;
 }
 .navbar-item {
     display: inline;
@@ -9,12 +9,13 @@
 
 .background {
     background-image: url("../assets/images/nk-mineirao.jpg");
-    height: 800px;
+    height: 3000px;
     width: 100%;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     position: relative;
+    background-attachment: fixed;
 }
 
 .overlay {
@@ -52,13 +53,14 @@
 }
 
 .set-eighty-width {
-    width: 80%;
+    width: 100%;
 }
 
 .tab-content {
     padding: 15px;
     background-color: #0d0d0d;
-    opacity: 95%;
+    /*max-height: 800px;
+    overflow-x: scroll;*/
 }
 
 .Select--multi .Select-value {
@@ -87,6 +89,7 @@
 
 .form-plot-config {
     background-color: white;
+    width: 75%;
 }
 
 .form-title {
@@ -119,4 +122,10 @@
     color: black;
     font-weight: 350;
     font-size: 1.2rem;
+}
+
+.lateral-content {
+    width: calc(25% - 15px);
+    margin-left: 15px;
+    display: inline;
 }

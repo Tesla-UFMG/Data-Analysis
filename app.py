@@ -4,10 +4,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_daq as daq
 import pandas as pd
+import numpy as np
+from scipy import signal
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import io
 import base64
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
 
@@ -45,7 +49,7 @@ app.layout = html.Div(children=[
                 className="container center-content",
                 children=[
                     html.Div(
-                        className="row align-items-center justify-content-center",
+                        className="row align-items-center justify-content-center no-opacity",
                         children=[
                             html.Div(
                                 className="col-md-8 text-center",
@@ -117,6 +121,17 @@ app.layout = html.Div(children=[
                                                 className='container-form',
                                                 children=[
                                                     html.H4(
+                                                        children='EIXO X',
+                                                        className='form-label'
+                                                    ),
+                                                    dcc.Dropdown(
+                                                        id='dropdown-analise-geral-X',
+                                                        value='timer',
+                                                        className='',
+                                                        multi=False,
+                                                        placeholder='Selecione as grandezas do eixo X'
+                                                    ),
+                                                    html.H4(
                                                         children='EIXO Y',
                                                         className='form-label'
                                                     ),
@@ -124,7 +139,7 @@ app.layout = html.Div(children=[
                                                         className='row-drop',
                                                         children=[
                                                             dcc.Dropdown(
-                                                                id='dropdown-analise-geral',
+                                                                id='dropdown-analise-geral-Y',
                                                                 className='',
                                                                 multi=True,
                                                                 placeholder='Selecione as grandezas do eixo Y'
@@ -137,8 +152,7 @@ app.layout = html.Div(children=[
                                                                 id='filtros-checklist',
                                                                 options=[
                                                                     {'label': 'Média Móvel', 'value': 'Média Móvel'},
-                                                                    {'label': 'Savitzky-Golay', 'value': 'Savitzky-Golay'},
-                                                                    {'label': 'Wiener', 'value': 'Wiener'}
+                                                                    {'label': 'Filtro Mediana', 'value': 'Filtro Mediana'}
                                                                 ],
                                                                 inputStyle = {'margin-right':'3px'},
                                                                 labelStyle =  {'margin-right':'8px'},
@@ -164,11 +178,14 @@ app.layout = html.Div(children=[
                                                         ]
                                                     )
                                                 ]
+                                            ),
+                                            html.Div(
+                                                id='Graph-content',
+                                                children=[
+                                            
+                                                ]
                                             )
                                         ]
-                                    ),
-                                    html.Div(
-                                        id='Graph-content'
                                     )
                                 ]
                             ),
@@ -211,9 +228,13 @@ app.layout = html.Div(children=[
         ]
     )
 ])
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
 
 @app.callback(
-    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral', 'options')],
+    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options')],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
@@ -227,11 +248,9 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
             for nome_do_arquivo in files:
                 if(nome_do_arquivo != 'legenda.txt'):
                     data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
-            options = []
-            for i in legenda:
-                if i != 'timer':
-                    options.append({'label' : i, 'value' : i})
-            return [{'display': 'none'},{'display':'inline'}, options]
+            
+            options = [{'label' : column_name, 'value' : column_name} for column_name in legenda]
+            return [{'display': 'none'},{'display':'inline'}, options, options]
         else:
             #TRATAR ERRO
             raise PreventUpdate
@@ -239,15 +258,51 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         raise PreventUpdate
 
 
+
 @app.callback(
     Output('media-movel-input','disabled'),
     [Input('filtros-checklist','value')]
 )
 def disable_media_movel_input(selected_filters):
-    if 'Média Móvel' in selected_filters:
+    if ('Média Móvel' in selected_filters) or ('Filtro Mediana' in selected_filters):
         return False
     else:
         return True
+
+@app.callback(
+    Output('Graph-content','children'),
+    [Input('plot-button','n_clicks')],
+    [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
+)
+def plot_graph_analise_geral(button_clicks, selected_columns_Y, selected_X, filters, filters_subseq):
+    if button_clicks != 0 and button_clicks != None:
+        data_copy = data.copy()
+        if filters_subseq % 2 == 0:
+            filters_subseq = filters_subseq + 1
+        if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
+            for column in selected_columns_Y:
+                data_copy[column] = smooth(signal.medfilt(data_copy[column], filters_subseq), filters_subseq)
+        elif 'Média Móvel' in filters:
+            for column in selected_columns_Y:
+                data_copy[column] = smooth(data_copy[column], filters_subseq)
+        elif 'Filtro Mediana' in filters:
+            for column in selected_columns_Y:
+                data_copy[column] = signal.medfilt(data_copy[column], np.array(filters_subseq))
+
+
+        fig = make_subplots(rows=len(selected_columns_Y), cols=1, shared_xaxes=True, vertical_spacing=0.0)
+        for cont, column_name in enumerate(selected_columns_Y):
+            fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name), row=cont+1, col=1)
+        fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
+        return dcc.Graph(
+            figure=fig,
+            id='figure-id',
+            config={'autosizable' : False}
+        )
+    else:
+        #TRATAR ERRO
+        raise PreventUpdate
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
