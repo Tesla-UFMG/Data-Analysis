@@ -127,5 +127,5 @@
 .lateral-content {
     width: calc(25% - 15px);
     margin-left: 15px;
-    display: inline;
+    display: inline-block;
 }
