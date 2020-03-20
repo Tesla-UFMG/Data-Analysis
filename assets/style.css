@@ -1,0 +1,131 @@
+.navbar {
+    background-color: black;
+    width: 100%;
+    height: 100px;
+}
+.navbar-item {
+    display: inline;
+}
+
+.background {
+    background-image: url("../assets/images/nk-mineirao.jpg");
+    height: 3000px;
+    width: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    position: relative;
+    background-attachment: fixed;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    content: '';
+    opacity: .7;
+    background: #000;
+}
+
+.center-content {
+    position:relative;
+    top: 250px;
+}
+
+.background h1,h4{
+    color: white;
+}
+
+.upload-btn:hover{
+    border-color: white !important;
+    
+}
+
+.upload-btn:focus{
+    box-shadow: 0 0 0 0.2rem white;
+}
+
+.hidePage {
+    display: none;
+    position: relative;
+}
+
+.set-eighty-width {
+    width: 100%;
+}
+
+.tab-content {
+    padding: 15px;
+    background-color: #0d0d0d;
+    /*max-height: 800px;
+    overflow-x: scroll;*/
+}
+
+.Select--multi .Select-value {
+    background-color: #ebf5ff;
+    background-color: #76D36C;
+    border-radius: 2px;
+    border: 1px solid #c2e0ff;
+    border: 1px solid black;
+    color: black;
+    display: inline-block;
+    font-size: .9em;
+    line-height: 1.4;
+    margin-left: 5px;
+    margin-top: 5px;
+    vertical-align: top;
+}
+
+.Select--multi .Select-value-icon {
+    cursor: pointer;
+    border-bottom-left-radius: 2px;
+    border-top-left-radius: 2px;
+    border-right: 1px solid #c2e0ff;
+    border-right: 1px solid black;
+    padding: 1px 5px 3px;
+}
+
+.form-plot-config {
+    background-color: white;
+    width: 75%;
+}
+
+.form-title {
+    background-color: #4ed840;
+    padding: 0.01em 16px;
+}
+
+.form-title h1 {
+    font-weight: 450;
+    font-size: 1.5rem;
+    margin-top: .5rem;
+}
+
+.container-form {
+    padding: 0.01em 16px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.row-drop {
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.form-label {
+    margin: 10px 0px 4px 0px;
+    color: black;
+    font-weight: 350;
+    font-size: 1.2rem;
+}
+
+.lateral-content {
+    width: calc(25% - 15px);
+    margin-left: 15px;
+    display: inline-block;
+}
