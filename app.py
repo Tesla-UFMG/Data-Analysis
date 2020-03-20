@@ -261,6 +261,7 @@ def smooth(y, box_pts):
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
+#Funçao do Botao da pigina inicial
 @app.callback(
     [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options')],
     [Input('upload-data', 'contents')],
@@ -286,7 +287,7 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         raise PreventUpdate
 
 
-
+#Funçao do botao de filtros
 @app.callback(
     Output('media-movel-input','disabled'),
     [Input('filtros-checklist','value')]
@@ -297,6 +298,7 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
+#Funçao do botao de plotagem de graficos
 @app.callback(
     Output('Graph-content','children'),
     [Input('plot-button','n_clicks')],
