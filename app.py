@@ -21,7 +21,9 @@ app.scripts.config.serve_locally = True
 
 data = None
 
+#LAYOUT DA PAGINA
 app.layout = html.Div(children=[
+    #Layout NavBar
     html.Nav(
         className="navbar",
         children=[
@@ -37,13 +39,16 @@ app.layout = html.Div(children=[
         ]
     ),
 
+    #Layout do Corpo da pagina
     html.Div(
         className="background",
         children=[
+            #Layout do Fundo
             html.Div(
                 className="overlay"
             ),
 
+            #Layout da parte central, com o escrito e botao
             html.Div(
                 id="index-page",
                 className="container center-content",
@@ -54,16 +59,20 @@ app.layout = html.Div(children=[
                             html.Div(
                                 className="col-md-8 text-center",
                                 children=[
+                                    #Definiçao dos escritos
                                     html.Div(
                                         className="text",
                                         children=[
+                                            #H1 = Fonte maior, Título
                                             html.H1(
                                                 children='Análise de dados NK319'
                                             ),
+                                            #H4 = Fonte menor, subtítulo
                                             html.H4(
                                                 className="mb-5",
                                                 children='Fórmula Tesla UFMG'
                                             ),
+                                            #Layout botão
                                             dcc.Upload(
                                                 children=[
                                                     'Upload de arquivos'
@@ -85,6 +94,7 @@ app.layout = html.Div(children=[
                 ]
             ),
 
+            #Segunda pagina, com graficos e configuraçoes
             html.Div(
                 id="main-page",
                 className="hidePage",
@@ -99,13 +109,17 @@ app.layout = html.Div(children=[
                             'background':'grey'
                         },
                         children=[
+                            #Divisão da pagina em tres Tabs
                             dcc.Tab(
+                                #Primeiro Tab (Analise Geral)
                                 label='Análise Geral',
                                 value='tab-1',
                                 children=[
+                                    #Conteudo do primeiro tab
                                     html.Div(
                                         className="form-plot-config",
                                         children=[
+                                            #Título
                                             html.Div(
                                                 className="form-title",
                                                 children=[
@@ -117,13 +131,16 @@ app.layout = html.Div(children=[
                                                     )
                                                 ]
                                             ),
+                                            #Conteudo abaixo do titulo
                                             html.Div(
                                                 className='container-form',
                                                 children=[
+                                                    #Configuraçao Eixo X
                                                     html.H4(
                                                         children='EIXO X',
                                                         className='form-label'
                                                     ),
+                                                    #Dropdown para selecionar coluna de dados para o eixo X
                                                     dcc.Dropdown(
                                                         id='dropdown-analise-geral-X',
                                                         value='timer',
@@ -131,6 +148,7 @@ app.layout = html.Div(children=[
                                                         multi=False,
                                                         placeholder='Selecione as grandezas do eixo X'
                                                     ),
+                                                    #Configuraçao Eixo Y
                                                     html.H4(
                                                         children='EIXO Y',
                                                         className='form-label'
@@ -138,16 +156,19 @@ app.layout = html.Div(children=[
                                                     html.Div(
                                                         className='row-drop',
                                                         children=[
+                                                            #Dropdown para selecionar coluna de dados para o eixo Y
                                                             dcc.Dropdown(
                                                                 id='dropdown-analise-geral-Y',
                                                                 className='',
                                                                 multi=True,
                                                                 placeholder='Selecione as grandezas do eixo Y'
                                                             ),
+                                                            #Configuraçao Filtros
                                                             html.H4(
                                                                 children='Filtros',
                                                                 className='form-label'
                                                             ),
+                                                            #Checklist de filtros
                                                             dcc.Checklist(
                                                                 id='filtros-checklist',
                                                                 options=[
@@ -158,6 +179,7 @@ app.layout = html.Div(children=[
                                                                 labelStyle =  {'margin-right':'8px'},
                                                                 value=[]
                                                             ),
+                                                            #Selecionar valor de subsequencia do filtro
                                                             html.H4(
                                                                 children='Subsequência do filtro média móvel',
                                                                 className='form-label',
@@ -169,6 +191,7 @@ app.layout = html.Div(children=[
                                                                 min=1,
                                                                 max=50
                                                             ),
+                                                            #Botão de Plotagem
                                                             html.Button(
                                                                 id='plot-button',
                                                                 children='Plotar',
@@ -179,6 +202,7 @@ app.layout = html.Div(children=[
                                                     )
                                                 ]
                                             ),
+                                            #Conteudo do Grafico
                                             html.Div(
                                                 id='Graph-content',
                                                 children=[
@@ -189,6 +213,7 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
+                            #Segundo Tab (Grafico Customizados)
                             dcc.Tab(
                                 label='Gráficos customizados',
                                 value='tab-2',
@@ -205,6 +230,7 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
+                            #Terceiro Tab (Configuraçoes)
                             dcc.Tab(
                                 label='Configurações',
                                 value='tab-3',
@@ -228,6 +254,8 @@ app.layout = html.Div(children=[
         ]
     )
 ])
+
+#Funçao de Media Movel
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
