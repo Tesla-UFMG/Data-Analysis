@@ -1,10 +1,10 @@
 echo off
 cls
-echo "Script para excucao da Analise de Dados"
+echo "SCRIPT PARA EXCUCAO DA ANALISE DE DADOS"
+echo "Instalando arquivos necessarios"
 pip install numpy
 pip install pandas
 pip install dash==1.8.0
 pip install dash_daq
-start cmd.exe
-python app.py
-
+pip install scipy
+echo "Tudo OK!! Pode Iniciar."
