@@ -12,14 +12,16 @@ import io
 import base64
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 
-external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.scripts.config.serve_locally = True
 
 data = None
+converted_data = []
 
 app.layout = html.Div(children=[
     html.Nav(
@@ -126,7 +128,7 @@ app.layout = html.Div(children=[
                                                     ),
                                                     dcc.Dropdown(
                                                         id='dropdown-analise-geral-X',
-                                                        value='timer',
+                                                        value='Timer',
                                                         className='',
                                                         multi=False,
                                                         placeholder='Selecione as grandezas do eixo X'
@@ -173,7 +175,7 @@ app.layout = html.Div(children=[
                                                                 id='plot-button',
                                                                 children='Plotar',
                                                                 className="btn btn-primary btn-lg",
-                                                                style={'background-color':'#4ed840', 'margin':'20px 0px 20px 0px', 'border-color':'black'}
+                                                                style={'background-color':'#4ed840', 'margin':'20px 0px 20px 0px', 'border':'solid 1px black', 'color':'black', 'font-weight': '350'}
                                                             )
                                                         ]
                                                     )
@@ -184,55 +186,148 @@ app.layout = html.Div(children=[
                                                 children=[
                                             
                                                 ]
+                                            ),               
+                                            dbc.Button(
+                                                children="Opções avançadas",
+                                                color="secondary",
+                                                className="mr-1 hiden modal-button-style",
+                                                id='modal-button'
                                             )
                                         ]
                                     )
                                 ]
-                            ),
-                            dcc.Tab(
-                                label='Gráficos customizados',
-                                value='tab-2',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [1, 4, 1],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [1, 2, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            ),
-                            dcc.Tab(
-                                label='Configurações',
-                                value='tab-3',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [2, 4, 3],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [5, 4, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            )
+                            )#,
+                            # dcc.Tab(
+                            #     label='Gráficos customizados',
+                            #     value='tab-2',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [1, 4, 1],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [1, 2, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # ),
+                            # dcc.Tab(
+                            #     label='Configurações',
+                            #     value='tab-3',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [2, 4, 3],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [5, 4, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # )
                         ]
                     )
                 ]
             )
         ]
+    ),
+    dbc.Modal(
+        children = [
+            dbc.ModalHeader("Configurações de plotagem avançadas"),
+            dbc.ModalBody(
+                children=[
+
+                ]
+            ),
+            dbc.ModalFooter(
+                dbc.Button("Fechar", id="close-modal", className="ml-auto")
+            )
+        ],
+        id="modal-graph-config",
+        size="sm",
     )
 ])
+
+unidades_dados_hash = {
+    'Intensidade_Frenagem': '%',
+    'Timer': 's',
+    'V_motor_D':'RPM',
+    'V_motor_E':'RPM',
+    'Volante': 'graus',
+    'Speed_LR': 'km/h',
+    'Speed_RR': 'km/h',
+    'Pedal': '%',
+    'AccelX': 'G',
+    'AccelY': 'G',
+    'AccelZ': 'G',
+    'GyroX': 'graus/s',
+    'GyroY': 'graus/s',
+    'GyroZ': 'graus/s',
+    'Temp_pack0_1': 'ºC',
+    'Temp_pack0_2': 'ºC',
+    'Temp_pack1_1': 'ºC',
+    'Temp_pack1_2': 'ºC',
+    'Temp_pack2_1': 'ºC',
+    'Temp_pack2_2': 'ºC',
+    'Temp_pack3_1': 'ºC',
+    'Temp_pack3_2': 'ºC',
+    'Temp_pack4_1': 'ºC',
+    'Temp_pack4_2': 'ºC',
+    'Temp_pack5_1': 'ºC',
+    'Temp_pack5_2': 'ºC',
+    'Tempmediabb': 'ºC',
+    'Tempmaxbb': 'ºC',
+    'TempInv_D1': 'ºC',
+    'TempInv_D2': 'ºC',
+    'TempInv_E1': 'ºC',
+    'TempInv_E2': 'ºC',
+    'TempInt2': 'ºC',
+    'TempInt': 'ºC',
+    'Temp': 'ºC',
+    'Tensao_GLV': 'mV',
+    'Volt_BAT': 'mV',
+    'Tensaototal': 'mV',
+    'Hodometro_P': 'm',
+    'Hodometro_T': 'm'
+}
+
+tratamento_dados_hash = {
+    'Intensidade_Frenagem': lambda x: x/10,
+    'Timer': lambda x: x/1000,
+    'Speed_LR': lambda x: x/10,
+    'Speed_RR': lambda x: x/10,
+    'Pedal': lambda x: x/10,
+    'AccelX': lambda x: x/1000,
+    'AccelY': lambda x: x/1000,
+    'AccelZ': lambda x: x/1000,
+    'Volante': lambda x: (x-1030)/10
+}
+
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
+def trataDados(selected_x, selected_y):
+    global data
+    global converted_data
+    selected_y_copy = selected_y.copy()
+
+    if not(selected_x in selected_y_copy):
+        selected_y_copy.append(selected_x)
+
+    for coluna in selected_y_copy:
+        if not(coluna in converted_data):
+            if(coluna in tratamento_dados_hash):
+                data[coluna] = tratamento_dados_hash[coluna](data[coluna])
+            converted_data.append(coluna)    
+
+
+#Upload de arquivos e montagem do dataFrame
 @app.callback(
     [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options')],
     [Input('upload-data', 'contents')],
@@ -244,11 +339,11 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         if ('legenda.txt' in list_of_names) and (len(list_of_names) >= 2):
             files = dict(zip(list_of_names, list_of_contents))
             legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
-            legenda = [name for name in legenda.columns.values]
+            legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
+
             for nome_do_arquivo in files:
                 if(nome_do_arquivo != 'legenda.txt'):
                     data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
-            
             options = [{'label' : column_name, 'value' : column_name} for column_name in legenda]
             return [{'display': 'none'},{'display':'inline'}, options, options]
         else:
@@ -256,9 +351,9 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
             raise PreventUpdate
     else:
         raise PreventUpdate
+            
 
-
-
+#Habilita e desabilita o INPUT de média móvel
 @app.callback(
     Output('media-movel-input','disabled'),
     [Input('filtros-checklist','value')]
@@ -269,13 +364,16 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
+
+#Plota os gráficos da análise geral
 @app.callback(
-    Output('Graph-content','children'),
+    [Output('Graph-content','children'), Output('modal-button','style')],
     [Input('plot-button','n_clicks')],
     [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
 )
 def plot_graph_analise_geral(button_clicks, selected_columns_Y, selected_X, filters, filters_subseq):
     if button_clicks != 0 and button_clicks != None:
+        trataDados(selected_X, selected_columns_Y)
         data_copy = data.copy()
         if filters_subseq % 2 == 0:
             filters_subseq = filters_subseq + 1
@@ -292,16 +390,34 @@ def plot_graph_analise_geral(button_clicks, selected_columns_Y, selected_X, filt
 
         fig = make_subplots(rows=len(selected_columns_Y), cols=1, shared_xaxes=True, vertical_spacing=0.0)
         for cont, column_name in enumerate(selected_columns_Y):
-            fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name), row=cont+1, col=1)
+            if (column_name in unidades_dados_hash):
+                fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name, hovertemplate = "%{y} " + unidades_dados_hash[column_name]), row=cont+1, col=1)
+            else:
+                fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name, hovertemplate = "%{y}"), row=cont+1, col=1)               
+        
         fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
-        return dcc.Graph(
-            figure=fig,
-            id='figure-id',
-            config={'autosizable' : False}
-        )
+        return [
+            dcc.Graph(
+                figure=fig,
+                id='figure-id',
+                config={'autosizable' : False}
+            ),
+            {'display':'inline'}
+        ]
     else:
         #TRATAR ERRO
         raise PreventUpdate
+
+
+@app.callback(
+    Output("modal-graph-config", "is_open"),
+    [Input("modal-button", "n_clicks"), Input("close-modal", "n_clicks")],
+    [State("modal-graph-config", "is_open")],
+)
+def toggle_modal(open_button, close_button, is_open):
+    if open_button or close_button:
+        return not is_open
+    return is_open
 
 
 if __name__ == '__main__':

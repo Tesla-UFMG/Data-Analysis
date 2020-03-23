@@ -89,7 +89,7 @@
 
 .form-plot-config {
     background-color: white;
-    width: 75%;
+    width: 100%;
 }
 
 .form-title {
@@ -128,4 +128,12 @@
     width: calc(25% - 15px);
     margin-left: 15px;
     display: inline-block;
+}
+
+.hiden {
+    display: none;
+}
+
+.modal-button-style {
+    margin: 16px
 }
