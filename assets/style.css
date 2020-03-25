@@ -134,6 +134,57 @@
     display: none;
 }
 
-.modal-button-style {
+.modal-content {
+    border:none;
+}
+
+.modal-open-button-style {
     margin: 16px
 }
+
+.modal-header-and-footer {
+    background-color: #0d0d0d;
+    color: ghostwhite;
+    text-align: center;
+}
+
+.tesla-button {
+    background-color: darkgreen;
+    color:white;
+    border-color:#0d0d0d;
+}
+
+.tesla-button:hover {
+    background-color: white;
+    color:black;
+}
+
+.dropdown-triangle {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: .255em;
+    vertical-align: .255em;
+    content: "";
+    border-top: .3em solid;
+    border-right: .3em solid transparent;
+    border-bottom: 0;
+    border-left: .3em solid transparent;
+}
+
+.divider {
+    height: 0;
+    border-top: 1px solid #6c757d;
+    margin: 10px 0;
+}
+
+.adv-config-subtitle {
+    color: black;
+    font-weight: 400;
+    margin-top: 8px;
+    font-size: 1.3rem;
+    text-decoration: underline;
+    margin: 10px 0;
+}
+
+

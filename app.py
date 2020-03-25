@@ -21,7 +21,10 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.scripts.config.serve_locally = True
 
 data = None
+data_copy = None
 converted_data = []
+eixoY = []
+eixoX = None
 
 #LAYOUT DA PAGINA
 app.layout = html.Div(children=[
@@ -214,14 +217,14 @@ app.layout = html.Div(children=[
                                             dbc.Button(
                                                 children="Opções avançadas",
                                                 color="secondary",
-                                                className="mr-1 hiden modal-button-style",
+                                                className="mr-1 hiden modal-open-button-style",
                                                 id='modal-button'
                                             )
                                         ]
                                     )
                                 ]
-<<<<<<< HEAD
                             )#,
+                            #Segundo Tab (Grafico Customizados)
                             # dcc.Tab(
                             #     label='Gráficos customizados',
                             #     value='tab-2',
@@ -238,6 +241,7 @@ app.layout = html.Div(children=[
                             #         )
                             #     ]
                             # ),
+                            #Terceiro Tab (Configuraçoes)
                             # dcc.Tab(
                             #     label='Configurações',
                             #     value='tab-3',
@@ -253,44 +257,7 @@ app.layout = html.Div(children=[
                             #             }
                             #         )
                             #     ]
-                            # )
-=======
-                            ),
-                            #Segundo Tab (Grafico Customizados)
-                            dcc.Tab(
-                                label='Gráficos customizados',
-                                value='tab-2',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [1, 4, 1],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [1, 2, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            ),
-                            #Terceiro Tab (Configuraçoes)
-                            dcc.Tab(
-                                label='Configurações',
-                                value='tab-3',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [2, 4, 3],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [5, 4, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            )
->>>>>>> 8273c057233bf5c50aa53ee9aff5c4b6e32dee37
+                            #)
                         ]
                     )
                 ]
@@ -298,23 +265,29 @@ app.layout = html.Div(children=[
         ]
     ),
     dbc.Modal(
+        contentClassName = 'modal-content',
         children = [
-            dbc.ModalHeader("Configurações de plotagem avançadas"),
+            dbc.ModalHeader(
+                children="Configurações avançadas de plotagem",
+                className="modal-header-and-footer"
+            ),
             dbc.ModalBody(
-                children=[
-
-                ]
+                id='modal-body'
             ),
             dbc.ModalFooter(
-                dbc.Button("Fechar", id="close-modal", className="ml-auto")
+                children=[
+                    dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
+                    dbc.Button("Aplicar", id=" ", className="tesla-button")
+                ],
+                className="modal-header-and-footer"
             )
         ],
         id="modal-graph-config",
-        size="sm",
+        scrollable=True
     )
 ])
 
-<<<<<<< HEAD
+#Dicionário(HASH) com todas as unidades dos dados conhecidos
 unidades_dados_hash = {
     'Intensidade_Frenagem': '%',
     'Timer': 's',
@@ -358,6 +331,7 @@ unidades_dados_hash = {
     'Hodometro_T': 'm'
 }
 
+#Dicionário(HASH) com todas as funções de conversão de unidades de cada dado 
 tratamento_dados_hash = {
     'Intensidade_Frenagem': lambda x: x/10,
     'Timer': lambda x: x/1000,
@@ -370,15 +344,85 @@ tratamento_dados_hash = {
     'Volante': lambda x: (x-1030)/10
 }
 
-=======
+#Lista com todos os possíveis dados a serem analisados no software
+data_name = [
+    'ECU_Mode',
+    'Intensidade_Frenagem',
+    'Ecu_flag',
+    'Timer',
+    'Hodometro_P',
+    'Hodometro_T',
+    'Speed_LR',
+    'Speed_RR',
+    'V_motor_D',
+    'V_motor_E',
+    'Torque_LM',
+    'Torque_RM',
+    'Torque_ref_R',
+    'Torque_ref_L',
+    'Current_LM',
+    'Current_RM',
+    'Pedal',
+    'Volante',
+    'TempInv_D1',
+    'TempInv_D2',
+    'TempInv_E1',
+    'TempInv_E2',
+    'AccelX',
+    'AccelY',
+    'AccelZ',
+    'GyroX',
+    'GyroY',
+    'GyroZ',
+    'Temp',
+    'Sensorpressao1',
+    'Leitura_PotInt',
+    'TempInt',
+    'Ext1',
+    'Ext2',
+    'Ext13',
+    'Ext23',
+    'Ext22',
+    'Leitura_PotInt2',
+    'PotTD',
+    'Sensorpressao2',
+    'Leitura_PotInt3',
+    'TempInt2',
+    'Current_sensor1_baixa',
+    'Current_sensor1_alta',
+    'Current_sensor2',
+    'Current_sensor3',
+    'Tensaototal',
+    'Tempmediabb',
+    'Tempmaxbb',
+    'Temp_pack0_1',
+    'Temp_pack0_2',
+    'Temp_pack1_1',
+    'Temp_pack1_2',
+    'Temp_pack2_1',
+    'Temp_pack2_2',
+    'Temp_pack3_1',
+    'Temp_pack3_2',
+    'Temp_pack4_1',
+    'Temp_pack4_2',
+    'Temp_pack5_1',
+    'Temp_pack5_2',
+    'Current_BAT',
+    'Volt_BAT',
+    'Tensao_GLV',
+    'IRCan[0]',
+    'IRCan[1]',
+    'IRCan[2]',
+    'IRCan[3]'
+]
+
 #Funçao de Media Movel
->>>>>>> 8273c057233bf5c50aa53ee9aff5c4b6e32dee37
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
-<<<<<<< HEAD
+#Função que faz as conversões de unidade nos dados dos arquivos, aplicando cada função da tabela hash de conversão no seu respectivo dado
 def trataDados(selected_x, selected_y):
     global data
     global converted_data
@@ -393,11 +437,123 @@ def trataDados(selected_x, selected_y):
                 data[coluna] = tratamento_dados_hash[coluna](data[coluna])
             converted_data.append(coluna)    
 
+#Função utilizada nos callbacks de abrir/fechar os bootstrap collapses dentro do modal de config avançadas
+def generate_toggle_callback():
+    def toggle_collapse(n, is_open):
+        if n:
+            return not is_open
+        return is_open
+    return toggle_collapse
 
-#Upload de arquivos e montagem do dataFrame
-=======
-#Funçao do Botao da pigina inicial
->>>>>>> 8273c057233bf5c50aa53ee9aff5c4b6e32dee37
+#Função utilizada nos callbacks de habilitar/desabilitar inputs numéricos do filtro passa-banda
+def generate_input_passabanda_disable_callback():
+    def disable_inputs_passabanda(checkbox):
+        if( 'Passa-Banda' in checkbox):
+            return [False,False]
+        else:
+            return [True,True]
+    return disable_inputs_passabanda
+
+#Função utilizada nos callbacks de habilitar/desabilitar inputs numéricos do filtro Savitzky-golay
+def generate_input_savitzky_disable_callback():
+    def disable_inputs_savitzky(checkbox):
+        if( 'Filtro savitzky-golay' in checkbox):
+            return [False,False]
+        else:
+            return [True,True]
+    return disable_inputs_savitzky
+
+#Função que cria o corpo HTML do modal. Cada Chamada dessa função retorna um Bootstrap collapse para o dado passado como parâmetro
+def generate_element_modal_body(column_name):
+    html_generated = [
+        dbc.Button(
+            children=[
+                column_name,
+                html.I(className='dropdown-triangle')
+            ],
+            color="secondary", 
+            block=True,
+            id=column_name + '-collapse-button',
+            style={'margin':'5px 0'}
+        ),
+        dbc.Collapse(
+            id= column_name + '-collapse',
+            children=[
+                html.H4(
+                    children='Filtros Adicionais',
+                    className='adv-config-subtitle',
+                ),
+                dcc.Checklist(
+                    id=column_name + '-passa-banda-check',
+                    options=[
+                        {'label': 'Passa-Banda', 'value': 'Passa-Banda'},
+                    ],
+                    inputStyle = {'margin-right':'3px'},
+                    labelStyle =  {'margin-right':'8px'},
+                    value=[]
+                ),
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            daq.NumericInput(
+                                id=column_name + '-passa-banda-input-inf',
+                                label={'label':'limite inferior (Hz)'},
+                                min=0,
+                                max=10000,
+                                value=1
+                            )
+                        ),
+                        dbc.Col(
+                            daq.NumericInput(
+                                id=column_name + '-passa-banda-input-sup',
+                                label={'label':'limite superior (Hz)'},
+                                min=0,
+                                max=10000,
+                                value=100
+                            )
+                        )
+                    ]
+                ),
+                dcc.Checklist(
+                    id=column_name + '-savitzky-check',
+                    options=[
+                        {'label': 'Filtro savitzky-golay (Passa-baixas)', 'value': 'Filtro savitzky-golay'},
+                    ],
+                    inputStyle = {'margin-right':'3px'},
+                    labelStyle =  {'margin-right':'8px'},
+                    value=[]
+                ),
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            daq.NumericInput(
+                                id=column_name + '-savitzky-cut',
+                                label={'label':'limite superior (Hz)'},
+                                min=0,
+                                max=10000,
+                                value=100
+                            )
+                        ),
+                        dbc.Col(
+                            daq.NumericInput(
+                                id=column_name + '-savitzky-rate',
+                                label={'label':'Frequência de Nyquist'},
+                                min=0,
+                                max=10000,
+                                value=120
+                            )
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    className="divider"
+                )
+            ]
+        )
+    ]
+    return html_generated
+
+# Callback para o Upload de arquivos e montagem do dataFrame
 @app.callback(
     [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options')],
     [Input('upload-data', 'contents')],
@@ -423,12 +579,7 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         raise PreventUpdate
             
 
-<<<<<<< HEAD
-#Habilita e desabilita o INPUT de média móvel
-=======
-
-#Funçao do botao de filtros
->>>>>>> 8273c057233bf5c50aa53ee9aff5c4b6e32dee37
+#Callback que habilita e desabilita o INPUT de média móvel
 @app.callback(
     Output('media-movel-input','disabled'),
     [Input('filtros-checklist','value')]
@@ -439,19 +590,17 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
-<<<<<<< HEAD
-
-#Plota os gráficos da análise geral
-=======
-#Funçao do botao de plotagem de graficos
->>>>>>> 8273c057233bf5c50aa53ee9aff5c4b6e32dee37
+#Callback do botão de plotagem de graficos
 @app.callback(
-    [Output('Graph-content','children'), Output('modal-button','style')],
+    [Output('Graph-content','children'), Output('modal-button','style'), Output('modal-body','children')],
     [Input('plot-button','n_clicks')],
     [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
 )
 def plot_graph_analise_geral(button_clicks, selected_columns_Y, selected_X, filters, filters_subseq):
     if button_clicks != 0 and button_clicks != None:
+        global data_copy
+        eixoY = selected_columns_Y.copy()
+        eixoX = selected_X
         trataDados(selected_X, selected_columns_Y)
         data_copy = data.copy()
         if filters_subseq % 2 == 0:
@@ -468,26 +617,30 @@ def plot_graph_analise_geral(button_clicks, selected_columns_Y, selected_X, filt
 
 
         fig = make_subplots(rows=len(selected_columns_Y), cols=1, shared_xaxes=True, vertical_spacing=0.0)
+        modal_body_content = []
         for cont, column_name in enumerate(selected_columns_Y):
             if (column_name in unidades_dados_hash):
                 fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name, hovertemplate = "%{y} " + unidades_dados_hash[column_name]), row=cont+1, col=1)
             else:
                 fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name, hovertemplate = "%{y}"), row=cont+1, col=1)               
-        
+            modal_body_content.extend(generate_element_modal_body(column_name))
         fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
+
+        
         return [
             dcc.Graph(
                 figure=fig,
                 id='figure-id',
                 config={'autosizable' : False}
             ),
-            {'display':'inline'}
+            {'display':'inline'},
+            modal_body_content
         ]
     else:
         #TRATAR ERRO
         raise PreventUpdate
 
-
+#Callback de abrir/fechar o modal de configurações avançadas
 @app.callback(
     Output("modal-graph-config", "is_open"),
     [Input("modal-button", "n_clicks"), Input("close-modal", "n_clicks")],
@@ -498,6 +651,26 @@ def toggle_modal(open_button, close_button, is_open):
         return not is_open
     return is_open
 
+#Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
+app.config['suppress_callback_exceptions'] = True
+
+#Laço para criar todos os callbacks possíveis, de forma a contornar a impossibilidade de criar callbacks dinâmicamente
+for nome in data_name:
+    app.callback(
+        Output( nome + "-collapse" , "is_open"),
+        [Input(nome + "-collapse-button", "n_clicks")],
+        [State( nome + "-collapse" , "is_open")]
+    ) (generate_toggle_callback())
+
+    app.callback(
+        [Output(nome + '-passa-banda-input-inf', 'disabled'), Output(nome + '-passa-banda-input-sup', 'disabled')],
+        [Input(nome + '-passa-banda-check', 'value')]
+    ) (generate_input_passabanda_disable_callback())
+
+    app.callback(
+        [Output(nome + '-savitzky-cut', 'disabled'), Output(nome + '-savitzky-rate', 'disabled')],
+        [Input(nome + '-savitzky-check', 'value')]
+    ) (generate_input_savitzky_disable_callback())
 
 if __name__ == '__main__':
     app.run_server(debug=True)
