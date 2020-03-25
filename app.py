@@ -216,7 +216,7 @@ app.layout = html.Div(children=[
                                             dbc.Button(
                                                 children="Opções avançadas",
                                                 color="secondary",
-                                                className="mr-1 hiden modal-button-style",
+                                                className="mr-1 hiden modal-open-button-style",
                                                 id='modal-button'
                                             )
                                         ]
@@ -256,7 +256,7 @@ app.layout = html.Div(children=[
                             #             }
                             #         )
                             #     ]
-                            # )
+                            #)
                         ]
                     )
                 ]
