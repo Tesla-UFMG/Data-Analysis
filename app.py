@@ -238,40 +238,40 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
-                            #Segundo Tab (Grafico Customizados)
-                            dcc.Tab(
-                                label='Gráficos customizados',
-                                value='tab-2',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [1, 4, 1],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [1, 2, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            ),
-                            #Terceiro Tab (Configuraçoes)
-                            dcc.Tab(
-                                label='Configurações',
-                                value='tab-3',
-                                children=[
-                                    dcc.Graph(
-                                        figure={
-                                            'data': [
-                                                {'x': [1, 2, 3], 'y': [2, 4, 3],
-                                                    'type': 'bar', 'name': 'SF'},
-                                                {'x': [1, 2, 3], 'y': [5, 4, 3],
-                                                'type': 'bar', 'name': u'Montréal'},
-                                            ]
-                                        }
-                                    )
-                                ]
-                            )
+                            # #Segundo Tab (Grafico Customizados)
+                            # dcc.Tab(
+                            #     label='Gráficos customizados',
+                            #     value='tab-2',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [1, 4, 1],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [1, 2, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # ),
+                            # #Terceiro Tab (Configuraçoes)
+                            # dcc.Tab(
+                            #     label='Configurações',
+                            #     value='tab-3',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [2, 4, 3],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [5, 4, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # )
                         ]
                     )
                 ]
