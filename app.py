@@ -771,49 +771,6 @@ def toggle_modal(n1, n2, is_open):
     
     return is_open
 
-# Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
-@app.callback(
-    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options'), Output('modal-body','children')],
-    [Input('upload-data', 'contents')],
-    [State('upload-data', 'filename')]
-)
-def hide_index_and_read_file(list_of_contents, list_of_names):
-
-    global data
-    global num_dados
-    
-    if list_of_contents is not None:
-        
-        if ('legenda.txt' in list_of_names) and (len(list_of_names) >= 2):
-            
-            files = dict(zip(list_of_names, list_of_contents))
-            legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
-            legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
-
-            for nome_do_arquivo in files:
-                if(nome_do_arquivo != 'legenda.txt'):
-                    data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
-            
-            options = []
-            modalbody_content = []
-            num_dados = len(legenda)
-            
-            for cont, column_name in enumerate(legenda):
-                options.append( {'label' : column_name, 'value' : column_name} )
-                all_data_name[column_name] = cont
-                modalbody_content.extend(generate_element_modal_body(str(cont), column_name))
-                output_for_apply_callback.extend([
-                    Output(str(cont) + '-modal-element', 'style')
-                ])
-            
-            for cont in range(num_dados,num_max_dados):
-                modalbody_content.extend(generate_element_modal_body(str(cont), 'extra'))
-            
-            return [{'display': 'none'}, {'display':'inline'}, options, options, modalbody_content]
-    else:
-        raise PreventUpdate
-            
-
 # Callback que habilita e desabilita o INPUT de média móvel
 @app.callback(
     Output('media-movel-input','disabled'),
