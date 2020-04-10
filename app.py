@@ -6,7 +6,7 @@ import dash_daq as daq
 import pandas as pd
 import numpy as np
 from scipy import signal
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ClientsideFunction
 from dash.exceptions import PreventUpdate
 import io
 import base64
@@ -27,31 +27,81 @@ app.scripts.config.serve_locally = True
 
 num_max_dados = 80
 num_dados = 0
-
+is_loaded = False
 data = None
 data_copy = None
 all_data_name = {}
 converted_data = []
 show_modal_items = [ {'display':'none'} for _ in range(num_max_dados) ]
 
-state_for_apply_callback = []
-output_for_apply_callback = []
+state_for_apply_callback = [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
+output_for_apply_callback = [Output('apply-adv-changes-loading','children'), Output('Graph-content','children'), Output('modal-button','style')]
  
 # LAYOUT DA PAGINA
 app.layout = html.Div(children=[
     # Layout NavBar
-    html.Nav(
-        className="navbar",
+    html.Header(
         children=[
-            html.A(children=[
-                html.Img(
-                    src="/assets/images/LOGO FUNDO PRETO.png",
-                    style={
-                        'height':'80px',
-                        'margin':'auto'
-                    }
-                )
-            ])
+            html.Nav(
+                style={"background-color":"black"},
+                className="navbar navbar-expand-md navbar-dark",
+                children=[
+                    html.A(
+                        children=[
+                            html.Img(
+                                src="/assets/images/logo-fundo-preto.png",
+                                className="logo-tesla"
+                            )
+                        ],
+                        href="https://formulateslaufmg.wixsite.com/teslaufmg"
+                    ),
+                    html.Div(
+                        className="collapse navbar-collapse",
+                        children=[
+                            html.Ul(
+                                className="navbar-nav ml-5",
+                                children = [
+                                    html.Li(
+                                        className="nav-item",
+                                        children=[
+                                            html.A(
+                                                href="#",
+                                                className="nav-link",
+                                                children="Gerar relatório"
+                                            )
+                                        ]
+                                    ),
+                                    html.Li(
+                                        className="nav-item",
+                                        children=[
+                                            html.A(
+                                                href="#",
+                                                className="nav-link",
+                                                children="Manual de instruções"
+                                            )
+                                        ]
+                                    )
+                                ]
+                            ),
+                            dbc.ButtonGroup(
+                                size="md",
+                                className="mr-1 ml-auto",
+                                children=[
+                                    dbc.Button(
+                                        children="Salvar",
+                                        outline=True,
+                                        color="success"
+                                    ), 
+                                    dbc.Button(
+                                        children="Exportar",
+                                        color="success"
+                                    )
+                                ],                               
+                            ),
+                        ]
+                    )
+                ]
+            )
         ]
     ),
 
@@ -63,7 +113,16 @@ app.layout = html.Div(children=[
             html.Div(
                 className="overlay"
             ),
-
+            dbc.Alert(
+                duration=5000,
+                dismissable=True,
+                color="danger",
+                fade = True,
+                id="upload-files-alert",
+                is_open=False,
+                className="mx-4",
+                style={"top":"15px"}
+            ),
             # Layout da parte central, com o escrito e botao
             html.Div(
                 id="index-page",
@@ -89,17 +148,25 @@ app.layout = html.Div(children=[
                                                 children='Fórmula Tesla UFMG'
                                             ),
                                             # Layout botão
-                                            dcc.Upload(
+                                            dbc.Spinner(
+                                                color='success',
                                                 children=[
-                                                    'Upload de arquivos'
-                                                ], 
-                                                id="upload-data",
-                                                className="btn btn-primary px-4 py-3 upload-btn",
-                                                style={
-                                                    'background-color':'#4ed840',
-                                                    'border-color':'#0d0d0d'
-                                                },
-                                                multiple=True
+                                                    dcc.Upload(
+                                                        children=[
+                                                            'Upload de arquivos'
+                                                        ], 
+                                                        id="upload-data",
+                                                        className="btn btn-primary px-4 py-3 upload-btn",
+                                                        style={
+                                                            'background-color':'#4ed840',
+                                                            'border-color':'#0d0d0d'
+                                                        },
+                                                        multiple=True
+                                                    ),
+                                                    html.Div(
+                                                        id="upload-data-loading"
+                                                    )
+                                                ]
                                             )
                                         ]
                                     )
@@ -219,14 +286,14 @@ app.layout = html.Div(children=[
                                             ),
                                             # Conteudo do Grafico
                                             dbc.Spinner(
-                                                spinner_style={'margin':'3rem auto'},
+                                                spinner_style={'margin':'10rem auto'},
                                                 children=[
                                                     html.Div(
                                                         id='Graph-content'
                                                     ), 
                                                 ]
                                             ),
-                                                   
+                                            html.Br(), 
                                             dbc.Button(
                                                 children="Opções avançadas",
                                                 color="secondary",
@@ -320,7 +387,17 @@ app.layout = html.Div(children=[
             dbc.ModalFooter(
                 children=[
                     dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
-                    dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0)
+                    dbc.Spinner(
+                        children=[
+                            dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0),
+                            html.Div(
+                                id="apply-adv-changes-loading"
+                            )
+                        ],
+                        size="sm",
+                        spinner_style={'margin': '0 37px'},
+                        color="success"
+                    )
                 ],
                 className="modal-header-and-footer"
             )
@@ -644,22 +721,33 @@ app.config['suppress_callback_exceptions'] = True
 for num in range(num_max_dados):
     
     num = str(num)
-
-    app.callback(
-        Output( num + "-collapse" , "is_open"),
-        [Input(num + "-collapse-button", "n_clicks")],
-        [State( num + "-collapse" , "is_open")]
-    ) (generate_toggle_callback())
+    app.clientside_callback(
+        ClientsideFunction(
+            namespace='clientside',
+            function_name ='toggle_collapse'
+        ),
+        output=Output( num + "-collapse" , "is_open"),
+        inputs=[Input(num + "-collapse-button", "n_clicks")],
+        state=[State( num + "-collapse" , "is_open")]
+    )
  
-    app.callback(
-        [Output(num + '-passa-banda-input-inf', 'disabled'), Output(num + '-passa-banda-input-sup', 'disabled')],
-        [Input(num + '-passa-banda-check', 'value')]
-    ) (generate_input_passabanda_disable_callback())
+    app.clientside_callback(
+        ClientsideFunction(
+            namespace='clientside',
+            function_name ='disable_inputs_passabanda'
+        ),
+        output=[Output(num + '-passa-banda-input-inf', 'disabled'), Output(num + '-passa-banda-input-sup', 'disabled')],
+        inputs=[Input(num + '-passa-banda-check', 'value')]
+    )
 
-    app.callback(
-        [Output(num + '-savitzky-cut', 'disabled'), Output(num + '-savitzky-rate', 'disabled')],
-        [Input(num + '-savitzky-check', 'value')]
-    ) (generate_input_savitzky_disable_callback())
+    app.clientside_callback(
+        ClientsideFunction(
+            namespace='clientside',
+            function_name ='disable_inputs_savitzky'
+        ),
+        output = [Output(num + '-savitzky-cut', 'disabled'), Output(num + '-savitzky-rate', 'disabled')],
+        inputs= [Input(num + '-savitzky-check', 'value')]
+    )
 
     state_for_apply_callback.extend([
         State(str(num) + '-passa-banda-check', 'value'),
@@ -675,11 +763,10 @@ for num in range(num_max_dados):
 @app.callback(
     Output("modal-graph-config", "is_open"),
     [Input("modal-button", "n_clicks"), Input("close-modal", "n_clicks")],
-    [State("modal-graph-config", "is_open")],
+    [State("modal-graph-config", "is_open")]
 )
-def toggle_modal(open_button, close_button, is_open):
-
-    if open_button or close_button:
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
         return not is_open
     
     return is_open
@@ -739,14 +826,53 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
-state_for_apply_callback[0:0] = [State('dropdown-analise-geral-Y','value'),
-                                 State('dropdown-analise-geral-X','value'), 
-                                 State('filtros-checklist','value'), 
-                                 State('media-movel-input','value')
-                                ]
-output_for_apply_callback[0:0] = [Output('Graph-content','children'), 
-                                  Output('modal-button','style')
-                                 ]
+# Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
+@app.callback(
+    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options'), Output('modal-body','children'), Output('upload-data-loading','children'), Output('upload-files-alert','is_open'), Output('upload-files-alert', 'children')],
+    [Input('upload-data', 'contents')],
+    [State('upload-data', 'filename')]
+)
+def hide_index_and_read_file(list_of_contents, list_of_names):
+    global data
+    global num_dados
+    global output_for_apply_callback
+    global is_loaded
+    if list_of_contents is not None:
+        if ('legenda.txt' in list_of_names):
+            if len(list_of_names) >= 2:
+                files = dict(zip(list_of_names, list_of_contents))
+                legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
+                legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
+                try:
+                    for nome_do_arquivo in files:
+                        if(nome_do_arquivo != 'legenda.txt'):
+                            data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
+                except:
+                    return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
+                options = []
+                modalbody_content = []
+                num_dados = len(legenda)
+                for cont, column_name in enumerate(legenda):
+                    options.append( {'label' : column_name, 'value' : column_name} )
+                    all_data_name[column_name] = cont
+                    modalbody_content.extend(generate_element_modal_body(str(cont), column_name))
+                    if not is_loaded:
+                        output_for_apply_callback.extend([
+                            Output(str(cont) + '-modal-element', 'style')
+                        ])
+                for cont in range(num_dados,num_max_dados):
+                    modalbody_content.extend(generate_element_modal_body(str(cont), 'extra'))
+                is_loaded = True
+                return [{'display': 'none'}, {'display':'inline'}, options, options, modalbody_content, [], dash.no_update, dash.no_update]
+            else:
+                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]
+        else:
+            return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
+    else:
+        raise PreventUpdate
+        
+        
+            
 
 
 # Callback do botão de plotagem de graficos
@@ -857,6 +983,7 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
         fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
 
         retorno = [
+            [],
             dcc.Graph(
                 figure=fig,
                 id='figure-id',
@@ -874,4 +1001,4 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
