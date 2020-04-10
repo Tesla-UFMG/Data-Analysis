@@ -27,15 +27,24 @@ app.scripts.config.serve_locally = True
 
 num_max_dados = 80
 num_dados = 0
+<<<<<<< HEAD
 is_loaded = False
+=======
+
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 data = None
 data_copy = None
 all_data_name = {}
 converted_data = []
 show_modal_items = [ {'display':'none'} for _ in range(num_max_dados) ]
 
+<<<<<<< HEAD
 state_for_apply_callback = [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
 output_for_apply_callback = [Output('apply-adv-changes-loading','children'), Output('Graph-content','children'), Output('modal-button','style')]
+=======
+state_for_apply_callback = []
+output_for_apply_callback = []
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
  
 # LAYOUT DA PAGINA
 app.layout = html.Div(children=[
@@ -287,14 +296,22 @@ app.layout = html.Div(children=[
                                             ),
                                             # Conteudo do Grafico
                                             dbc.Spinner(
+<<<<<<< HEAD
                                                 spinner_style={'margin':'10rem auto'},
+=======
+                                                spinner_style={'margin':'3rem auto'},
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
                                                 children=[
                                                     html.Div(
                                                         id='Graph-content'
                                                     ), 
                                                 ]
                                             ),
+<<<<<<< HEAD
                                             html.Br(), 
+=======
+                                                   
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
                                             dbc.Button(
                                                 children="Opções avançadas",
                                                 color="secondary",
@@ -305,6 +322,7 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
+<<<<<<< HEAD
                             #Segundo Tab (Grafico Customizados)
                             dcc.Tab(
                                 label='Gráficos customizados',
@@ -339,6 +357,42 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             )
+=======
+                            # #Segundo Tab (Grafico Customizados)
+                            # dcc.Tab(
+                            #     label='Gráficos customizados',
+                            #     value='tab-2',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [1, 4, 1],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [1, 2, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # ),
+                            # #Terceiro Tab (Configuraçoes)
+                            # dcc.Tab(
+                            #     label='Configurações',
+                            #     value='tab-3',
+                            #     children=[
+                            #         dcc.Graph(
+                            #             figure={
+                            #                 'data': [
+                            #                     {'x': [1, 2, 3], 'y': [2, 4, 3],
+                            #                         'type': 'bar', 'name': 'SF'},
+                            #                     {'x': [1, 2, 3], 'y': [5, 4, 3],
+                            #                     'type': 'bar', 'name': u'Montréal'},
+                            #                 ]
+                            #             }
+                            #         )
+                            #     ]
+                            # )
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
                         ]
                     )
                 ]
@@ -359,6 +413,7 @@ app.layout = html.Div(children=[
             dbc.ModalFooter(
                 children=[
                     dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
+<<<<<<< HEAD
                     dbc.Spinner(
                         children=[
                             dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0),
@@ -370,6 +425,9 @@ app.layout = html.Div(children=[
                         spinner_style={'margin': '0 37px'},
                         color="success"
                     )
+=======
+                    dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0)
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
                 ],
                 className="modal-header-and-footer"
             )
@@ -540,6 +598,17 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = signal.lfilter(b, a, data)
     return y
+<<<<<<< HEAD
+=======
+
+#Função utilizada nos callbacks de abrir/fechar os bootstrap collapses dentro do modal de config avançadas
+def generate_toggle_callback():
+    def toggle_collapse(n, is_open):
+        if n:
+            return not is_open
+        return is_open
+    return toggle_collapse
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 
 #Função utilizada nos callbacks de habilitar/desabilitar inputs numéricos do filtro passa-banda
 def generate_input_passabanda_disable_callback():
@@ -659,6 +728,7 @@ def generate_element_modal_body(num, column_name):
 app.config['suppress_callback_exceptions'] = True
 
 
+<<<<<<< HEAD
 #Laço para criar todos os callbacks possíveis, de forma a contornar a impossibilidade de criar callbacks dinâmicamente
 for num in range(num_max_dados):
     num = str(num)
@@ -689,6 +759,27 @@ for num in range(num_max_dados):
         output = [Output(num + '-savitzky-cut', 'disabled'), Output(num + '-savitzky-rate', 'disabled')],
         inputs= [Input(num + '-savitzky-check', 'value')]
     )
+=======
+
+#Laço para criar todos os callbacks possíveis, de forma a contornar a impossibilidade de criar callbacks dinâmicamente
+for num in range(num_max_dados):
+    num = str(num)
+    app.callback(
+        Output( num + "-collapse" , "is_open"),
+        [Input(num + "-collapse-button", "n_clicks")],
+        [State( num + "-collapse" , "is_open")]
+    ) (generate_toggle_callback())
+ 
+    app.callback(
+        [Output(num + '-passa-banda-input-inf', 'disabled'), Output(num + '-passa-banda-input-sup', 'disabled')],
+        [Input(num + '-passa-banda-check', 'value')]
+    ) (generate_input_passabanda_disable_callback())
+
+    app.callback(
+        [Output(num + '-savitzky-cut', 'disabled'), Output(num + '-savitzky-rate', 'disabled')],
+        [Input(num + '-savitzky-check', 'value')]
+    ) (generate_input_savitzky_disable_callback())
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 
     state_for_apply_callback.extend([
         State(str(num) + '-passa-banda-check', 'value'),
@@ -700,6 +791,7 @@ for num in range(num_max_dados):
     ])
 
 
+<<<<<<< HEAD
 
 @app.callback(
     Output("modal-graph-config", "is_open"),
@@ -711,6 +803,53 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
+=======
+#Callback de abrir/fechar o modal de configurações avançadas
+@app.callback(
+    Output("modal-graph-config", "is_open"),
+    [Input("modal-button", "n_clicks"), Input("close-modal", "n_clicks")],
+    [State("modal-graph-config", "is_open")],
+)
+def toggle_modal(open_button, close_button, is_open):
+    if open_button or close_button:
+        return not is_open
+    return is_open
+
+# Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
+@app.callback(
+    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options'), Output('modal-body','children')],
+    [Input('upload-data', 'contents')],
+    [State('upload-data', 'filename')]
+)
+def hide_index_and_read_file(list_of_contents, list_of_names):
+    global data
+    global num_dados
+    if list_of_contents is not None:
+        if ('legenda.txt' in list_of_names) and (len(list_of_names) >= 2):
+            files = dict(zip(list_of_names, list_of_contents))
+            legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
+            legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
+
+            for nome_do_arquivo in files:
+                if(nome_do_arquivo != 'legenda.txt'):
+                    data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
+            options = []
+            modalbody_content = []
+            num_dados = len(legenda)
+            for cont, column_name in enumerate(legenda):
+                options.append( {'label' : column_name, 'value' : column_name} )
+                all_data_name[column_name] = cont
+                modalbody_content.extend(generate_element_modal_body(str(cont), column_name))
+                output_for_apply_callback.extend([
+                    Output(str(cont) + '-modal-element', 'style')
+                ])
+            for cont in range(num_dados,num_max_dados):
+                modalbody_content.extend(generate_element_modal_body(str(cont), 'extra'))
+            return [{'display': 'none'}, {'display':'inline'}, options, options, modalbody_content]
+    else:
+        raise PreventUpdate
+            
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 
 #Callback que habilita e desabilita o INPUT de média móvel
 @app.callback(
@@ -723,6 +862,7 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
+<<<<<<< HEAD
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
     [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options'), Output('modal-body','children'), Output('upload-data-loading','children'), Output('upload-files-alert','is_open'), Output('upload-files-alert', 'children')],
@@ -778,6 +918,18 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
     [Input('plot-button','n_clicks_timestamp'), Input('apply-adv-changes-button','n_clicks_timestamp')],
     state_for_apply_callback
 )
+=======
+state_for_apply_callback[0:0] = [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
+output_for_apply_callback[0:0] = [Output('Graph-content','children'), Output('modal-button','style')]
+
+
+#Callback do botão de plotagem de graficos
+@app.callback(
+    output_for_apply_callback,
+    [Input('plot-button','n_clicks_timestamp'), Input('apply-adv-changes-button','n_clicks_timestamp')],
+    state_for_apply_callback
+)
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, *args):
     global data_copy
     global show_modal_items
@@ -815,10 +967,16 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
             else:
                 fig.add_trace(go.Scatter(y=data_copy[column_name], x=data_copy[selected_X], mode="lines", name=column_name, hovertemplate = "%{y}"), row=cont+1, col=1)               
             show_modal_items_copy[all_data_name[column_name]] = {'display':'block'}
+<<<<<<< HEAD
         fig['layout'].update(height=120*len(selected_columns_Y) + 100, margin={'t':50, 'b':50, 'l':100, 'r':100})
 
         retorno = [
             [],
+=======
+        fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
+
+        retorno = [
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
             dcc.Graph(
                 figure=fig,
                 id='figure-id',
@@ -833,6 +991,11 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
         raise PreventUpdate
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 80e1fc37c9f9d00865bd6d0230590a948a245b9b
 
 if __name__ == '__main__':
     app.run_server(debug=False)
