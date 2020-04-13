@@ -181,5 +181,31 @@
     margin: 10px 0;
 }
 
+.config-page {
+    background-color: white;
+    width: 100%;
+}
 
+.config-title {
+    background-color: #4ed840;
+    padding: 0.01em 16px;
+}
+
+.config-title h1 {
+    font-weight: 450;
+    font-size: 1.5rem;
+    margin-top: .5rem;
+}
+
+.divisão-content {
+    padding: 0.01em 16px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.divisao-sub-content {
+    padding-left: 2.35rem;
+}
 
