@@ -919,8 +919,6 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                              )
 
             show_modal_items_copy[all_data_name[column_name]] = {'display':'block'}
-            #print(selected_columns_Y)
-            #print(data_copy[column_name])
 
         # tempo_voltas = [50, 100, 150]
 
