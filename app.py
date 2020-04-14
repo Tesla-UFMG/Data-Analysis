@@ -345,20 +345,77 @@ app.layout = html.Div(children=[
                                                 className="divisão-content",
                                                 children=[
                                                     # Opção para selecionar divisão por distancia ou tempo
-                                                    html.H4(
-                                                        children='Divisão de Voltas',
-                                                        className='form-label'
-                                                    ),
-                                                    # Checklist de Distancia ou Tempo
-                                                    dcc.Checklist(
-                                                        id='divisao-checklist',
+                                                    dbc.Checklist(
                                                         options=[
-                                                            {'label': 'Distância', 'value': 'Distancia'},
-                                                            {'label': 'Tempo', 'value': 'Tempo'}
+                                                            {"label": "Divisão de Voltas", "value": 1},
                                                         ],
-                                                        inputStyle = {'margin-right':'3px'},
-                                                        labelStyle =  {'margin-right':'8px'},
-                                                        value=[]
+                                                        id="switches-input",
+                                                        switch=True,
+                                                    ),
+                                                    html.Div(
+                                                        className="divisao-sub-content",
+                                                        #style={'display':'none'},
+                                                        children=[
+                                                            # Checklist de Distancia ou Tempo
+                                                            dbc.RadioItems(
+                                                                id="radios-row",
+                                                                options=[
+                                                                    {"label": "Distância", "value": "distancia"},
+                                                                    {"label": "Tempo", "value": "tempo"},
+                                                                ],
+                                                            ),
+                                                            html.Div(
+                                                                className="checklist-selected",
+                                                                children=[
+                                                                    html.Div(
+                                                                        className="if-tempo-selected",
+                                                                        children=[
+                                                                            # Selecionar número de voltas
+                                                                            html.H4(
+                                                                                children='Número de Voltas:',
+                                                                                className='form-label',
+                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                            ),
+                                                                            daq.NumericInput(
+                                                                                id='divisão-voltas-tempo-input',
+                                                                                value=1,
+                                                                                min=1,
+                                                                                max=100
+                                                                            ),
+                                                                            # Setando o valor de cada volta
+                                                                            html.H4(
+                                                                                children='Defina o tempo de cada volta:',
+                                                                                className='form-label',
+                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                            ),
+                                                                            dbc.Input(
+                                                                                id="time-input", 
+                                                                                placeholder="Tempo em segundos (s.ms)", 
+                                                                                type="number",
+                                                                                min=1
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                    html.Div(
+                                                                        className="if-dist-selected",
+                                                                        children=[
+                                                                            # Selecionar a distância das voltas
+                                                                            html.H4(
+                                                                                children='Distância das Voltas:',
+                                                                                className='form-label',
+                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                            ),
+                                                                            dbc.Input(
+                                                                                id="dist-input", 
+                                                                                placeholder="Distância em metros", 
+                                                                                type="number",
+                                                                                min=1
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]   
                                                     ),
                                                 ]
                                             ),
@@ -766,6 +823,7 @@ for num in range(num_max_dados):
     [State("modal-graph-config", "is_open")]
 )
 def toggle_modal(n1, n2, is_open):
+
     if n1 or n2:
         return not is_open
     
@@ -783,55 +841,79 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
+# Callback que habilita e desabilita as configurações de setar volta ou distancia
+@app.callback(
+    [Output('divisao-sub-content','display')],
+    [Input('switches-input','value')]
+)
+def able_divisao_volta(switch_value):
+    
+    if (switch_value != 1):
+        return 'none'
+    else:
+        return 'inline-block'
+
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
-    [Output('index-page', 'style'), Output('main-page', 'style'), Output('dropdown-analise-geral-Y', 'options'), Output('dropdown-analise-geral-X', 'options'), Output('modal-body','children'), Output('upload-data-loading','children'), Output('upload-files-alert','is_open'), Output('upload-files-alert', 'children')],
+    [Output('index-page', 'style'), 
+     Output('main-page', 'style'),
+     Output('dropdown-analise-geral-Y', 'options'),
+     Output('dropdown-analise-geral-X', 'options'), 
+     Output('modal-body','children'), 
+     Output('upload-data-loading','children'), 
+     Output('upload-files-alert','is_open'), 
+     Output('upload-files-alert', 'children')],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
 def hide_index_and_read_file(list_of_contents, list_of_names):
+
     global data
     global num_dados
     global output_for_apply_callback
     global is_loaded
+
     if list_of_contents is not None:
         if ('legenda.txt' in list_of_names):
             if len(list_of_names) >= 2:
                 files = dict(zip(list_of_names, list_of_contents))
                 legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
                 legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
+
                 try:
                     for nome_do_arquivo in files:
                         if(nome_do_arquivo != 'legenda.txt'):
                             data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
                 except:
                     return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
+                
                 options = []
                 modalbody_content = []
                 num_dados = len(legenda)
+                
                 for cont, column_name in enumerate(legenda):
+                
                     options.append( {'label' : column_name, 'value' : column_name} )
                     all_data_name[column_name] = cont
                     modalbody_content.extend(generate_element_modal_body(str(cont), column_name))
+
                     if not is_loaded:
                         output_for_apply_callback.extend([
                             Output(str(cont) + '-modal-element', 'style')
                         ])
+
                 for cont in range(num_dados,num_max_dados):
                     modalbody_content.extend(generate_element_modal_body(str(cont), 'extra'))
+                
                 is_loaded = True
                 return [{'display': 'none'}, {'display':'inline'}, options, options, modalbody_content, [], dash.no_update, dash.no_update]
             else:
-                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]
+                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]    
         else:
             return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
     else:
         raise PreventUpdate
         
-        
-            
-
-
 # Callback do botão de plotagem de graficos
 @app.callback(
     output_for_apply_callback,
@@ -956,4 +1038,4 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
