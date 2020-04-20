@@ -6,38 +6,37 @@ import dash_daq as daq
 import pandas as pd
 import numpy as np
 from scipy import signal
-from dash.dependencies import Input, Output, State, ClientsideFunction
+from dash.dependencies import Input, Output, State, ClientsideFunction, MATCH, ALL
 from dash.exceptions import PreventUpdate
 import io
 import base64
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
+import visdcc
 
 
 #debug
 import time
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
+external_scripts = ["https://cdn.plot.ly/plotly-1.2.0.min.js"]
+
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.scripts.config.serve_locally = True
 
+#--------------- Global var ---------------#
+num_dados = None #Número de colunas dos arquivos de dados
+data = None #Pandas Dataframe com os dados utilizados
+data_copy = None #Cópia da variável data para a 
+converted_data = [] #Armazena o nome das colunas que já tiveram seus dados tratados para evitar retrabalho
+eixoY = None #Armazena as colunas que estão plotadas
+ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
+#------------------------------------------#
 
-num_max_dados = 80
-num_dados = 0
-is_loaded = False
-data = None
-data_copy = None
-all_data_name = {}
-converted_data = []
-show_modal_items = [ {'display':'none'} for _ in range(num_max_dados) ]
-tempo_voltas = []
 
-state_for_apply_callback = [State('dropdown-analise-geral-Y','value'),State('dropdown-analise-geral-X','value'), State('filtros-checklist','value'), State('media-movel-input','value')]
-output_for_apply_callback = [Output('apply-adv-changes-loading','children'), Output('Graph-content','children'), Output('modal-button','style')]
- 
 # LAYOUT DA PAGINA
 app.layout = html.Div(children=[
     # Layout NavBar
@@ -276,24 +275,33 @@ app.layout = html.Div(children=[
                                                             # Botão de Plotagem
                                                             dbc.Button(
                                                                 id='plot-button',
-                                                                children='Plotar',
-                                                                className="btn btn-primary btn-lg",
-                                                                style={'background-color':'#4ed840', 'margin':'20px 0px 20px 0px', 'border':'solid 1px black', 'color':'black', 'font-weight': '350'},
+                                                                className="tesla-button",
+                                                                children=[
+                                                                    'Plotar',
+                                                                    dbc.Spinner(
+                                                                        color="light",
+                                                                        spinner_style = {'display':'inline-block', 'margin':'0 0 0 .5rem'},
+                                                                        size='sm',
+                                                                        children=[
+                                                                            html.Div(id="plot-loading")
+                                                                        ]
+                                                                    )
+                                                                ],
+                                                                color="success",
+                                                                style={'margin':'20px 0px 20px 0px'},
                                                                 n_clicks_timestamp=0
                                                             )
                                                         ]
                                                     )
                                                 ]
                                             ),
-                                            # Conteudo do Grafico
-                                            dbc.Spinner(
-                                                spinner_style={'margin':'10rem auto'},
-                                                children=[
-                                                    html.Div(
-                                                        id='Graph-content'
-                                                    ), 
-                                                ]
-                                            ),
+                                            
+                                            html.Div(
+                                                id='Graph-content'
+                                            ), 
+
+    
+
                                             html.Br(), 
                                             dbc.Button(
                                                 children="Opções avançadas",
@@ -351,12 +359,12 @@ app.layout = html.Div(children=[
                                                             {"label": "Divisão de Voltas", "value": 1},
                                                         ],
                                                         id="switches-input",
-                                                        switch=True,
-                                                        value=[]
+                                                        value=[],
+                                                        switch=True
                                                     ),
                                                     html.Div(
-                                                        className="divisao-sub-content",
                                                         id="corpo-divisao-voltas",
+                                                        className="divisao-sub-content",
                                                         style={'display':'none'},
                                                         children=[
                                                             # Checklist de Distancia ou Tempo
@@ -460,14 +468,14 @@ app.layout = html.Div(children=[
                 children=[
                     dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
                     dbc.Spinner(
-                        children=[
+                        children = [
                             dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0),
                             html.Div(
                                 id="apply-adv-changes-loading"
                             )
                         ],
                         size="sm",
-                        spinner_style={'margin': '0 37px'},
+                        spinner_style = {'margin': '0 37px'},
                         color="success"
                     )
                 ],
@@ -688,32 +696,46 @@ def generate_input_savitzky_disable_callback():
     return disable_inputs_savitzky
 
 # Função que cria o corpo HTML do modal. Cada Chamada dessa função retorna um Bootstrap collapse para o dado passado como parâmetro
-def generate_element_modal_body(num, column_name):
+def generate_element_modal_body(column_name):
 
     html_generated = [
         html.Div(
-            id= num + '-modal-element',
-            style = {'display': 'none'},
+            id={
+                'type': 'advconfig-data',
+                'index': column_name
+            },
             children = [
                 dbc.Button(
                     children=[
                         column_name,
-                        html.I(className='dropdown-triangle')
+                        html.I(
+                            className='dropdown-triangle'
+                        )
                     ],
                     color="secondary", 
                     block=True,
-                    id=num + '-collapse-button',
-                    style={'margin':'5px 0'}
+                    id = {
+                        'type':'advchanges-button-collapse',
+                        'index': column_name
+                    },
+                    style={'margin':'5px 0'},
+                    n_clicks=0
                 ),
                 dbc.Collapse(
-                    id= num + '-collapse',
+                    id= {
+                        'type':'advchanges-collapse',
+                        'index': column_name
+                    },
                     children=[
                         html.H4(
                             children='Filtros Adicionais',
                             className='adv-config-subtitle',
                         ),
                         dcc.Checklist(
-                            id=num + '-passa-banda-check',
+                            id={
+                                'type':'bandpass-checklist',
+                                'index': column_name
+                            },
                             options=[
                                 {'label': 'Passa-Banda', 'value': 'Passa-Banda'},
                             ],
@@ -725,7 +747,10 @@ def generate_element_modal_body(num, column_name):
                             children=[
                                 dbc.Col(
                                     daq.NumericInput(
-                                        id=num + '-passa-banda-input-inf',
+                                        id={
+                                            'type':"bandpass-inf-limit",
+                                            'index': column_name
+                                        },
                                         label={'label':'limite inferior (Hz)'},
                                         min=1,
                                         max=15,
@@ -734,7 +759,10 @@ def generate_element_modal_body(num, column_name):
                                 ),
                                 dbc.Col(
                                     daq.NumericInput(
-                                        id=num + '-passa-banda-input-sup',
+                                        id={
+                                            'type':"bandpass-sup-limit",
+                                            'index': column_name
+                                        },
                                         label={'label':'limite superior (Hz)'},
                                         min=1,
                                         max=15,
@@ -744,7 +772,10 @@ def generate_element_modal_body(num, column_name):
                             ]
                         ),
                         dcc.Checklist(
-                            id=num + '-savitzky-check',
+                            id={
+                                'type':"savitzky-checklist",
+                                'index': column_name
+                            },
                             options=[
                                 {'label': 'Filtro savitzky-golay (Passa-baixas)', 'value': 'Filtro savitzky-golay'},
                             ],
@@ -756,7 +787,10 @@ def generate_element_modal_body(num, column_name):
                             children=[
                                 dbc.Col(
                                     daq.NumericInput(
-                                        id=num + '-savitzky-cut',
+                                        id={
+                                            'type':"savitzky-cut",
+                                            'index': column_name
+                                        },
                                         label={'label':'Tamanho da subsequência'},
                                         min=0,
                                         max=20,
@@ -765,7 +799,10 @@ def generate_element_modal_body(num, column_name):
                                 ),
                                 dbc.Col(
                                     daq.NumericInput(
-                                        id=num + '-savitzky-rate',
+                                        id={
+                                            'type':"savitzky-poly",
+                                            'index': column_name
+                                        },
                                         label={'label':'Grau polinomial'},
                                         min=0,
                                         max=5,
@@ -789,46 +826,35 @@ def generate_element_modal_body(num, column_name):
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
 
-# Laço para criar todos os callbacks possíveis, de forma a contornar a impossibilidade de criar callbacks dinâmicamente
-for num in range(num_max_dados):
-    
-    num = str(num)
-    app.clientside_callback(
-        ClientsideFunction(
-            namespace='clientside',
-            function_name ='toggle_collapse'
-        ),
-        output=Output( num + "-collapse" , "is_open"),
-        inputs=[Input(num + "-collapse-button", "n_clicks")],
-        state=[State( num + "-collapse" , "is_open")]
-    )
- 
-    app.clientside_callback(
-        ClientsideFunction(
-            namespace='clientside',
-            function_name ='disable_inputs_passabanda'
-        ),
-        output=[Output(num + '-passa-banda-input-inf', 'disabled'), Output(num + '-passa-banda-input-sup', 'disabled')],
-        inputs=[Input(num + '-passa-banda-check', 'value')]
-    )
+@app.callback(
+    Output({'type':'advchanges-collapse','index': MATCH}, 'is_open'),
+    [Input({'type':'advchanges-button-collapse','index': MATCH}, 'n_clicks')],
+    [State({'type':'advchanges-collapse','index': MATCH}, 'is_open')]
+)
+def toggle_collapse(n_clicks, is_open):
+    if(n_clicks):
+        return not is_open
+    return is_open
 
-    app.clientside_callback(
-        ClientsideFunction(
-            namespace='clientside',
-            function_name ='disable_inputs_savitzky'
-        ),
-        output = [Output(num + '-savitzky-cut', 'disabled'), Output(num + '-savitzky-rate', 'disabled')],
-        inputs= [Input(num + '-savitzky-check', 'value')]
-    )
+@app.callback(
+    [Output({'type':"bandpass-inf-limit",'index': MATCH},'disabled'),
+     Output({'type':"bandpass-sup-limit",'index': MATCH},'disabled')],
+    [Input({'type':'bandpass-checklist','index': MATCH}, 'value')]
+) 
+def disable_inputs_passabanda(checklist):
+    if('Passa-Banda' in checklist):
+        return [False,False]
+    return [True, True]
 
-    state_for_apply_callback.extend([
-        State(str(num) + '-passa-banda-check', 'value'),
-        State(str(num) + '-passa-banda-input-inf', 'value'),
-        State(str(num) + '-passa-banda-input-sup', 'value'),
-        State(str(num) + '-savitzky-check', 'value'),
-        State(str(num) + '-savitzky-cut', 'value'),
-        State(str(num) + '-savitzky-rate', 'value')
-    ])
+@app.callback(
+    [Output({'type':"savitzky-cut",'index': MATCH},'disabled'),
+     Output({'type':"savitzky-poly",'index': MATCH},'disabled')],
+    [Input({'type':'savitzky-checklist','index': MATCH}, 'value')]
+) 
+def disable_inputs_savitzky(checklist):
+    if('Filtro savitzky-golay' in checklist):
+        return [False,False]
+    return [True, True]
 
 
 # Callback de abrir/fechar o modal de configurações avançadas
@@ -862,7 +888,6 @@ def disable_media_movel_input(selected_filters):
     [Input('switches-input','value')]
 )
 def able_divisao_volta(switch_value):
-    
     if (1 in switch_value):
         return {'display':'inline-block'}
     else:
@@ -918,8 +943,7 @@ def quantidade_input_div_voltas(numero_voltas, n1, children):
     [Output('index-page', 'style'), 
      Output('main-page', 'style'),
      Output('dropdown-analise-geral-Y', 'options'),
-     Output('dropdown-analise-geral-X', 'options'), 
-     Output('modal-body','children'), 
+     Output('dropdown-analise-geral-X', 'options'),
      Output('upload-data-loading','children'), 
      Output('upload-files-alert','is_open'), 
      Output('upload-files-alert', 'children')],
@@ -930,8 +954,6 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
 
     global data
     global num_dados
-    global output_for_apply_callback
-    global is_loaded
 
     if list_of_contents is not None:
         if ('legenda.txt' in list_of_names):
@@ -945,50 +967,55 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
                         if(nome_do_arquivo != 'legenda.txt'):
                             data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
                 except:
-                    return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
+                    return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
                 
                 options = []
-                modalbody_content = []
                 num_dados = len(legenda)
                 
                 for cont, column_name in enumerate(legenda):
-                
                     options.append( {'label' : column_name, 'value' : column_name} )
-                    all_data_name[column_name] = cont
-                    modalbody_content.extend(generate_element_modal_body(str(cont), column_name))
 
-                    if not is_loaded:
-                        output_for_apply_callback.extend([
-                            Output(str(cont) + '-modal-element', 'style')
-                        ])
-
-                for cont in range(num_dados,num_max_dados):
-                    modalbody_content.extend(generate_element_modal_body(str(cont), 'extra'))
-                
-                is_loaded = True
-                return [{'display': 'none'}, {'display':'inline'}, options, options, modalbody_content, [], dash.no_update, dash.no_update]
+                return [{'display': 'none'}, {'display':'inline'}, options, options, [], dash.no_update, dash.no_update]
             else:
-                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]    
+                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]    
         else:
-            return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
+            return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
     else:
         raise PreventUpdate
         
 # Callback do botão de plotagem de graficos
 @app.callback(
-    output_for_apply_callback,
-    [Input('plot-button','n_clicks_timestamp'), Input('apply-adv-changes-button','n_clicks_timestamp')],
-    state_for_apply_callback
+    [Output('apply-adv-changes-loading','children'),
+     Output('Graph-content','children'),
+     Output('modal-button','style'),
+     Output('modal-body','children'),
+     Output('plot-loading','children')],
+    [Input('plot-button','n_clicks_timestamp'),
+     Input('apply-adv-changes-button','n_clicks_timestamp')],
+    [State('dropdown-analise-geral-Y','value'), 
+     State('dropdown-analise-geral-X','value'),
+     State('filtros-checklist','value'),
+     State('media-movel-input','value'),
+     State({'type': 'advconfig-data', 'index': ALL}, 'id'),
+     State({'type': 'bandpass-checklist', 'index': ALL}, 'value'),
+     State({'type':'bandpass-inf-limit', 'index': ALL}, 'value'),
+     State({'type':'bandpass-sup-limit', 'index': ALL}, 'value'),
+     State({'type': 'savitzky-checklist', 'index': ALL}, 'value'),
+     State({'type':'savitzky-cut', 'index': ALL}, 'value'),
+     State({'type':'savitzky-poly', 'index': ALL}, 'value')]
 )
-def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, *args):
+def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly):
     
     global data_copy
-    global show_modal_items
-    
+    global ploted_figure
+    global eixoY
+
     if button_plot != 0 or button_apply != 0:
 
-        if int(button_plot) > int(button_apply):
+        modal_itens = []
 
+        if int(button_plot) > int(button_apply):
+            eixoY = selected_columns_Y
             trataDados(selected_X, selected_columns_Y)
             data_copy = data.copy()
 
@@ -1007,37 +1034,31 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
 
                 for column in selected_columns_Y:
                     data_copy[column] = signal.medfilt(data_copy[column], np.array(filters_subseq))
-        elif(int(button_plot) < int(button_apply)):
 
-            for column in selected_columns_Y:
-                data_index = all_data_name[column] * 6
-                
-                if( 'Passa-Banda' in args[data_index] ):
-                    data_copy[column] = butter_bandpass_filter(data_copy[column], 
-                                                               args[data_index+1],
-                                                               args[data_index+2],
-                                                               fs=60
-                                                              )
-
-                if( 'Filtro savitzky-golay' in args[data_index+3]):
                     
-                    window_length = args[data_index+4]
-
+        elif(int(button_plot) < int(button_apply)):
+            for cont, id in enumerate(identificador):
+                if('Passa-Banda' in bandpass_check[cont]):
+                    data_copy[id['index']] = butter_bandpass_filter(data_copy[id['index']], 
+                                                                    bandpass_inf[cont],
+                                                                    bandpass_sup[cont],
+                                                                    fs=60
+                                                                   )
+                if('Filtro savitzky-golay' in savitzky_check[cont]):
+                    window_length = savitzky_cut[cont]
                     if window_length % 2 == 0:
                         window_length += 1
 
-                    data_copy[column] = signal.savgol_filter(data_copy[column],
-                                                             window_length=window_length,
-                                                             polyorder=args[data_index+5]
-                                                            )
+                    data_copy[id['index']] = signal.savgol_filter(data_copy[id['index']],
+                                                                  window_length=window_length,
+                                                                  polyorder=savitzky_poly[cont]
+                                                                 )
 
-        show_modal_items_copy = show_modal_items[:num_dados]
         fig = make_subplots(rows=len(selected_columns_Y),
                             cols=1, 
                             shared_xaxes=True, 
                             vertical_spacing=0.0
                            )
-
         for cont, column_name in enumerate(selected_columns_Y):
             if (column_name in unidades_dados_hash):
                 fig.add_trace(go.Scatter(y=data_copy[column_name], 
@@ -1059,38 +1080,76 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                               row=cont+1, 
                               col=1
                              )
-
-            show_modal_items_copy[all_data_name[column_name]] = {'display':'block'}
+            modal_itens.extend( generate_element_modal_body(column_name) )
+        # tempo_voltas = [50, 100, 150]
 
         # Acresenta traços de divisão de voltas
-        for cont, column_name in enumerate(selected_columns_Y):
-            for z in range(50, 300, 50):
-                fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                         x=[z, z],                                                       # array com os valores dos tempos das voltas 
-                                         mode="lines", 
-                                         line=go.scatter.Line(color="gray"), 
-                                         showlegend=False
-                                        ),
-                              row=cont+1,
-                              col=1
-                             )
-                        
-        fig['layout'].update(height=120*len(selected_columns_Y)+100, margin={'t':50, 'b':50, 'l':100, 'r':100})
+        # for cont, column_name in enumerate(selected_columns_Y):
+        #     for z in range(50, 300, 50):
+        #         fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
+        #                                  x=[z, z],                                                       # array com os valores dos tempos das voltas 
+        #                                  mode="lines", 
+        #                                  line=go.scatter.Line(color="gray"), 
+        #                                  showlegend=False
+        #                                 ),
+        #                       row=cont+1,
+        #                       col=1
+        #                      )
+        fig['layout'].update(height=120*len(selected_columns_Y)+25, margin={'t':25, 'b':0, 'l':100, 'r':100}, uirevision='const')
 
-        retorno = [
+        ploted_figure = fig
+
+        return [
             [],
             dcc.Graph(
                 figure=fig,
                 id='figure-id',
                 config={'autosizable' : False}
             ),
-            {'display':'inline'}
+            {'display':'inline'},
+            modal_itens,
+            []
         ]
-        retorno.extend(show_modal_items_copy)
-        
-        return retorno
+
     else:
         #TRATAR ERRO
+        raise PreventUpdate
+
+@app.callback(
+    Output('add-line-button' , 'className'),
+    [Input('add-line-button' , 'n_clicks')],
+    [State('add-line-button' , 'className')]
+)
+def change_button_class(n_clicks, className):
+    if(n_clicks):
+        if(className == 'interations-button-pressed button-int' ):
+            return 'interations-button button-int'
+        return 'interations-button-pressed button-int'
+    else:
+        raise PreventUpdate
+    
+
+@app.callback (
+    [Output("figure-id","figure")],
+    [Input("figure-id","clickData")],
+    [State("figure-id","relayoutData")]
+)
+def display_vertical_line(clickData, zoom_options):
+    if clickData is not None:
+        last_figure = go.Figure(ploted_figure)
+        last_figure.add_shape(type="line",
+                              yref="paper",
+                              x0 = clickData['points'][0]['x'],
+                              x1 = clickData['points'][0]['x'],
+                              y0=0,
+                              y1=1,
+                              line=dict(
+                                  color="black",
+                                  width=2
+                              )
+                             )
+        return [last_figure]
+    else:
         raise PreventUpdate
 
 

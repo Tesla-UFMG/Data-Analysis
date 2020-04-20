@@ -59,7 +59,7 @@
 
 .Select--multi .Select-value {
     background-color: #ebf5ff;
-    background-color: #76D36C;
+    background-color: #28a745;
     border-radius: 2px;
     border: 1px solid #c2e0ff;
     border: 1px solid black;
@@ -76,9 +76,12 @@
     cursor: pointer;
     border-bottom-left-radius: 2px;
     border-top-left-radius: 2px;
-    border-right: 1px solid #c2e0ff;
     border-right: 1px solid black;
     padding: 1px 5px 3px;
+}
+
+.Select--multi .Select-value-icon:hover {
+    color:white;
 }
 
 .form-plot-config {
@@ -87,7 +90,7 @@
 }
 
 .form-title {
-    background-color: #4ed840;
+    background-color: #28a745;
     padding: 0.01em 16px;
 }
 
@@ -143,14 +146,14 @@
 }
 
 .tesla-button {
-    background-color: darkgreen;
+    background-color: #28a745;
     color:white;
-    border-color:#0d0d0d;
+    border-color:#28a745;
 }
 
 .tesla-button:hover {
     background-color: white;
-    color:black;
+    color:#28a745;
 }
 
 .dropdown-triangle {
