@@ -360,7 +360,7 @@ app.layout = html.Div(children=[
                                                         ],
                                                         id="switches-input",
                                                         value=[],
-                                                        switch=True,
+                                                        switch=True
                                                     ),
                                                     html.Div(
                                                         id="corpo-divisao-voltas",
@@ -374,12 +374,15 @@ app.layout = html.Div(children=[
                                                                     {"label": "Distância", "value": "distancia"},
                                                                     {"label": "Tempo", "value": "tempo"},
                                                                 ],
+                                                                value=[]
                                                             ),
                                                             html.Div(
                                                                 className="checklist-selected",
                                                                 children=[
                                                                     html.Div(
                                                                         className="if-tempo-selected",
+                                                                        id="corpo-divisao-tempo",
+                                                                        style={'display':'none'},
                                                                         children=[
                                                                             # Selecionar número de voltas
                                                                             html.H4(
@@ -393,22 +396,27 @@ app.layout = html.Div(children=[
                                                                                 min=1,
                                                                                 max=100
                                                                             ),
+                                                                            dbc.Button(
+                                                                                children="Set",
+                                                                                color="secondary",
+                                                                                className="set-numero-voltas",
+                                                                                id='numero-voltas-button'
+                                                                            ),
                                                                             # Setando o valor de cada volta
                                                                             html.H4(
                                                                                 children='Defina o tempo de cada volta:',
                                                                                 className='form-label',
                                                                                 style={'margin-top':'8px', 'font-size':'1rem'}
                                                                             ),
-                                                                            dbc.Input(
-                                                                                id="time-input", 
-                                                                                placeholder="Tempo em segundos (s.ms)", 
-                                                                                type="number",
-                                                                                min=1
+                                                                            html.Div(
+                                                                                id="time-input"
                                                                             ),
                                                                         ]
                                                                     ),
                                                                     html.Div(
                                                                         className="if-dist-selected",
+                                                                        id="corpo-divisao-distancia",
+                                                                        style={'display':'none'},
                                                                         children=[
                                                                             # Selecionar a distância das voltas
                                                                             html.H4(
@@ -416,11 +424,14 @@ app.layout = html.Div(children=[
                                                                                 className='form-label',
                                                                                 style={'margin-top':'8px', 'font-size':'1rem'}
                                                                             ),
-                                                                            dbc.Input(
-                                                                                id="dist-input", 
-                                                                                placeholder="Distância em metros", 
-                                                                                type="number",
-                                                                                min=1
+                                                                            dbc.InputGroup(
+                                                                                [dbc.InputGroupAddon("Distancia", addon_type="prepend"), 
+                                                                                 dbc.Input(
+                                                                                    placeholder="Distância em metros",
+                                                                                    type="number",
+                                                                                    min=0
+                                                                                 )
+                                                                                ]
                                                                             ),
                                                                         ]
                                                                     ),
@@ -870,7 +881,7 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
-# Callback que habilita e desabilita as configurações de setar volta ou distancia
+# Callback que habilita e desabilita as configurações de divisao de voltas
 @app.callback(
     Output('corpo-divisao-voltas','style'),
     [Input('switches-input','value')]
@@ -880,7 +891,49 @@ def able_divisao_volta(switch_value):
         return {'display':'inline-block'}
     else:
         return {'display':'none'}
-        
+
+# Callback que habilita e desabilita as configurações de setar distancia ou tempo
+@app.callback(
+    [Output('corpo-divisao-tempo','style'),
+     Output('corpo-divisao-distancia','style')],
+    [Input('radios-row','value')]
+)
+def able_tempo_or_distancia(radios_value):
+    
+    if ('distancia' in radios_value):
+        return [{'display':'none'}, {'display':'inline-block'}]
+    elif ('tempo' in radios_value):
+        return [{'display':'inline-block'}, {'display':'none'}]
+
+# Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
+@app.callback(
+    Output('time-input','children'),
+    [Input('divisão-voltas-tempo-input','value'),
+     Input('numero-voltas-button', 'n_clicks')]
+)
+def quantidades_input_div_voltas(numero_voltas, n1):
+
+    global tempo_voltas
+    salva_input_group = []
+
+    for i in range(1, numero_voltas+1):
+        input_group = dbc.InputGroup(
+                        [dbc.InputGroupAddon("Volta {}:".format(i), addon_type="prepend"), 
+                         dbc.Input(
+                            placeholder="Tempo em segundos (s.ms)",
+                            type="number",
+                            min=0,
+                            step=0.01
+                         )
+                        ]
+                      ),
+        salva_input_group.append(input_group)
+        #tempo_voltas.append()
+    #print(salva_input_group)
+    
+    if n1:
+        for z in range(0, len(salva_input_group)+1):
+            return salva_input_group[z]
 
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
