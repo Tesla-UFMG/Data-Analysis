@@ -153,7 +153,7 @@
 
 .tesla-button:hover {
     background-color: white;
-    color:#28a745;
+    color:#28a745!important;
 }
 
 .dropdown-triangle {
@@ -216,3 +216,54 @@
     padding-left: 1.5rem;
 }
 
+.interactive-graph-box {
+    display: flex;
+    justify-content: start;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    margin: 10px 0px 0px 70px;
+}
+
+.button-int {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    line-height: normal;
+    font-family:arial;
+    cursor:pointer;
+    padding:7px 5px;
+    background-color: #5a6268;
+    text-decoration: none;
+    font-weight:400;
+    color: #FFF;
+    border-radius: 4px;
+    display: inline-block;
+    background-image: url("../assets/images/plus.svg");
+    box-sizing: border-box;
+    height: 30px;
+    width:60px;
+}
+
+.interations-button {
+    border: none;
+}
+
+.interations-button-pressed {
+    border: solid 1.5px #28a745;
+}
+
+.interations-button:focus {
+    outline: none;
+}
+.interations-button-pressed:focus {
+    outline: none;
+}
+
+.bg-plus {
+   position: absolute;
+   cursor: pointer;
+   opacity: 0;
+}
