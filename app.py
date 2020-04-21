@@ -425,7 +425,8 @@ app.layout = html.Div(children=[
                                                                                 style={'margin-top':'8px', 'font-size':'1rem'}
                                                                             ),
                                                                             html.Div(
-                                                                                id="time-input"
+                                                                                id="time-input",
+                                                                                children= []
                                                                             ),
                                                                         ]
                                                                     ),
@@ -922,38 +923,42 @@ def able_tempo_or_distancia(radios_value):
         return [{'display':'none'}, {'display':'inline-block'}]
     elif ('tempo' in radios_value):
         return [{'display':'inline-block'}, {'display':'none'}]
+<<<<<<< HEAD
     else: 
+=======
+    else:
+>>>>>>> 1275b85989d69af9cf4224eab301e7a449d681c0
         raise PreventUpdate
 
 # Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
 @app.callback(
-    Output('time-input','children'),
-    [Input('divisão-voltas-tempo-input','value'),
-     Input('numero-voltas-button', 'n_clicks')]
+    Output('time-input', 'children'),
+    [Input('divisão-voltas-tempo-input', 'value'),
+     Input('numero-voltas-button', 'n_clicks')],
+    [State('time-input', 'children')]
 )
-def quantidades_input_div_voltas(numero_voltas, n1):
+def quantidade_input_div_voltas(numero_voltas, n1, children):
 
     global tempo_voltas
-    salva_input_group = []
-
-    for i in range(1, numero_voltas+1):
-        input_group = dbc.InputGroup(
-                        [dbc.InputGroupAddon("Volta {}:".format(i), addon_type="prepend"), 
-                         dbc.Input(
+    
+    new_input = html.Div([
+                    dbc.InputGroup(
+                        [dbc.InputGroupAddon(("Volta {}:".format(i)), 
+                                            addon_type="prepend"
+                                            ), 
+                        dbc.Input(
                             placeholder="Tempo em segundos (s.ms)",
                             type="number",
                             min=0,
                             step=0.01
-                         )
+                        )
                         ]
-                      ),
-        salva_input_group.append(input_group)
-        #tempo_voltas.append()
-    #print(salva_input_group)
-    
-    if n1:
-        for z in range(0, len(salva_input_group)+1):
-            return salva_input_group[z]
+                    ) 
+                    for i in range(1, numero_voltas+1)
+                ])
+    children.append(new_input)
+    #tempo_voltas.append()
+    return children
 
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
