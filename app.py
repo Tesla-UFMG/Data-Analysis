@@ -34,7 +34,8 @@ data_copy = None #Cópia da variável data para a
 converted_data = [] #Armazena o nome das colunas que já tiveram seus dados tratados para evitar retrabalho
 eixoY = None #Armazena as colunas que estão plotadas
 ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
-tempo_voltas = [] #Armazena os valores dos tempos de cada volta (divisão de voltas)
+tempo_voltas = [0] #Armazena os valores dos tempos de cada volta (divisão de voltas)
+empty_ploted_figure = None #Armazena a Figure do gráfico plotado sem nenhum linha de referência
 #------------------------------------------#
 
 
@@ -280,7 +281,6 @@ app.layout = html.Div(children=[
                                                                 children=[
                                                                     'Plotar',
                                                                     dbc.Spinner(
-                                                                        color="light",
                                                                         spinner_style = {'display':'inline-block', 'margin':'0 0 0 .5rem'},
                                                                         size='sm',
                                                                         children=[
@@ -301,6 +301,22 @@ app.layout = html.Div(children=[
                                                 id='Graph-content'
                                             ), 
 
+                                            html.Div(
+                                                id="graph-control-panel",
+                                                className="interactive-graph-box",
+                                                style={'display':'none'},
+                                                children=[
+                                                    dcc.Checklist(
+                                                        id="add-line-button",
+                                                        labelClassName="interations-button button-int",
+                                                        options=[
+                                                            {'label':'+ Line', 'value':'Line'}
+                                                        ],
+                                                        inputClassName="bg-plus",
+                                                        value=[]
+                                                    )
+                                                ]
+                                            ),
     
 
                                             html.Br(), 
@@ -399,7 +415,7 @@ app.layout = html.Div(children=[
                                                                             ),
                                                                             # Setando o valor de cada volta
                                                                             html.H4(
-                                                                                children='Defina o tempo de cada volta:',
+                                                                                children='Defina o tempo de cada volta (s.ms):',
                                                                                 className='form-label',
                                                                                 style={'margin-top':'8px', 'font-size':'1rem'}
                                                                             ),
@@ -857,7 +873,6 @@ def disable_inputs_savitzky(checklist):
         return [False,False]
     return [True, True]
 
-
 # Callback de abrir/fechar o modal de configurações avançadas
 @app.callback(
     Output("modal-graph-config", "is_open"),
@@ -906,18 +921,18 @@ def able_tempo_or_distancia(radios_value):
         return [{'display':'none'}, {'display':'inline-block'}]
     elif ('tempo' in radios_value):
         return [{'display':'inline-block'}, {'display':'none'}]
-    else:
+    else: 
         raise PreventUpdate
 
 # Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
 @app.callback(
     Output('time-input', 'children'),
     [Input('divisão-voltas-tempo-input', 'value'),
-     Input('input-voltas-button', 'n_clicks'),
-     Input({'type':'input-tempo','index':ALL}, 'value')],
-    [State('time-input', 'children')]
+     Input('input-voltas-button', 'n_clicks')],
+    [State('time-input', 'children'),
+     State({'type':'input-tempo','index':ALL}, 'value')]
 )
-def quantidade_input_div_voltas(numero_voltas, n1, input_value, children):
+def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
 
     global tempo_voltas
 
@@ -931,27 +946,22 @@ def quantidade_input_div_voltas(numero_voltas, n1, input_value, children):
                                 'type':'input-tempo',
                                 'index':'input-volta-{}'
                             },
-                            placeholder="Tempo em segundos (s.ms)",
                             type="number",
                             min=0,
-                            step=0.01
+                            step=0.01,
+                            value=0
                         )
                         ]
                     ) 
                     for i in range(1, numero_voltas+1)
                 ])
+
     children.insert(0, new_input)
     for i in range(1, len(children)):
         children.pop(i)
 
     if n1:
-        x = input_value[0]
-        for i in range(1, numero_voltas+1):
-            if i == 1:
-                tempo_voltas[0] = input_value[0]
-            else:                
-                tempo_voltas[i-1] = input_value[i-1] + x
-                x += input_value[i-1]
+        tempo_voltas = input_value
 
     return children
 
@@ -1006,7 +1016,8 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      Output('Graph-content','children'),
      Output('modal-button','style'),
      Output('modal-body','children'),
-     Output('plot-loading','children')],
+     Output('plot-loading','children'),
+     Output('graph-control-panel', 'style')],
     [Input('plot-button','n_clicks_timestamp'),
      Input('apply-adv-changes-button','n_clicks_timestamp')],
     [State('dropdown-analise-geral-Y','value'), 
@@ -1024,11 +1035,12 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
 def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly):
     
     global data_copy
+    global empty_ploted_figure
     global ploted_figure
     global eixoY
+    global tempo_voltas
 
     if button_plot != 0 or button_apply != 0:
-
         modal_itens = []
 
         if int(button_plot) > int(button_apply):
@@ -1098,23 +1110,33 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                               col=1
                              )
             modal_itens.extend( generate_element_modal_body(column_name) )
-        # tempo_voltas = [50, 100, 150]
+
+        aux1 = len(tempo_voltas)
+        aux2 = tempo_voltas[0]
+        tempo_div_voltas = tempo_voltas
+        for i in range(0, aux1):
+            if i == 0:
+                tempo_div_voltas[0] = tempo_voltas[0]
+            else:
+                tempo_div_voltas[i] = tempo_voltas[i] + aux2
+                aux2 += tempo_voltas[i]
 
         # Acresenta traços de divisão de voltas
-        # for cont, column_name in enumerate(selected_columns_Y):
-        #     for z in range(50, 300, 50):
-        #         fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-        #                                  x=[z, z],                                                       # array com os valores dos tempos das voltas 
-        #                                  mode="lines", 
-        #                                  line=go.scatter.Line(color="gray"), 
-        #                                  showlegend=False
-        #                                 ),
-        #                       row=cont+1,
-        #                       col=1
-        #                      )
-        fig['layout'].update(height=120*len(selected_columns_Y)+25, margin={'t':25, 'b':0, 'l':100, 'r':100}, uirevision='const')
+        for cont, column_name in enumerate(selected_columns_Y):
+            for z in tempo_div_voltas:
+                fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
+                                         x=[z, z],                                                       # array com os valores dos tempos das voltas 
+                                         mode="lines", 
+                                         line=go.scatter.Line(color="gray"), 
+                                         showlegend=False
+                                        ),
+                              row=cont+1,
+                              col=1
+                             )
 
-        ploted_figure = fig
+        fig['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
+
+        ploted_figure = empty_ploted_figure = fig
 
         return [
             [],
@@ -1125,7 +1147,8 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
             ),
             {'display':'inline'},
             modal_itens,
-            []
+            [],
+            {'display':'flex'}
         ]
 
     else:
@@ -1133,38 +1156,60 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
         raise PreventUpdate
 
 @app.callback(
-    Output('add-line-button' , 'className'),
-    [Input('add-line-button' , 'n_clicks')],
-    [State('add-line-button' , 'className')]
+    Output('add-line-button' , 'labelClassName'),
+    [Input('add-line-button' , 'value')]
 )
-def change_button_class(n_clicks, className):
-    if(n_clicks):
-        if(className == 'interations-button-pressed button-int' ):
-            return 'interations-button button-int'
+def change_button_class(value):
+    if('Line' in value):
         return 'interations-button-pressed button-int'
-    else:
-        raise PreventUpdate
-
+    return 'interations-button button-int'
+    
 @app.callback (
-    [Output("figure-id","figure")],
+    [Output("figure-id","figure"),
+     Output("add-line-button", "value")],
     [Input("figure-id","clickData")],
-    [State("figure-id","relayoutData")]
+    [State("figure-id","relayoutData"),
+     State("add-line-button", "value")]
 )
-def display_vertical_line(clickData, zoom_options):
+def display_vertical_line(clickData, zoom_options, add_line):
     if clickData is not None:
-        last_figure = go.Figure(ploted_figure)
-        last_figure.add_shape(type="line",
-                              yref="paper",
-                              x0 = clickData['points'][0]['x'],
-                              x1 = clickData['points'][0]['x'],
-                              y0=0,
-                              y1=1,
-                              line=dict(
-                                  color="black",
-                                  width=2
-                              )
-                             )
-        return [last_figure]
+        global ploted_figure
+        if("Line" in add_line):
+            #HORIZONTAL
+            yref = "y"
+            curveNumber = clickData['points'][0]['curveNumber']
+            if(  curveNumber != 0 ):
+                yref = yref + str(curveNumber+1)
+            
+            ploted_figure.add_shape(type="line",
+                                    xref="paper",
+                                    yref=yref,
+                                    y0 = clickData['points'][0]['y'],
+                                    y1 = clickData['points'][0]['y'],
+                                    x0 = 0,
+                                    x1 = 1,
+                                    line = dict(
+                                        color = "black",
+                                        dash = "dot",
+                                        width = 1
+                                    ),
+                                   )
+            return [ploted_figure,[]]
+        else:
+            #VERTICAL
+            last_figure = go.Figure(ploted_figure)
+            last_figure.add_shape(type = "line",
+                                  yref = "paper",
+                                  x0 = clickData['points'][0]['x'],
+                                  x1 = clickData['points'][0]['x'],
+                                  y0 = 0,
+                                  y1 = 1,
+                                  line = dict(
+                                    color = "#505050",
+                                    width = 1.5
+                                  )
+                                 )
+            return [last_figure, dash.no_update]
     else:
         raise PreventUpdate
 
