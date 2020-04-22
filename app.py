@@ -34,6 +34,7 @@ data_copy = None #Cópia da variável data para a
 converted_data = [] #Armazena o nome das colunas que já tiveram seus dados tratados para evitar retrabalho
 eixoY = None #Armazena as colunas que estão plotadas
 ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
+tempo_voltas = [] #Armazena os valores dos tempos de cada volta (divisão de voltas)
 #------------------------------------------#
 
 
@@ -396,12 +397,6 @@ app.layout = html.Div(children=[
                                                                                 min=1,
                                                                                 max=100
                                                                             ),
-                                                                            dbc.Button(
-                                                                                children="Set",
-                                                                                color="secondary",
-                                                                                className="set-numero-voltas",
-                                                                                id='numero-voltas-button'
-                                                                            ),
                                                                             # Setando o valor de cada volta
                                                                             html.H4(
                                                                                 children='Defina o tempo de cada volta:',
@@ -411,6 +406,12 @@ app.layout = html.Div(children=[
                                                                             html.Div(
                                                                                 id="time-input",
                                                                                 children= []
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                children="Set",
+                                                                                color="secondary",
+                                                                                className="set-numero-voltas",
+                                                                                id='input-voltas-button'
                                                                             ),
                                                                         ]
                                                                     ),
@@ -912,19 +913,24 @@ def able_tempo_or_distancia(radios_value):
 @app.callback(
     Output('time-input', 'children'),
     [Input('divisão-voltas-tempo-input', 'value'),
-     Input('numero-voltas-button', 'n_clicks')],
+     Input('input-voltas-button', 'n_clicks'),
+     Input({'type':'input-tempo','index':ALL}, 'value')],
     [State('time-input', 'children')]
 )
-def quantidade_input_div_voltas(numero_voltas, n1, children):
+def quantidade_input_div_voltas(numero_voltas, n1, input_value, children):
 
     global tempo_voltas
-    
+
     new_input = html.Div([
                     dbc.InputGroup(
                         [dbc.InputGroupAddon(("Volta {}:".format(i)), 
                                             addon_type="prepend"
                                             ), 
                         dbc.Input(
+                            id={
+                                'type':'input-tempo',
+                                'index':'input-volta-{}'
+                            },
                             placeholder="Tempo em segundos (s.ms)",
                             type="number",
                             min=0,
@@ -934,8 +940,19 @@ def quantidade_input_div_voltas(numero_voltas, n1, children):
                     ) 
                     for i in range(1, numero_voltas+1)
                 ])
-    children.append(new_input)
-    #tempo_voltas.append()
+    children.insert(0, new_input)
+    for i in range(1, len(children)):
+        children.pop(i)
+
+    if n1:
+        x = input_value[0]
+        for i in range(1, numero_voltas+1):
+            if i == 1:
+                tempo_voltas[0] = input_value[0]
+            else:                
+                tempo_voltas[i-1] = input_value[i-1] + x
+                x += input_value[i-1]
+
     return children
 
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
@@ -1127,7 +1144,6 @@ def change_button_class(n_clicks, className):
         return 'interations-button-pressed button-int'
     else:
         raise PreventUpdate
-    
 
 @app.callback (
     [Output("figure-id","figure")],
