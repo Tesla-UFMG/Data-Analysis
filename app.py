@@ -839,6 +839,11 @@ def generate_element_modal_body(column_name):
 
     return html_generated
 
+def soma_lista(lista):
+    if len(lista) == 1:
+        return lista[0]
+    else:
+        return lista[0] + soma_lista(lista[1:])
 
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
@@ -1111,15 +1116,13 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                              )
             modal_itens.extend( generate_element_modal_body(column_name) )
 
-        aux1 = len(tempo_voltas)
-        aux2 = tempo_voltas[0]
-        tempo_div_voltas = tempo_voltas
-        for i in range(0, aux1):
-            if i == 0:
-                tempo_div_voltas[0] = tempo_voltas[0]
-            else:
-                tempo_div_voltas[i] = tempo_voltas[i] + aux2
-                aux2 += tempo_voltas[i]
+        tempo_div_voltas = np.zeros(len(tempo_voltas))
+
+        for i in range(0, len(tempo_voltas)-1):
+            tempo_div_voltas[i] = soma_lista(tempo_voltas[:i+1])
+
+        tempo_div_voltas[len(tempo_voltas)-1] = 0
+        tempo_div_voltas[len(tempo_voltas)-1] = soma_lista(tempo_voltas)
 
         # Acresenta traços de divisão de voltas
         for cont, column_name in enumerate(selected_columns_Y):
