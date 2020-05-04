@@ -483,9 +483,14 @@ app.layout = html.Div(children=[
                                                         options=[
                                                             {"label": "Divisão de Voltas", "value": 1},
                                                         ],
-                                                        id="switches-input",
+                                                        id="switches-input-divisao",
                                                         value=[],
-                                                        switch=True
+                                                        switch=True,
+                                                        style={
+                                                            'margin-top':'8px',
+                                                            'margin-bottom':'8px',
+                                                            'font-size':'18px'
+                                                        }
                                                     ),
                                                     # Conteudo divisão de voltas
                                                     html.Div(
@@ -522,7 +527,11 @@ app.layout = html.Div(children=[
                                                                                 id='divisão-voltas-tempo-input',
                                                                                 value=1,
                                                                                 min=1,
-                                                                                max=100
+                                                                                max=100,
+                                                                                style={
+                                                                                    'position':'relative',
+                                                                                    'top':'4px'
+                                                                                }
                                                                             ),
                                                                             # Setando o valor de cada volta
                                                                             html.H4(
@@ -532,13 +541,20 @@ app.layout = html.Div(children=[
                                                                             ),
                                                                             html.Div(
                                                                                 id="time-input",
+                                                                                style={
+                                                                                    'margin-top':'8px',
+                                                                                    'margin-bottom':'8px'
+                                                                                },
                                                                                 children= []
                                                                             ),
                                                                             dbc.Button(
                                                                                 children="Set",
                                                                                 color="secondary",
                                                                                 className="set-numero-voltas",
-                                                                                id='input-voltas-button-tempo'
+                                                                                id='input-voltas-button-tempo',
+                                                                                style={
+                                                                                    'margin-bottom':'6px'
+                                                                                }
                                                                             ),
                                                                         ]
                                                                     ),
@@ -561,13 +577,20 @@ app.layout = html.Div(children=[
                                                                                     type="number",
                                                                                     min=0
                                                                                  )
-                                                                                ]
+                                                                                ],
+                                                                                style={
+                                                                                    'margin-top':'8px',
+                                                                                    'margin-bottom':'8px'
+                                                                                }
                                                                             ),
                                                                             dbc.Button(
                                                                                 children="Set",
                                                                                 color="secondary",
                                                                                 className="set-distancia-voltas",
-                                                                                id='input-voltas-button-distancia'
+                                                                                id='input-voltas-button-distancia',
+                                                                                style={
+                                                                                    'margin-bottom':'6px'
+                                                                                }
                                                                             ),
                                                                         ]
                                                                     ),
@@ -577,6 +600,25 @@ app.layout = html.Div(children=[
                                                     ),
                                                 ]
                                             ),
+                                            #html.Div(
+                                            #    className="sobreposicao-content",
+                                            #    children=[
+                                            #        # Opção para selecionar sobreposição de voltas
+                                            #        dbc.Checklist(
+                                            #            options=[
+                                            #                {"label": "Sobreposição de Voltas", "value": 1},
+                                            #            ],
+                                            #            id="switches-input-sobreposicao",
+                                            #            value=[],
+                                            #            switch=True,
+                                            #            style={
+                                            #                'margin-top':'8px',
+                                            #                'margin-bottom':'8px',
+                                            #                'font-size':'18px'
+                                            #            }
+                                            #        ),
+                                            #    ]
+                                            #),
                                         ]
                                     ), 
                                 ]
@@ -1075,7 +1117,7 @@ def disable_ref_vertical_button(selected_radio, selected_checklist):
 # Callback que habilita e desabilita as configurações de divisao de voltas
 @app.callback(
     Output('corpo-divisao-voltas','style'),
-    [Input('switches-input','value')]
+    [Input('switches-input-divisao','value')]
 )
 def able_divisao_volta(switch_value):
     if (1 in switch_value):
