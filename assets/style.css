@@ -1,12 +1,6 @@
-.navbar {
-    background-color: black;
-    width: 100%;
-    height: 100px;
+.logo-tesla {
+    height:40px;
 }
-.navbar-item {
-    display: inline;
-}
-
 .background {
     background-image: url("../assets/images/nk-mineirao.jpg");
     height: 3000px;
@@ -65,7 +59,7 @@
 
 .Select--multi .Select-value {
     background-color: #ebf5ff;
-    background-color: #76D36C;
+    background-color: #28a745;
     border-radius: 2px;
     border: 1px solid #c2e0ff;
     border: 1px solid black;
@@ -82,9 +76,12 @@
     cursor: pointer;
     border-bottom-left-radius: 2px;
     border-top-left-radius: 2px;
-    border-right: 1px solid #c2e0ff;
     border-right: 1px solid black;
     padding: 1px 5px 3px;
+}
+
+.Select--multi .Select-value-icon:hover {
+    color:white;
 }
 
 .form-plot-config {
@@ -93,7 +90,7 @@
 }
 
 .form-title {
-    background-color: #4ed840;
+    background-color: #28a745;
     padding: 0.01em 16px;
 }
 
@@ -149,14 +146,14 @@
 }
 
 .tesla-button {
-    background-color: darkgreen;
+    background-color: #28a745;
     color:white;
-    border-color:#0d0d0d;
+    border-color:#28a745;
 }
 
 .tesla-button:hover {
     background-color: white;
-    color:black;
+    color:#28a745!important;
 }
 
 .dropdown-triangle {
@@ -187,4 +184,86 @@
     margin: 10px 0;
 }
 
+.config-page {
+    background-color: white;
+    width: 100%;
+}
 
+.config-title {
+    background-color: #4ed840;
+    padding: 0.01em 16px;
+}
+
+.config-title h1 {
+    font-weight: 450;
+    font-size: 1.5rem;
+    margin-top: .5rem;
+}
+
+.divisão-content {
+    padding: 0.01em 16px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.divisao-sub-content {
+    padding-left: 2.35rem;
+}
+
+.checklist-selected {
+    padding-left: 1.5rem;
+}
+
+.interactive-graph-box {
+    display: flex;
+    justify-content: start;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    margin: 10px 0px 0px 70px;
+}
+
+.button-int {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    line-height: normal;
+    font-family:arial;
+    cursor:pointer;
+    padding:7px 5px;
+    background-color: #5a6268;
+    text-decoration: none;
+    font-weight:400;
+    color: #FFF;
+    border-radius: 4px;
+    display: inline-block;
+    background-image: url("../assets/images/plus.svg");
+    box-sizing: border-box;
+    height: 30px;
+    width:60px;
+}
+
+.interations-button {
+    border: none;
+}
+
+.interations-button-pressed {
+    border: solid 1.5px #28a745;
+}
+
+.interations-button:focus {
+    outline: none;
+}
+.interations-button-pressed:focus {
+    outline: none;
+}
+
+.bg-plus {
+   position: absolute;
+   cursor: pointer;
+   opacity: 0;
+}
