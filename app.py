@@ -246,33 +246,158 @@ app.layout = html.Div(children=[
                                                                 multi=True,
                                                                 placeholder='Selecione as grandezas do eixo Y'
                                                             ),
-                                                            # Configuraçao Filtros
-                                                            html.H4(
-                                                                children='Filtros',
-                                                                className='form-label'
-                                                            ),
-                                                            # Checklist de filtros
-                                                            dcc.Checklist(
-                                                                id='filtros-checklist',
-                                                                options=[
-                                                                    {'label': 'Média Móvel', 'value': 'Média Móvel'},
-                                                                    {'label': 'Filtro Mediana', 'value': 'Filtro Mediana'}
-                                                                ],
-                                                                inputStyle = {'margin-right':'3px'},
-                                                                labelStyle =  {'margin-right':'8px'},
-                                                                value=[]
-                                                            ),
-                                                            # Selecionar valor de subsequencia do filtro
-                                                            html.H4(
-                                                                children='Subsequência do filtro média móvel',
-                                                                className='form-label',
-                                                                style={'margin-top':'8px', 'font-size':'1rem'}
-                                                            ),
-                                                            daq.NumericInput(
-                                                                id='media-movel-input',
-                                                                value=5,
-                                                                min=1,
-                                                                max=50
+                                                            html.Div(
+                                                                className='config-pre-plot',
+                                                                style={'display':'flex'},
+                                                                children=[
+                                                                    # Configuraçao Filtros
+                                                                    html.Div(
+                                                                        className='config-filtros',
+                                                                        children=[
+                                                                            # Título
+                                                                            html.H4(
+                                                                                children='Filtros',
+                                                                                className='form-label'
+                                                                            ),
+                                                                            # Checklist de filtros
+                                                                            dcc.Checklist(
+                                                                                id='filtros-checklist',
+                                                                                options=[
+                                                                                    {'label': 'Média Móvel', 'value': 'Média Móvel'},
+                                                                                    {'label': 'Filtro Mediana', 'value': 'Filtro Mediana'}
+                                                                                ],
+                                                                                inputStyle = {'margin-right':'3px'},
+                                                                                labelStyle =  {'margin-right':'8px'},
+                                                                                value=[]
+                                                                            ),
+                                                                            # Selecionar valor de subsequencia do filtro
+                                                                            html.H4(
+                                                                                children='Subsequência do filtro média móvel',
+                                                                                className='form-label',
+                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                            ),
+                                                                            daq.NumericInput(
+                                                                                id='media-movel-input',
+                                                                                value=5,
+                                                                                min=1,
+                                                                                max=50
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                    # Configuração Linhas de Referência
+                                                                    html.Div(
+                                                                        id='config-ref-line',
+                                                                        className='ref-line',
+                                                                        style={
+                                                                            'display':'none',
+                                                                            'border-left-style': 'outset',
+                                                                            'border-width': '2px',
+                                                                            'position': 'relative',
+                                                                            'left': '20px',
+                                                                            'top': '15px'
+                                                                        },
+                                                                        children=[
+                                                                            # Título
+                                                                            html.H4(
+                                                                                children='Linhas de Referência',
+                                                                                style={
+                                                                                    'position': 'relative',
+                                                                                    'left': '10px',
+                                                                                    'bottom': '15px'
+                                                                                },
+                                                                                className='form-label'
+                                                                            ),
+                                                                            # Selecionar valor de onde a linha vai estar
+                                                                            html.Div(
+                                                                                className='definir-valor',
+                                                                                style={
+                                                                                    'position': 'relative',
+                                                                                    'bottom': '15px',
+                                                                                    'display': 'flex'
+                                                                                },
+                                                                                children=[
+                                                                                    # Selecionar da linha horizontal
+                                                                                    html.Div(
+                                                                                        className='definir-valor-horizontal',
+                                                                                        style={
+                                                                                            'position':'relative',
+                                                                                            'left': '10px'
+                                                                                        },
+                                                                                        children=[
+                                                                                            # Checklist da linha horizontal
+                                                                                            dcc.Checklist(
+                                                                                                id='checklist-horizontal',
+                                                                                                options=[
+                                                                                                    {'label': 'Linha Horizontal', 'value': 'Horizontal'}
+                                                                                                ],
+                                                                                                inputStyle = {'margin-right':'8px'},
+                                                                                                labelStyle =  {'margin-right':'8px'},
+                                                                                                value=[]
+                                                                                            ),
+                                                                                            # Escolher definir valor ou definir no gráfico
+                                                                                            dbc.RadioItems(
+                                                                                                id="horizontal-row",
+                                                                                                style={
+                                                                                                    'position':'relative',
+                                                                                                    'left': '10px'
+                                                                                                },
+                                                                                                options=[
+                                                                                                    {"label": "Definir no gráfico", "value": "horizontal-grafico"},
+                                                                                                    {"label": "Definir valor", "value": "horizontal-value", "disable":True},
+                                                                                                ],
+                                                                                                value=[]
+                                                                                            ),
+                                                                                            html.Div(
+                                                                                                className='horizontal-input-set',
+                                                                                                id='set-input-div',
+                                                                                                style={
+                                                                                                    'display':'none'
+                                                                                                },
+                                                                                                children=[
+                                                                                                    daq.NumericInput(
+                                                                                                        id='horizontal-input',
+                                                                                                        max=100000,
+                                                                                                        min=-100000,
+                                                                                                        value=0
+                                                                                                    ),
+                                                                                                    dbc.Button(
+                                                                                                        style={
+                                                                                                            'position':'relative',
+                                                                                                            'left':'15px'
+                                                                                                        },
+                                                                                                        children="Set",
+                                                                                                        color="secondary",
+                                                                                                        className="set-numero-voltas",
+                                                                                                        id='set-reference-button'
+                                                                                                    ),
+                                                                                                ]
+                                                                                            ),
+                                                                                            # Botão para acrescentar linha de referência horizontal
+                                                                                            html.Div(
+                                                                                                id="graph-control-panel",
+                                                                                                className="interactive-graph-box",
+                                                                                                style={
+                                                                                                    'margin': '10px 0px 0px 40px'
+                                                                                                    },
+                                                                                                children=[
+                                                                                                    dcc.Checklist(
+                                                                                                        id="add-line-button",
+                                                                                                        labelClassName="interations-button button-int",
+                                                                                                        options=[
+                                                                                                            {'label':'+ Line', 'value':'Line'}
+                                                                                                            ],
+                                                                                                        inputClassName="bg-plus",
+                                                                                                        value=[]
+                                                                                                    )
+                                                                                                ]
+                                                                                            ),
+                                                                                        ]
+                                                                                    ),
+                                                                                ]
+                                                                            ),     
+                                                                        ]
+                                                                    ),   
+                                                                ]
                                                             ),
                                                             # Botão de Plotagem
                                                             dbc.Button(
@@ -296,29 +421,11 @@ app.layout = html.Div(children=[
                                                     )
                                                 ]
                                             ),
-                                            
+                                            # Conteudo dos gráficos
                                             html.Div(
                                                 id='Graph-content'
-                                            ), 
-
-                                            html.Div(
-                                                id="graph-control-panel",
-                                                className="interactive-graph-box",
-                                                style={'display':'none'},
-                                                children=[
-                                                    dcc.Checklist(
-                                                        id="add-line-button",
-                                                        labelClassName="interations-button button-int",
-                                                        options=[
-                                                            {'label':'+ Line', 'value':'Line'}
-                                                        ],
-                                                        inputClassName="bg-plus",
-                                                        value=[]
-                                                    )
-                                                ]
                                             ),
-    
-
+                                            # Botão de Opções Avançadas
                                             html.Br(), 
                                             dbc.Button(
                                                 children="Opções avançadas",
@@ -367,10 +474,11 @@ app.layout = html.Div(children=[
                                                     )
                                                 ]
                                             ),
+                                            # Conteudo do Tab
                                             html.Div(
                                                 className="divisão-content",
                                                 children=[
-                                                    # Opção para selecionar divisão por distancia ou tempo
+                                                    # Opção para selecionar divisão de voltas
                                                     dbc.Checklist(
                                                         options=[
                                                             {"label": "Divisão de Voltas", "value": 1},
@@ -379,6 +487,7 @@ app.layout = html.Div(children=[
                                                         value=[],
                                                         switch=True
                                                     ),
+                                                    # Conteudo divisão de voltas
                                                     html.Div(
                                                         id="corpo-divisao-voltas",
                                                         className="divisao-sub-content",
@@ -393,9 +502,11 @@ app.layout = html.Div(children=[
                                                                 ],
                                                                 value=[]
                                                             ),
+                                                            # Conteudo do Item selecionado
                                                             html.Div(
                                                                 className="checklist-selected",
                                                                 children=[
+                                                                    # Se Tempo for Selecionado
                                                                     html.Div(
                                                                         className="if-tempo-selected",
                                                                         id="corpo-divisao-tempo",
@@ -427,10 +538,11 @@ app.layout = html.Div(children=[
                                                                                 children="Set",
                                                                                 color="secondary",
                                                                                 className="set-numero-voltas",
-                                                                                id='input-voltas-button'
+                                                                                id='input-voltas-button-tempo'
                                                                             ),
                                                                         ]
                                                                     ),
+                                                                    # Se Distancia for Selecionado
                                                                     html.Div(
                                                                         className="if-dist-selected",
                                                                         id="corpo-divisao-distancia",
@@ -450,6 +562,12 @@ app.layout = html.Div(children=[
                                                                                     min=0
                                                                                  )
                                                                                 ]
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                children="Set",
+                                                                                color="secondary",
+                                                                                className="set-distancia-voltas",
+                                                                                id='input-voltas-button-distancia'
                                                                             ),
                                                                         ]
                                                                     ),
@@ -474,13 +592,16 @@ app.layout = html.Div(children=[
     dbc.Modal(
         contentClassName = 'modal-content',
         children = [
+            # Título
             dbc.ModalHeader(
                 children="Configurações avançadas de plotagem",
                 className="modal-header-and-footer"
             ),
+            # Corpo
             dbc.ModalBody(
                 id='modal-body'
             ),
+            # Parte de baixo
             dbc.ModalFooter(
                 children=[
                     dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
@@ -839,7 +960,9 @@ def generate_element_modal_body(column_name):
 
     return html_generated
 
+# Função utilizada para somar os valores de uma lista
 def soma_lista(lista):
+
     if len(lista) == 1:
         return lista[0]
     else:
@@ -903,6 +1026,52 @@ def disable_media_movel_input(selected_filters):
     else:
         return True
 
+# Callback que habilita e desabilita os radioItens de linha de referência horizontal
+@app.callback(
+    Output('horizontal-row','options'),
+    [Input('checklist-horizontal','value')]
+)
+def disable_radioItens_ref_horizontal(selected_checklist):
+
+    if('Horizontal' in selected_checklist):
+        return ({"label": "Definir no gráfico", "value": "horizontal-grafico"}, 
+                {"label": "Definir valor", "value": "horizontal-value", "disabled": True},)
+    else:
+        return ({"label": "Definir no gráfico", "value": "horizontal-grafico", "disabled": True}, 
+                {"label": "Definir valor", "value": "horizontal-value", "disabled": True},)
+
+# Callback que habilita e desabilita o INPUT de linha de referencia horizontal
+@app.callback(
+    Output('set-input-div','style'),
+    [Input('horizontal-row','value'),
+     Input('checklist-horizontal','value')]
+)
+def disable_ref_horizontal_input(selected_radio, selected_checklist):
+    
+    if('horizontal-value' in selected_radio) and ('Horizontal' in selected_checklist):
+        return ({'display': 'flex',
+                 'position':'relative',
+                 'left':'20px',
+                 'top':'10px'
+                })
+    else:
+        return {'display':'none'}
+
+# Callback que habilita e desabilita o botão de acrescentar linha de referência horizontal no gráfico
+@app.callback(
+    Output('graph-control-panel','style'),
+    [Input('horizontal-row','value'),
+     Input('checklist-horizontal','value')]
+)
+def disable_ref_vertical_button(selected_radio, selected_checklist):
+
+    if('Horizontal' in selected_checklist) and ('horizontal-grafico' in selected_radio):
+        return ({'margin': '10px 0px 0px 40px',
+                 'display': 'block'
+                })
+    else:
+        return {'display':'none'}
+
 # Callback que habilita e desabilita as configurações de divisao de voltas
 @app.callback(
     Output('corpo-divisao-voltas','style'),
@@ -933,7 +1102,7 @@ def able_tempo_or_distancia(radios_value):
 @app.callback(
     Output('time-input', 'children'),
     [Input('divisão-voltas-tempo-input', 'value'),
-     Input('input-voltas-button', 'n_clicks')],
+     Input('input-voltas-button-tempo', 'n_clicks')],
     [State('time-input', 'children'),
      State({'type':'input-tempo','index':ALL}, 'value')]
 )
@@ -1015,14 +1184,14 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
     else:
         raise PreventUpdate
         
-# Callback do botão de plotagem de graficos
+# Callback do botão de plotagem de gráficos
 @app.callback(
     [Output('apply-adv-changes-loading','children'),
      Output('Graph-content','children'),
      Output('modal-button','style'),
      Output('modal-body','children'),
      Output('plot-loading','children'),
-     Output('graph-control-panel', 'style')],
+     Output('config-ref-line', 'style')],
     [Input('plot-button','n_clicks_timestamp'),
      Input('apply-adv-changes-button','n_clicks_timestamp')],
     [State('dropdown-analise-geral-Y','value'), 
@@ -1037,7 +1206,9 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      State({'type':'savitzky-cut', 'index': ALL}, 'value'),
      State({'type':'savitzky-poly', 'index': ALL}, 'value')]
 )
-def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly):
+def plot_graph_analise_geral(button_plot, button_apply, 
+                             selected_columns_Y, selected_X, filters, filters_subseq, 
+                             identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly):
     
     global data_copy
     global empty_ploted_figure
@@ -1069,16 +1240,19 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                 for column in selected_columns_Y:
                     data_copy[column] = signal.medfilt(data_copy[column], np.array(filters_subseq))
 
-                    
         elif(int(button_plot) < int(button_apply)):
+
             for cont, id in enumerate(identificador):
                 if('Passa-Banda' in bandpass_check[cont]):
+
                     data_copy[id['index']] = butter_bandpass_filter(data_copy[id['index']], 
                                                                     bandpass_inf[cont],
                                                                     bandpass_sup[cont],
                                                                     fs=60
                                                                    )
+
                 if('Filtro savitzky-golay' in savitzky_check[cont]):
+
                     window_length = savitzky_cut[cont]
                     if window_length % 2 == 0:
                         window_length += 1
@@ -1093,6 +1267,7 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                             shared_xaxes=True, 
                             vertical_spacing=0.0
                            )
+
         for cont, column_name in enumerate(selected_columns_Y):
             if (column_name in unidades_dados_hash):
                 fig.add_trace(go.Scatter(y=data_copy[column_name], 
@@ -1114,14 +1289,15 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
                               row=cont+1, 
                               col=1
                              )
+
             modal_itens.extend( generate_element_modal_body(column_name) )
 
+        # Seta o array com os valores das voltas somados
         tempo_div_voltas = np.zeros(len(tempo_voltas))
 
         for i in range(0, len(tempo_voltas)-1):
             tempo_div_voltas[i] = soma_lista(tempo_voltas[:i+1])
 
-        tempo_div_voltas[len(tempo_voltas)-1] = 0
         tempo_div_voltas[len(tempo_voltas)-1] = soma_lista(tempo_voltas)
 
         # Acresenta traços de divisão de voltas
@@ -1151,55 +1327,83 @@ def plot_graph_analise_geral(button_plot, button_apply, selected_columns_Y, sele
             {'display':'inline'},
             modal_itens,
             [],
-            {'display':'flex'}
+            {'display':'block',
+             'border-left-style': 'outset',
+             'border-width': '2px',
+             'position': 'relative',
+             'left': '20px',
+             'top': '15px'
+            }
         ]
 
     else:
         #TRATAR ERRO
         raise PreventUpdate
 
+# Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(
     Output('add-line-button' , 'labelClassName'),
     [Input('add-line-button' , 'value')]
 )
 def change_button_class(value):
+
     if('Line' in value):
         return 'interations-button-pressed button-int'
+
     return 'interations-button button-int'
-    
+
+# Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
 @app.callback (
     [Output("figure-id","figure"),
      Output("add-line-button", "value")],
-    [Input("figure-id","clickData")],
+    [Input("figure-id","clickData"),
+     Input("checklist-horizontal", "value"),
+     Input('horizontal-row','value'),
+     Input('set-reference-button','n_clicks')],
     [State("figure-id","relayoutData"),
-     State("add-line-button", "value")]
+     State("add-line-button", "value"),
+     State('horizontal-input','value')]
 )
-def display_vertical_line(clickData, zoom_options, add_line):
+def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
+
     if clickData is not None:
+
         global ploted_figure
-        if("Line" in add_line):
-            #HORIZONTAL
-            yref = "y"
-            curveNumber = clickData['points'][0]['curveNumber']
-            if(  curveNumber != 0 ):
-                yref = yref + str(curveNumber+1)
-            
-            ploted_figure.add_shape(type="line",
-                                    xref="paper",
-                                    yref=yref,
-                                    y0 = clickData['points'][0]['y'],
-                                    y1 = clickData['points'][0]['y'],
-                                    x0 = 0,
-                                    x1 = 1,
-                                    line = dict(
-                                        color = "black",
-                                        dash = "dot",
-                                        width = 1
-                                    ),
-                                   )
-            return [ploted_figure,[]]
+
+        #HORIZONTAL
+        if("Horizontal" in checklist_horizontal):
+
+            if('horizontal-grafico' in radios_value):
+        
+                if("Line" in add_line):
+                    
+                    yref = "y"
+                    curveNumber = clickData['points'][0]['curveNumber']
+                    if(  curveNumber != 0 ):
+                        yref = yref + str(curveNumber+1)
+                    
+                    ploted_figure.add_shape(type="line",
+                                            xref="paper",
+                                            yref=yref,
+                                            y0 = clickData['points'][0]['y'],
+                                            y1 = clickData['points'][0]['y'],
+                                            x0 = 0,
+                                            x1 = 1,
+                                            line = dict(
+                                                color = "black",
+                                                dash = "dot",
+                                                width = 1
+                                            ),
+                                           )
+                    
+                    return [ploted_figure,[]]
+                else:
+                    raise PreventUpdate
+            else:
+                raise PreventUpdate
+        #VERTICAL
         else:
-            #VERTICAL
+            
             last_figure = go.Figure(ploted_figure)
             last_figure.add_shape(type = "line",
                                   yref = "paper",
@@ -1212,9 +1416,31 @@ def display_vertical_line(clickData, zoom_options, add_line):
                                     width = 1.5
                                   )
                                  )
+            
             return [last_figure, dash.no_update]
-    else:
-        raise PreventUpdate
+    elif clickData is None:
+        # Horizontal definido no input
+        if('horizontal-value' in radios_value) and ("Horizontal" in checklist_horizontal):
+
+            if n1:
+                        
+                ploted_figure.add_shape(type="line",
+                                        xref="paper",
+                                        yref="y",
+                                        y0 = input_value,
+                                        y1 = input_value,
+                                        x0 = 0,
+                                        x1 = 1,
+                                        line = dict(
+                                            color = "black",
+                                            dash = "dot",
+                                            width = 1
+                                        ),
+                                    )
+                
+                return [ploted_figure,[]]
+        else:
+            raise PreventUpdate
 
 
 
