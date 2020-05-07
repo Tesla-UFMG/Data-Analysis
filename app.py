@@ -289,12 +289,7 @@ app.layout = html.Div(children=[
                                                                         id='config-ref-line',
                                                                         className='ref-line',
                                                                         style={
-                                                                            'display':'none',
-                                                                            'border-left-style': 'outset',
-                                                                            'border-width': '2px',
-                                                                            'position': 'relative',
-                                                                            'left': '20px',
-                                                                            'top': '15px'
+                                                                            'display':'none'
                                                                         },
                                                                         children=[
                                                                             # Título
@@ -396,7 +391,36 @@ app.layout = html.Div(children=[
                                                                                 ]
                                                                             ),     
                                                                         ]
-                                                                    ),   
+                                                                    ),
+                                                                    # Configuração de Sobreposição de Voltas
+                                                                    html.Div(
+                                                                        className="config-sobreposicao",
+                                                                        id="config-sobreposicao",
+                                                                        style={
+                                                                            'display':'none'
+                                                                        },
+                                                                        children=[
+                                                                            # Título
+                                                                            html.H4(
+                                                                                children='Sobreposição de Voltas',
+                                                                                style={
+                                                                                    'position': 'relative',
+                                                                                    'left': '10px',
+                                                                                    'bottom': '15px'
+                                                                                },
+                                                                                className='form-label'
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                children="Sobrepor",
+                                                                                color="secondary",
+                                                                                className="sovoltas",
+                                                                                id='sobreposicao-button',
+                                                                                style={
+                                                                                    'margin-left':'50px'
+                                                                                }
+                                                                            ),
+                                                                        ]
+                                                                    ),
                                                                 ]
                                                             ),
                                                             # Botão de Plotagem
@@ -423,7 +447,14 @@ app.layout = html.Div(children=[
                                             ),
                                             # Conteudo dos gráficos
                                             html.Div(
-                                                id='Graph-content'
+                                                id='Graph-content',
+                                                children=[
+                                                    dcc.Graph(
+                                                        id='figure-id',
+                                                        config={'autosizable' : False},
+                                                        style={'display':'none'}
+                                                    ),
+                                                ]
                                             ),
                                             # Botão de Opções Avançadas
                                             html.Br(), 
@@ -575,7 +606,8 @@ app.layout = html.Div(children=[
                                                                                  dbc.Input(
                                                                                     placeholder="Distância em metros",
                                                                                     type="number",
-                                                                                    min=0
+                                                                                    min=0,
+                                                                                    id="input-div-distancia"
                                                                                  )
                                                                                 ],
                                                                                 style={
@@ -708,7 +740,8 @@ unidades_dados_hash = {
     'Volt_BAT': 'mV',
     'Tensaototal': 'mV',
     'Hodometro_P': 'm',
-    'Hodometro_T': 'm'
+    'Hodometro_T': 'm',
+    'Dist': 'm'
 }
 
 # Dicionário(HASH) com todas as funções de conversão de unidades de cada dado 
@@ -726,7 +759,7 @@ tratamento_dados_hash = {
 
 # Lista com todos os possíveis dados a serem analisados no software
 data_name = [
-    'ECU_Mode',
+    'Dist',
     'Intensidade_Frenagem',
     'Ecu_flag',
     'Timer',
@@ -793,7 +826,8 @@ data_name = [
     'IRCan[0]',
     'IRCan[1]',
     'IRCan[2]',
-    'IRCan[3]'
+    'IRCan[3]',
+    'ECU_Mod'
 ]
 
 # Funçao de Media Movel
@@ -1010,6 +1044,11 @@ def soma_lista(lista):
     else:
         return lista[0] + soma_lista(lista[1:])
 
+# Função que divide o array de distancia pelas voltas
+def chunks(lista, n):
+    for i in range(0, len(lista), n):
+        yield lista[i:i + n]
+
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
 
@@ -1155,9 +1194,9 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
     new_input = html.Div([
                     dbc.InputGroup(
                         [dbc.InputGroupAddon(("Volta {}:".format(i)), 
-                                            addon_type="prepend"
+                                              addon_type="prepend"
                                             ), 
-                        dbc.Input(
+                         dbc.Input(
                             id={
                                 'type':'input-tempo',
                                 'index':'input-volta-{}'
@@ -1166,7 +1205,7 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
                             min=0,
                             step=0.01,
                             value=0
-                        )
+                         )
                         ]
                     ) 
                     for i in range(1, numero_voltas+1)
@@ -1176,8 +1215,17 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
     for i in range(1, len(children)):
         children.pop(i)
 
+    tempo_div_voltas = [0]
     if n1:
-        tempo_voltas = input_value
+        tempo_div_voltas = input_value
+
+        # Seta o array com os valores das voltas somados
+        tempo_voltas = np.zeros(len(tempo_div_voltas))
+
+        for i in range(0, len(tempo_voltas)-1):
+            tempo_voltas[i] = soma_lista(tempo_div_voltas[:i+1])
+
+        tempo_voltas[len(tempo_div_voltas)-1] = soma_lista(tempo_div_voltas)
 
     return children
 
@@ -1233,9 +1281,14 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      Output('modal-button','style'),
      Output('modal-body','children'),
      Output('plot-loading','children'),
-     Output('config-ref-line', 'style')],
+     Output('config-ref-line', 'style'),
+     Output('config-sobreposicao','style')],
     [Input('plot-button','n_clicks_timestamp'),
-     Input('apply-adv-changes-button','n_clicks_timestamp')],
+     Input('apply-adv-changes-button','n_clicks_timestamp'),
+     Input('switches-input-divisao','value'),
+     Input('radios-row','value'),
+     Input('input-voltas-button-distancia', 'n_clicks'),
+     Input('sobreposicao-button', 'n_clicks')],
     [State('dropdown-analise-geral-Y','value'), 
      State('dropdown-analise-geral-X','value'),
      State('filtros-checklist','value'),
@@ -1246,11 +1299,13 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      State({'type':'bandpass-sup-limit', 'index': ALL}, 'value'),
      State({'type': 'savitzky-checklist', 'index': ALL}, 'value'),
      State({'type':'savitzky-cut', 'index': ALL}, 'value'),
-     State({'type':'savitzky-poly', 'index': ALL}, 'value')]
+     State({'type':'savitzky-poly', 'index': ALL}, 'value'),
+     State('input-div-distancia', 'value')]
 )
-def plot_graph_analise_geral(button_plot, button_apply, 
+def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
                              selected_columns_Y, selected_X, filters, filters_subseq, 
-                             identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly):
+                             identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
+                             input_div_dist):
     
     global data_copy
     global empty_ploted_figure
@@ -1334,26 +1389,56 @@ def plot_graph_analise_geral(button_plot, button_apply,
 
             modal_itens.extend( generate_element_modal_body(column_name) )
 
-        # Seta o array com os valores das voltas somados
-        tempo_div_voltas = np.zeros(len(tempo_voltas))
-
-        for i in range(0, len(tempo_voltas)-1):
-            tempo_div_voltas[i] = soma_lista(tempo_voltas[:i+1])
-
-        tempo_div_voltas[len(tempo_voltas)-1] = soma_lista(tempo_voltas)
-
         # Acresenta traços de divisão de voltas
-        for cont, column_name in enumerate(selected_columns_Y):
-            for z in tempo_div_voltas:
-                fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                         x=[z, z],                                                       # array com os valores dos tempos das voltas 
-                                         mode="lines", 
-                                         line=go.scatter.Line(color="gray"), 
-                                         showlegend=False
-                                        ),
-                              row=cont+1,
-                              col=1
-                             )
+        if(1 in div_switches_value):
+            
+            # Se for por distância
+            if('distancia' in div_radios_value):
+
+                if set_div_dist:
+                    n_voltas = len(data_copy['Dist'])//input_div_dist
+                    
+                    for cont, column_name in enumerate(selected_columns_Y):
+                        for z in range(1, n_voltas+1):
+                            fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
+                                                    x=[input_div_dist*z, input_div_dist*z],                                     # array com os valores dos tempos das voltas 
+                                                    mode="lines", 
+                                                    line=go.scatter.Line(color="gray"), 
+                                                    showlegend=False
+                                                    ),
+                                        row=cont+1,
+                                        col=1
+                                        )
+            # Se for por tempo
+            elif('tempo' in div_radios_value):
+
+                for cont, column_name in enumerate(selected_columns_Y):
+                    for z in tempo_voltas:
+                        fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
+                                                 x=[z, z],                                                       # array com os valores dos tempos das voltas 
+                                                 mode="lines", 
+                                                 line=go.scatter.Line(color="gray"), 
+                                                 showlegend=False
+                                                ),
+                                      row=cont+1,
+                                      col=1
+                                     )
+
+        # sobreposição de voltas
+        if sobreposicao_button:
+
+            for cont, column_name in enumerate(selected_columns_Y):
+                w = len(data_copy[column_name])/max(data_copy['Dist'])
+                b = w * input_div_dist
+                w = int(b)
+                dist_use = list(chunks(data_copy['Dist'], w))
+                data_use = list(chunks(data_copy[column_name], w))
+
+                for i in range(0, n_voltas+1):
+                    fig.add_trace(
+                        go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
+                        row=cont+1, col=1
+                    )
 
         fig['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
 
@@ -1372,9 +1457,14 @@ def plot_graph_analise_geral(button_plot, button_apply,
             {'display':'block',
              'border-left-style': 'outset',
              'border-width': '2px',
-             'position': 'relative',
-             'left': '20px',
-             'top': '15px'
+             'margin-left': '20px',
+             'margin-top': '15px'
+            },
+            {'display':'block',
+             'border-left-style': 'outset',
+             'border-width': '2px',
+             'margin-left': '30px',
+             'margin-top': '15px'
             }
         ]
 
@@ -1483,6 +1573,12 @@ def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, z
                 return [ploted_figure,[]]
         else:
             raise PreventUpdate
+
+# Callback que aciona a sobreposição de voltas (por distância)
+#@app.callback(
+
+#)
+#def sobreposicao_voltas():
 
 
 
