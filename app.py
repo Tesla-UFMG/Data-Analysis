@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+#------------- Import Library -------------#
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -14,10 +16,19 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 import visdcc
+#------------------------------------------#
 
+#-------------- Import Pages --------------#
+from modules.functions.trataDados import Trata_dados
+from modules.functions.filtros import Filtros
+from modules.callbacks.divVoltas import DivVoltas
+#------------------------------------------#
 
-#debug
-import time
+#---------- Instanciando Objetos ----------#
+dados_tratados = Trata_dados()
+filtros = Filtros()
+divisao_voltas = DivVoltas()
+#------------------------------------------#
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 external_scripts = ["https://cdn.plot.ly/plotly-1.2.0.min.js"]
@@ -31,11 +42,9 @@ app.scripts.config.serve_locally = True
 num_dados = None #Número de colunas dos arquivos de dados
 data = None #Pandas Dataframe com os dados utilizados
 data_copy = None #Cópia da variável data para a 
-converted_data = [] #Armazena o nome das colunas que já tiveram seus dados tratados para evitar retrabalho
 eixoY = None #Armazena as colunas que estão plotadas
 ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
 tempo_voltas = [0] #Armazena os valores dos tempos de cada volta (divisão de voltas)
-empty_ploted_figure = None #Armazena a Figure do gráfico plotado sem nenhum linha de referência
 #------------------------------------------#
 
 
@@ -744,170 +753,17 @@ unidades_dados_hash = {
     'Dist': 'm'
 }
 
-# Dicionário(HASH) com todas as funções de conversão de unidades de cada dado 
-tratamento_dados_hash = {
-    'Intensidade_Frenagem': lambda x: x/10,
-    'Timer': lambda x: x/1000,
-    'Speed_LR': lambda x: x/10,
-    'Speed_RR': lambda x: x/10,
-    'Pedal': lambda x: x/10,
-    'AccelX': lambda x: x/1000,
-    'AccelY': lambda x: x/1000,
-    'AccelZ': lambda x: x/1000,
-    'Volante': lambda x: (x-1030)/10
-}
-
-# Lista com todos os possíveis dados a serem analisados no software
-data_name = [
-    'Dist',
-    'Intensidade_Frenagem',
-    'Ecu_flag',
-    'Timer',
-    'Hodometro_P',
-    'Hodometro_T',
-    'Speed_LR',
-    'Speed_RR',
-    'V_motor_D',
-    'V_motor_E',
-    'Torque_LM',
-    'Torque_RM',
-    'Torque_ref_R',
-    'Torque_ref_L',
-    'Current_LM',
-    'Current_RM',
-    'Pedal',
-    'Volante',
-    'TempInv_D1',
-    'TempInv_D2',
-    'TempInv_E1',
-    'TempInv_E2',
-    'AccelX',
-    'AccelY',
-    'AccelZ',
-    'GyroX',
-    'GyroY',
-    'GyroZ',
-    'Temp',
-    'Sensorpressao1',
-    'Leitura_PotInt',
-    'TempInt',
-    'Ext1',
-    'Ext2',
-    'Ext13',
-    'Ext23',
-    'Ext22',
-    'Leitura_PotInt2',
-    'PotTD',
-    'Sensorpressao2',
-    'Leitura_PotInt3',
-    'TempInt2',
-    'Current_sensor1_baixa',
-    'Current_sensor1_alta',
-    'Current_sensor2',
-    'Current_sensor3',
-    'Tensaototal',
-    'Tempmediabb',
-    'Tempmaxbb',
-    'Temp_pack0_1',
-    'Temp_pack0_2',
-    'Temp_pack1_1',
-    'Temp_pack1_2',
-    'Temp_pack2_1',
-    'Temp_pack2_2',
-    'Temp_pack3_1',
-    'Temp_pack3_2',
-    'Temp_pack4_1',
-    'Temp_pack4_2',
-    'Temp_pack5_1',
-    'Temp_pack5_2',
-    'Current_BAT',
-    'Volt_BAT',
-    'Tensao_GLV',
-    'IRCan[0]',
-    'IRCan[1]',
-    'IRCan[2]',
-    'IRCan[3]',
-    'ECU_Mod'
-]
-
-# Funçao de Media Movel
-def smooth(y, box_pts):
-
-    box = np.ones(box_pts)/box_pts
-    y_smooth = np.convolve(y, box, mode='same')
-
-    return y_smooth
-
-# Função que faz as conversões de unidade nos dados dos arquivos, aplicando cada função da tabela hash de conversão no seu respectivo dado
-def trataDados(selected_x, selected_y):
-
-    global data
-    global converted_data
-    
-    selected_y_copy = selected_y.copy()
-
-    if not(selected_x in selected_y_copy):
-        selected_y_copy.append(selected_x)
-
-    for coluna in selected_y_copy:
-        if not(coluna in converted_data):
-            if(coluna in tratamento_dados_hash):
-                data[coluna] = tratamento_dados_hash[coluna](data[coluna])
-
-            converted_data.append(coluna)    
-
-# Funções de filtro passa-banda
-def butter_bandpass(lowcut, highcut, fs, order=5):
-    
+# Função de filtro passa-banda
+def butter_bandpass(data, lowcut, highcut, fs, order=5):
+        
     nyq = 0.5 * fs
     low = lowcut / nyq
     high = highcut / nyq
     b, a = signal.butter(order, [low, high], btype='band')
 
-    return b, a
-
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-
-    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = signal.lfilter(b, a, data)
-    
+
     return y
-
-# Função utilizada nos callbacks de abrir/fechar os bootstrap collapses dentro do modal de config avançadas
-def generate_toggle_callback():
-
-    def toggle_collapse(n, is_open):
-
-        if n:
-            return not is_open
-        
-        return is_open
-    
-    return toggle_collapse
-
-# Função utilizada nos callbacks de habilitar/desabilitar inputs numéricos do filtro passa-banda
-def generate_input_passabanda_disable_callback():
-
-    def disable_inputs_passabanda(checkbox):
-
-        if( 'Passa-Banda' in checkbox):
-            return [False,False]
-        else:
-            return [True,True]
-
-    return disable_inputs_passabanda
-
-# Função utilizada nos callbacks de habilitar/desabilitar inputs numéricos do filtro Savitzky-golay
-def generate_input_savitzky_disable_callback():
-
-    def disable_inputs_savitzky(checkbox):
-
-        if( 'Filtro savitzky-golay' in checkbox):
-            return [False,False]
-        else:
-            return [True,True]
-
-    return disable_inputs_savitzky
 
 # Função que cria o corpo HTML do modal. Cada Chamada dessa função retorna um Bootstrap collapse para o dado passado como parâmetro
 def generate_element_modal_body(column_name):
@@ -1159,10 +1015,8 @@ def disable_ref_vertical_button(selected_radio, selected_checklist):
     [Input('switches-input-divisao','value')]
 )
 def able_divisao_volta(switch_value):
-    if (1 in switch_value):
-        return {'display':'inline-block'}
-    else:
-        return {'display':'none'}
+    
+    return divisao_voltas.able_divisao_volta(switch_value)
 
 # Callback que habilita e desabilita as configurações de setar distancia ou tempo
 @app.callback(
@@ -1172,12 +1026,7 @@ def able_divisao_volta(switch_value):
 )
 def able_tempo_or_distancia(radios_value):
     
-    if ('distancia' in radios_value):
-        return [{'display':'none'}, {'display':'inline-block'}]
-    elif ('tempo' in radios_value):
-        return [{'display':'inline-block'}, {'display':'none'}]
-    else: 
-        raise PreventUpdate
+    return divisao_voltas.able_tempo_or_distancia(radios_value)
 
 # Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
 @app.callback(
@@ -1308,6 +1157,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              input_div_dist):
     
     global data_copy
+    global data
     global empty_ploted_figure
     global ploted_figure
     global eixoY
@@ -1318,7 +1168,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
 
         if int(button_plot) > int(button_apply):
             eixoY = selected_columns_Y
-            trataDados(selected_X, selected_columns_Y)
+            dados_tratados.trataDados(selected_X, selected_columns_Y, data)
             data_copy = data.copy()
 
             if filters_subseq % 2 == 0:
@@ -1327,11 +1177,11 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
             if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
 
                 for column in selected_columns_Y:
-                    data_copy[column] = smooth(signal.medfilt(data_copy[column], filters_subseq), filters_subseq)
+                    data_copy[column] = filtros.smooth(signal.medfilt(data_copy[column], filters_subseq), filters_subseq)
             elif 'Média Móvel' in filters:
 
                 for column in selected_columns_Y:
-                    data_copy[column] = smooth(data_copy[column], filters_subseq)
+                    data_copy[column] = filtros.smooth(data_copy[column], filters_subseq)
             elif 'Filtro Mediana' in filters:
 
                 for column in selected_columns_Y:
@@ -1359,6 +1209,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                                                                   polyorder=savitzky_poly[cont]
                                                                  )
 
+        #fig = empty_ploted_figure
         fig = make_subplots(rows=len(selected_columns_Y),
                             cols=1, 
                             shared_xaxes=True, 
@@ -1425,7 +1276,8 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                                      )
 
         # sobreposição de voltas
-        if sobreposicao_button:
+        if (sobreposicao_button) :
+            fig.data = []
 
             for cont, column_name in enumerate(selected_columns_Y):
                 w = len(data_copy[column_name])/max(data_copy['Dist'])
@@ -1433,7 +1285,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                 w = int(b)
                 dist_use = list(chunks(data_copy['Dist'], w))
                 data_use = list(chunks(data_copy[column_name], w))
-
+                
                 for i in range(0, n_voltas+1):
                     fig.add_trace(
                         go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
@@ -1442,7 +1294,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
 
         fig['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
 
-        ploted_figure = empty_ploted_figure = fig
+        ploted_figure = fig
 
         return [
             [],
@@ -1515,12 +1367,9 @@ def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, z
                         yref = yref + str(curveNumber+1)
                     
                     ploted_figure.add_shape(type="line",
-                                            xref="paper",
-                                            yref=yref,
-                                            y0 = clickData['points'][0]['y'],
-                                            y1 = clickData['points'][0]['y'],
-                                            x0 = 0,
-                                            x1 = 1,
+                                            xref="paper", yref=yref,
+                                            y0 = clickData['points'][0]['y'], y1 = clickData['points'][0]['y'],
+                                            x0 = 0, x1 = 1,
                                             line = dict(
                                                 color = "black",
                                                 dash = "dot",
@@ -1539,10 +1388,8 @@ def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, z
             last_figure = go.Figure(ploted_figure)
             last_figure.add_shape(type = "line",
                                   yref = "paper",
-                                  x0 = clickData['points'][0]['x'],
-                                  x1 = clickData['points'][0]['x'],
-                                  y0 = 0,
-                                  y1 = 1,
+                                  x0 = clickData['points'][0]['x'], x1 = clickData['points'][0]['x'],
+                                  y0 = 0, y1 = 1,
                                   line = dict(
                                     color = "#505050",
                                     width = 1.5
@@ -1557,12 +1404,9 @@ def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, z
             if n1:
                         
                 ploted_figure.add_shape(type="line",
-                                        xref="paper",
-                                        yref="y",
-                                        y0 = input_value,
-                                        y1 = input_value,
-                                        x0 = 0,
-                                        x1 = 1,
+                                        xref="paper", yref="y",
+                                        y0 = input_value, y1 = input_value,
+                                        x0 = 0, x1 = 1,
                                         line = dict(
                                             color = "black",
                                             dash = "dot",
