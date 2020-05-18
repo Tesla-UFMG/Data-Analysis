@@ -21,13 +21,19 @@ import visdcc
 #-------------- Import Pages --------------#
 from modules.functions.trataDados import Trata_dados
 from modules.functions.filtros import Filtros
+from modules.functions.somaLista import somaLista
 from modules.callbacks.divVoltas import DivVoltas
+from modules.callbacks.lerArquivo import lerArquivo
+from modules.callbacks.plotarGrafico import plotarGrafico
 #------------------------------------------#
 
 #---------- Instanciando Objetos ----------#
 dados_tratados = Trata_dados()
 filtros = Filtros()
+soma_Lista = somaLista()
 divisao_voltas = DivVoltas()
+leitura_de_arquivos = lerArquivo(None,None)
+grafico = plotarGrafico(None)
 #------------------------------------------#
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -709,49 +715,6 @@ app.layout = html.Div(children=[
 ])
 
 # Dicionário(HASH) com todas as unidades dos dados conhecidos
-unidades_dados_hash = {
-    'Intensidade_Frenagem': '%',
-    'Timer': 's',
-    'V_motor_D':'RPM',
-    'V_motor_E':'RPM',
-    'Volante': 'graus',
-    'Speed_LR': 'km/h',
-    'Speed_RR': 'km/h',
-    'Pedal': '%',
-    'AccelX': 'G',
-    'AccelY': 'G',
-    'AccelZ': 'G',
-    'GyroX': 'graus/s',
-    'GyroY': 'graus/s',
-    'GyroZ': 'graus/s',
-    'Temp_pack0_1': 'ºC',
-    'Temp_pack0_2': 'ºC',
-    'Temp_pack1_1': 'ºC',
-    'Temp_pack1_2': 'ºC',
-    'Temp_pack2_1': 'ºC',
-    'Temp_pack2_2': 'ºC',
-    'Temp_pack3_1': 'ºC',
-    'Temp_pack3_2': 'ºC',
-    'Temp_pack4_1': 'ºC',
-    'Temp_pack4_2': 'ºC',
-    'Temp_pack5_1': 'ºC',
-    'Temp_pack5_2': 'ºC',
-    'Tempmediabb': 'ºC',
-    'Tempmaxbb': 'ºC',
-    'TempInv_D1': 'ºC',
-    'TempInv_D2': 'ºC',
-    'TempInv_E1': 'ºC',
-    'TempInv_E2': 'ºC',
-    'TempInt2': 'ºC',
-    'TempInt': 'ºC',
-    'Temp': 'ºC',
-    'Tensao_GLV': 'mV',
-    'Volt_BAT': 'mV',
-    'Tensaototal': 'mV',
-    'Hodometro_P': 'm',
-    'Hodometro_T': 'm',
-    'Dist': 'm'
-}
 
 # Função de filtro passa-banda
 def butter_bandpass(data, lowcut, highcut, fs, order=5):
@@ -1090,39 +1053,22 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
-def hide_index_and_read_file(list_of_contents, list_of_names):
-
-    global data
-    global num_dados
-
-    if list_of_contents is not None:
-        if ('legenda.txt' in list_of_names):
-            if len(list_of_names) >= 2:
-                files = dict(zip(list_of_names, list_of_contents))
-                legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
-                legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
-
-                try:
-                    for nome_do_arquivo in files:
-                        if(nome_do_arquivo != 'legenda.txt'):
-                            data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
-                except:
-                    return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
-                
-                options = []
-                num_dados = len(legenda)
-                
-                for cont, column_name in enumerate(legenda):
-                    options.append( {'label' : column_name, 'value' : column_name} )
-
-                return [{'display': 'none'}, {'display':'inline'}, options, options, [], dash.no_update, dash.no_update]
-            else:
-                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]    
-        else:
-            return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
-    else:
-        raise PreventUpdate
-        
+def hide_index_and_read_file(list_of_contents, list_of_names):   
+    
+    leitura_de_arquivos.get_data(list_of_contents, list_of_names)
+    global data 
+    data = leitura_de_arquivos.data
+    global num_dados 
+    num_dados = leitura_de_arquivos.num_dados
+    return [
+        leitura_de_arquivos.index_page_style,
+        leitura_de_arquivos.main_page_style,
+        leitura_de_arquivos.analise_Y_options,
+        leitura_de_arquivos.analis_X_options,
+        leitura_de_arquivos.upload_loading_children,
+        leitura_de_arquivos.files_alert_open,
+        leitura_de_arquivos.files_alert_children]
+    
 # Callback do botão de plotagem de gráficos
 @app.callback(
     [Output('apply-adv-changes-loading','children'),
@@ -1156,173 +1102,23 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
                              input_div_dist):
     
-    global data_copy
-    global data
-    global empty_ploted_figure
-    global ploted_figure
-    global eixoY
-    global tempo_voltas
-
-    if button_plot != 0 or button_apply != 0:
-        modal_itens = []
-
-        if int(button_plot) > int(button_apply):
-            eixoY = selected_columns_Y
-            dados_tratados.trataDados(selected_X, selected_columns_Y, data)
-            data_copy = data.copy()
-
-            if filters_subseq % 2 == 0:
-                filters_subseq = filters_subseq + 1
-
-            if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
-
-                for column in selected_columns_Y:
-                    data_copy[column] = filtros.smooth(signal.medfilt(data_copy[column], filters_subseq), filters_subseq)
-            elif 'Média Móvel' in filters:
-
-                for column in selected_columns_Y:
-                    data_copy[column] = filtros.smooth(data_copy[column], filters_subseq)
-            elif 'Filtro Mediana' in filters:
-
-                for column in selected_columns_Y:
-                    data_copy[column] = signal.medfilt(data_copy[column], np.array(filters_subseq))
-
-        elif(int(button_plot) < int(button_apply)):
-
-            for cont, id in enumerate(identificador):
-                if('Passa-Banda' in bandpass_check[cont]):
-
-                    data_copy[id['index']] = butter_bandpass_filter(data_copy[id['index']], 
-                                                                    bandpass_inf[cont],
-                                                                    bandpass_sup[cont],
-                                                                    fs=60
-                                                                   )
-
-                if('Filtro savitzky-golay' in savitzky_check[cont]):
-
-                    window_length = savitzky_cut[cont]
-                    if window_length % 2 == 0:
-                        window_length += 1
-
-                    data_copy[id['index']] = signal.savgol_filter(data_copy[id['index']],
-                                                                  window_length=window_length,
-                                                                  polyorder=savitzky_poly[cont]
-                                                                 )
-
-        #fig = empty_ploted_figure
-        fig = make_subplots(rows=len(selected_columns_Y),
-                            cols=1, 
-                            shared_xaxes=True, 
-                            vertical_spacing=0.0
-                           )
-
-        for cont, column_name in enumerate(selected_columns_Y):
-            if (column_name in unidades_dados_hash):
-                fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                         x=data_copy[selected_X], 
-                                         mode="lines", 
-                                         name=column_name, 
-                                         hovertemplate = "%{y} " + unidades_dados_hash[column_name]
-                                        ), 
-                              row=cont+1, 
-                              col=1
-                             )
-            else:
-                fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                         x=data_copy[selected_X],
-                                         mode="lines", 
-                                         name=column_name, 
-                                         hovertemplate = "%{y}"
-                                        ), 
-                              row=cont+1, 
-                              col=1
-                             )
-
-            modal_itens.extend( generate_element_modal_body(column_name) )
-
-        # Acresenta traços de divisão de voltas
-        if(1 in div_switches_value):
-            
-            # Se for por distância
-            if('distancia' in div_radios_value):
-
-                if set_div_dist:
-                    n_voltas = len(data_copy['Dist'])//input_div_dist
-                    
-                    for cont, column_name in enumerate(selected_columns_Y):
-                        for z in range(1, n_voltas+1):
-                            fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                    x=[input_div_dist*z, input_div_dist*z],                                     # array com os valores dos tempos das voltas 
-                                                    mode="lines", 
-                                                    line=go.scatter.Line(color="gray"), 
-                                                    showlegend=False
-                                                    ),
-                                        row=cont+1,
-                                        col=1
-                                        )
-            # Se for por tempo
-            elif('tempo' in div_radios_value):
-
-                for cont, column_name in enumerate(selected_columns_Y):
-                    for z in tempo_voltas:
-                        fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                 x=[z, z],                                                       # array com os valores dos tempos das voltas 
-                                                 mode="lines", 
-                                                 line=go.scatter.Line(color="gray"), 
-                                                 showlegend=False
-                                                ),
-                                      row=cont+1,
-                                      col=1
-                                     )
-
-        # sobreposição de voltas
-        if (sobreposicao_button) :
-            fig.data = []
-
-            for cont, column_name in enumerate(selected_columns_Y):
-                w = len(data_copy[column_name])/max(data_copy['Dist'])
-                b = w * input_div_dist
-                w = int(b)
-                dist_use = list(chunks(data_copy['Dist'], w))
-                data_use = list(chunks(data_copy[column_name], w))
-                
-                for i in range(0, n_voltas+1):
-                    fig.add_trace(
-                        go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
-                        row=cont+1, col=1
-                    )
-
-        fig['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-
-        ploted_figure = fig
-
-        return [
-            [],
-            dcc.Graph(
-                figure=fig,
-                id='figure-id',
-                config={'autosizable' : False}
-            ),
-            {'display':'inline'},
-            modal_itens,
-            [],
-            {'display':'block',
-             'border-left-style': 'outset',
-             'border-width': '2px',
-             'margin-left': '20px',
-             'margin-top': '15px'
-            },
-            {'display':'block',
-             'border-left-style': 'outset',
-             'border-width': '2px',
-             'margin-left': '30px',
-             'margin-top': '15px'
-            }
-        ]
-
-    else:
-        #TRATAR ERRO
-        raise PreventUpdate
+    
+    global data#ja foi usada e nao sera mais
+    global tempo_voltas#ja foi usada antes e termina aq
+    grafico.plotar(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
+                 selected_columns_Y, selected_X, filters, filters_subseq,
+                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
+                 input_div_dist,data,tempo_voltas)
+    global ploted_figure#começa aq e continua
+    ploted_figure = grafico.ploted_figure
+    
+    return[grafico.changes_loading_children,
+        grafico.graph_content_children,
+        grafico.modal_button_style,
+        grafico.modal_body_children ,
+        grafico.plot_loading_children ,
+        grafico.ref_line_style ,
+        grafico.configuracao_sobreposicao_style]
 
 # Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(
