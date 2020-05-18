@@ -1192,11 +1192,11 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
             for cont, id in enumerate(identificador):
                 if('Passa-Banda' in bandpass_check[cont]):
 
-                    data_copy[id['index']] = butter_bandpass_filter(data_copy[id['index']], 
-                                                                    bandpass_inf[cont],
-                                                                    bandpass_sup[cont],
-                                                                    fs=60
-                                                                   )
+                    data_copy[id['index']] = butter_bandpass(data_copy[id['index']], 
+                                                             bandpass_inf[cont],
+                                                             bandpass_sup[cont],
+                                                             fs=60
+                                                            )
 
                 if('Filtro savitzky-golay' in savitzky_check[cont]):
 
