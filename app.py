@@ -19,8 +19,6 @@ import visdcc
 #------------------------------------------#
 
 #-------------- Import Pages --------------#
-from modules.functions.trataDados import Trata_dados
-from modules.functions.filtros import Filtros
 from modules.functions.somaLista import somaLista
 from modules.callbacks.divVoltas import DivVoltas
 from modules.callbacks.lerArquivo import lerArquivo
@@ -28,8 +26,6 @@ from modules.callbacks.plotarGrafico import plotarGrafico
 #------------------------------------------#
 
 #---------- Instanciando Objetos ----------#
-dados_tratados = Trata_dados()
-filtros = Filtros()
 soma_Lista = somaLista()
 divisao_voltas = DivVoltas()
 leitura_de_arquivos = lerArquivo(None,None)
@@ -47,8 +43,6 @@ app.scripts.config.serve_locally = True
 #--------------- Global var ---------------#
 num_dados = None #Número de colunas dos arquivos de dados
 data = None #Pandas Dataframe com os dados utilizados
-data_copy = None #Cópia da variável data para a 
-eixoY = None #Armazena as colunas que estão plotadas
 ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
 tempo_voltas = [0] #Armazena os valores dos tempos de cada volta (divisão de voltas)
 #------------------------------------------#
@@ -121,7 +115,7 @@ app.layout = html.Div(children=[
             )
         ]
     ),
-
+    
     # Layout do Corpo da pagina
     html.Div(
         className="background",
@@ -713,18 +707,13 @@ app.layout = html.Div(children=[
         scrollable=True
     )
 ])
-# Função utilizada para somar os valores de uma lista
-def soma_lista(lista):
 
-    if len(lista) == 1:
-        return lista[0]
-    else:
-        return lista[0] + soma_lista(lista[1:])
-
-# Função que divide o array de distancia pelas voltas
-def chunks(lista, n):
-    for i in range(0, len(lista), n):
-        yield lista[i:i + n]
+def somaLista(lista):
+        
+        if len(lista) == 1:
+            return lista[0]
+        else:
+            return lista[0] + somaLista(lista[1:])
 
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
@@ -893,9 +882,9 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
         tempo_voltas = np.zeros(len(tempo_div_voltas))
 
         for i in range(0, len(tempo_voltas)-1):
-            tempo_voltas[i] = soma_lista(tempo_div_voltas[:i+1])
+            tempo_voltas[i] = somaLista(tempo_div_voltas[:i+1])
 
-        tempo_voltas[len(tempo_div_voltas)-1] = soma_lista(tempo_div_voltas)
+        tempo_voltas[len(tempo_div_voltas)-1] = somaLista(tempo_div_voltas)
 
     return children
 
@@ -913,11 +902,12 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
 )
 def hide_index_and_read_file(list_of_contents, list_of_names):   
     
-    leitura_de_arquivos.get_data(list_of_contents, list_of_names)
-    global data 
-    data = leitura_de_arquivos.data
     global num_dados 
+    
+    leitura_de_arquivos.get_data(list_of_contents, list_of_names)
+
     num_dados = leitura_de_arquivos.num_dados
+    
     return [
         leitura_de_arquivos.index_page_style,
         leitura_de_arquivos.main_page_style,
@@ -925,7 +915,8 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         leitura_de_arquivos.analis_X_options,
         leitura_de_arquivos.upload_loading_children,
         leitura_de_arquivos.files_alert_open,
-        leitura_de_arquivos.files_alert_children]
+        leitura_de_arquivos.files_alert_children
+    ]
     
 # Callback do botão de plotagem de gráficos
 @app.callback(
@@ -960,23 +951,25 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
                              input_div_dist):
     
-    
-    global data#ja foi usada e nao sera mais
-    global tempo_voltas#ja foi usada antes e termina aq
+    global tempo_voltas #ja foi usada antes e termina aq
+
     grafico.plotar(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
-                 selected_columns_Y, selected_X, filters, filters_subseq,
-                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
-                 input_div_dist,data,tempo_voltas)
-    global ploted_figure#começa aq e continua
+                   selected_columns_Y, selected_X, filters, filters_subseq,
+                   identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
+                   input_div_dist, leitura_de_arquivos.data, tempo_voltas)
+
+    global ploted_figure #começa aq e continua
+
     ploted_figure = grafico.ploted_figure
     
-    return[grafico.changes_loading_children,
-        grafico.graph_content_children,
-        grafico.modal_button_style,
-        grafico.modal_body_children ,
-        grafico.plot_loading_children ,
-        grafico.ref_line_style ,
-        grafico.configuracao_sobreposicao_style]
+    return [grafico.changes_loading_children,
+            grafico.graph_content_children,
+            grafico.modal_button_style,
+            grafico.modal_body_children ,
+            grafico.plot_loading_children ,
+            grafico.ref_line_style ,
+            grafico.configuracao_sobreposicao_style
+        ]
 
 # Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(

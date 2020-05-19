@@ -1,4 +1,3 @@
-
 import numpy as np
 from scipy import signal
 from plotly.subplots import make_subplots

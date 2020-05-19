@@ -1,5 +1,5 @@
-
 class somaLista:
+
     @staticmethod
     def somaLista(lista):
         

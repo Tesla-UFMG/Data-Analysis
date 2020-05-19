@@ -22,8 +22,9 @@ dados_tratados = Trata_dados()
 filtros = Filtros()
 modal_body = modalBody()
 bandpass_filter = bandPass()
+chunks = Chunks()
 
-
+# Dicionário(HASH) com todas as unidades dos dados conhecidos
 unidades_dados_hash = {
     'Intensidade_Frenagem': '%',
     'Timer': 's',
@@ -67,23 +68,25 @@ unidades_dados_hash = {
     'Hodometro_T': 'm',
     'Dist': 'm'
 }
+
 class plotarGrafico():
 
-
-    
-    def __init__(self,ploted_figure):
+    def __init__(self, ploted_figure):
         self.ploted_figure = ploted_figure
         self.debuger = True
         
-    
     def plotar(self, button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
-                 selected_columns_Y, selected_X, filters, filters_subseq,
-                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
-                 input_div_dist,data,tempo_voltas):
+               selected_columns_Y, selected_X, filters, filters_subseq,
+               identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
+               input_div_dist, data, tempo_voltas):
+
         if button_plot != 0 or button_apply != 0:
+
             modal_itens = []
             self.debuger = False
+
             if int(button_plot) > int(button_apply):
+
                 eixoY = selected_columns_Y
                 dados_tratados.trataDados(selected_X, selected_columns_Y, data)
                 data_copy = data.copy()
@@ -108,11 +111,12 @@ class plotarGrafico():
 
                 for cont, id in enumerate(identificador):
                     if('Passa-Banda' in bandpass_check[cont]):
+
                         data_copy[id['index']] = bandpass_filter.element_bandpass_filter(data_copy[id['index']], 
-                                                                        bandpass_inf[cont],
-                                                                        bandpass_sup[cont],
-                                                                        fs=60
-                                                                    )
+                                                                                         bandpass_inf[cont],
+                                                                                         bandpass_sup[cont],
+                                                                                         fs=60
+                                                                                        )
 
                     if('Filtro savitzky-golay' in savitzky_check[cont]):
 
@@ -121,39 +125,40 @@ class plotarGrafico():
                             window_length += 1
 
                         data_copy[id['index']] = signal.savgol_filter(data_copy[id['index']],
-                                                                    window_length=window_length,
-                                                                    polyorder=savitzky_poly[cont]
-                                                                    )
+                                                                      window_length = window_length,
+                                                                      polyorder = savitzky_poly[cont]
+                                                                     )
 
-            #fig = empty_ploted_figure
             fig = make_subplots(rows=len(selected_columns_Y),
                                 cols=1, 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.0
-                            )
+                               )
 
             for cont, column_name in enumerate(selected_columns_Y):
                 if (column_name in unidades_dados_hash):
                     fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                            x=data_copy[selected_X], 
-                                            mode="lines", 
-                                            name=column_name, 
-                                            hovertemplate = "%{y} " + unidades_dados_hash[column_name]
+                                             x=data_copy[selected_X], 
+                                             mode="lines", 
+                                             name=column_name, 
+                                             hovertemplate = "%{y} " + unidades_dados_hash[column_name]
                                             ), 
-                                row=cont+1, 
-                                col=1
-                                )
+                                  row=cont+1, 
+                                  col=1
+                                 )
                 else:
                     fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                            x=data_copy[selected_X],
-                                            mode="lines", 
-                                            name=column_name, 
-                                            hovertemplate = "%{y}"
+                                             x=data_copy[selected_X],
+                                             mode="lines", 
+                                             name=column_name, 
+                                             hovertemplate = "%{y}"
                                             ), 
-                                row=cont+1, 
-                                col=1
-                                )
+                                  row=cont+1, 
+                                  col=1
+                                 )
+
                 modal_itens.extend(modal_body.element_modal_body(column_name))
+
             # Acresenta traços de divisão de voltas
             if(1 in div_switches_value):
                 
@@ -165,29 +170,29 @@ class plotarGrafico():
                         
                         for cont, column_name in enumerate(selected_columns_Y):
                             for z in range(1, n_voltas+1):
-                                fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                        x=[input_div_dist*z, input_div_dist*z],                                     # array com os valores dos tempos das voltas 
-                                                        mode="lines", 
-                                                        line=go.scatter.Line(color="gray"), 
-                                                        showlegend=False
+                                fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],
+                                                         x=[input_div_dist*z, input_div_dist*z],
+                                                         mode="lines", 
+                                                         line=go.scatter.Line(color="gray"), 
+                                                         showlegend=False
                                                         ),
-                                            row=cont+1,
-                                            col=1
-                                            )
+                                              row=cont+1,
+                                              col=1
+                                             )
                 # Se for por tempo
                 elif('tempo' in div_radios_value):
 
                     for cont, column_name in enumerate(selected_columns_Y):
                         for z in tempo_voltas:
-                            fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                    x=[z, z],                                                       # array com os valores dos tempos das voltas 
-                                                    mode="lines", 
-                                                    line=go.scatter.Line(color="gray"), 
-                                                    showlegend=False
+                            fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],
+                                                     x=[z, z],
+                                                     mode="lines", 
+                                                     line=go.scatter.Line(color="gray"), 
+                                                     showlegend=False
                                                     ),
-                                        row=cont+1,
-                                        col=1
-                                        )
+                                          row=cont+1,
+                                          col=1
+                                         )
 
             # sobreposição de voltas
             if (sobreposicao_button) :
@@ -197,8 +202,8 @@ class plotarGrafico():
                     w = len(data_copy[column_name])/max(data_copy['Dist'])
                     b = w * input_div_dist
                     w = int(b)
-                    dist_use = list(Chunks(data_copy['Dist'], w))
-                    data_use = list(Chunks(data_copy[column_name], w))
+                    dist_use = list(chunks.Chunks(data_copy['Dist'], w))
+                    data_use = list(chunks.Chunks(data_copy[column_name], w))
                     
                     for i in range(0, n_voltas+1):
                         fig.add_trace(
@@ -211,25 +216,25 @@ class plotarGrafico():
             self.ploted_figure = fig
             self.changes_loading_children = []
             self.graph_content_children = dcc.Graph(
-                    figure=fig,
-                    id='figure-id',
-                    config={'autosizable' : False}
-                ),
+                                                figure=fig,
+                                                id='figure-id',
+                                                config={'autosizable' : False}
+                                            ),
             self.modal_button_style = {'display':'inline'}
             self.modal_body_children = modal_itens
             self.plot_loading_children = []
             self.ref_line_style = {'display':'block',
-                'border-left-style': 'outset',
-                'border-width': '2px',
-                'margin-left': '20px',
-                'margin-top': '15px'
-                }
+                                   'border-left-style': 'outset',
+                                   'border-width': '2px',
+                                   'margin-left': '20px',
+                                   'margin-top': '15px'
+                                  }
             self.configuracao_sobreposicao_style = {'display':'block',
-                'border-left-style': 'outset',
-                'border-width': '2px',
-                'margin-left': '30px',
-                'margin-top': '15px'
-                }
+                                                    'border-left-style': 'outset',
+                                                    'border-width': '2px',
+                                                    'margin-left': '30px',
+                                                    'margin-top': '15px'
+                                                   }
             return 
         else:
             raise PreventUpdate

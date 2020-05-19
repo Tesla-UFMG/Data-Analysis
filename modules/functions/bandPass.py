@@ -1,6 +1,7 @@
 from scipy import signal
 
 class bandPass:
+    
     @staticmethod
     def element_bandpass_filter(data, lowcut, highcut, fs, order=5):
         
