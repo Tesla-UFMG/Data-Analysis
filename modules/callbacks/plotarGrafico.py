@@ -82,6 +82,7 @@ class plotarGrafico():
 
         if button_plot != 0 or button_apply != 0:
 
+            data_copy = data.copy()
             modal_itens = []
             self.debuger = False
 
