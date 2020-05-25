@@ -952,13 +952,16 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              input_div_dist):
     
     global tempo_voltas #ja foi usada antes e termina aq
-
-    grafico.plotar(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
-                   selected_columns_Y, selected_X, filters, filters_subseq,
-                   identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
-                   input_div_dist, leitura_de_arquivos.data, tempo_voltas)
-
     global ploted_figure #começa aq e continua
+
+    if button_plot != 0 or button_apply != 0:
+        grafico.filtros(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
+                        bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
+                        
+        grafico.plotar(div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
+                       selected_columns_Y, selected_X, input_div_dist, tempo_voltas)
+    else:
+        raise PreventUpdate
 
     ploted_figure = grafico.ploted_figure
     
@@ -1064,12 +1067,6 @@ def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, z
                 return [ploted_figure,[]]
         else:
             raise PreventUpdate
-
-# Callback que aciona a sobreposição de voltas (por distância)
-#@app.callback(
-
-#)
-#def sobreposicao_voltas():
 
 
 
