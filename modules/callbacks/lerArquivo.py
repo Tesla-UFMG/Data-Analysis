@@ -43,7 +43,7 @@ class lerArquivo:
                         self.files_alert_children =  "Os arquivos de dados não são do tipo .txt" 
                         return
                     options= []
-                    self.num_dados= len(legenda)
+                    self.num_dados = len(legenda)
 
                     for cont, column_name in enumerate(legenda):
                         options.append(

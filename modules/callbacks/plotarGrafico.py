@@ -27,6 +27,20 @@ chunks = Chunks()
 data_copy = None
 #------------------------------------------#
 
+
+converted_data = []
+# Dicionário(HASH) com todas as funções de conversão de unidades de cada dado 
+tratamento_dados_hash = {
+    'Intensidade_Frenagem': lambda x: x/10,
+    'Timer': lambda x: x/1000,
+    'Speed_LR': lambda x: x/10,
+    'Speed_RR': lambda x: x/10,
+    'Pedal': lambda x: x/10,
+    'AccelX': lambda x: x/1000,
+    'AccelY': lambda x: x/1000,
+    'AccelZ': lambda x: x/1000,
+    'Volante': lambda x: (x-1030)/10
+}
 # Dicionário(HASH) com todas as unidades dos dados conhecidos
 unidades_dados_hash = {
     'Intensidade_Frenagem': '%',
@@ -117,7 +131,6 @@ class plotarGrafico():
 
     def __init__(self, ploted_figure):
         self.ploted_figure = ploted_figure
-        self.debuger = True
         
     def filtros(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):

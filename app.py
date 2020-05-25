@@ -20,14 +20,14 @@ import visdcc
 
 #-------------- Import Pages --------------#
 from modules.functions.somaLista import somaLista
-from modules.callbacks.divVoltas import DivVoltas
+from modules.callbacks.processingPOSGraphic import processingPOSGraphic
 from modules.callbacks.lerArquivo import lerArquivo
 from modules.callbacks.plotarGrafico import plotarGrafico
 #------------------------------------------#
 
 #---------- Instanciando Objetos ----------#
 soma_Lista = somaLista()
-divisao_voltas = DivVoltas()
+Pos_Graphic = processingPOSGraphic()
 leitura_de_arquivos = lerArquivo(None,None)
 grafico = plotarGrafico(None)
 #------------------------------------------#
@@ -477,23 +477,6 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
-                            # #Segundo Tab (Grafico Customizados)
-                            # dcc.Tab(
-                            #     label='Gráficos customizados',
-                            #     value='tab-2',
-                            #     children=[
-                            #         dcc.Graph(
-                            #             figure={
-                            #                 'data': [
-                            #                     {'x': [1, 2, 3], 'y': [1, 4, 1],
-                            #                         'type': 'bar', 'name': 'SF'},
-                            #                     {'x': [1, 2, 3], 'y': [1, 2, 3],
-                            #                     'type': 'bar', 'name': u'Montréal'},
-                            #                 ]
-                            #             }
-                            #         )
-                            #     ]
-                            # ),
                             #Terceiro Tab (Configuraçoes)
                             dcc.Tab(
                                 label='Configurações',
@@ -641,25 +624,6 @@ app.layout = html.Div(children=[
                                                     ),
                                                 ]
                                             ),
-                                            #html.Div(
-                                            #    className="sobreposicao-content",
-                                            #    children=[
-                                            #        # Opção para selecionar sobreposição de voltas
-                                            #        dbc.Checklist(
-                                            #            options=[
-                                            #                {"label": "Sobreposição de Voltas", "value": 1},
-                                            #            ],
-                                            #            id="switches-input-sobreposicao",
-                                            #            value=[],
-                                            #            switch=True,
-                                            #            style={
-                                            #                'margin-top':'8px',
-                                            #                'margin-bottom':'8px',
-                                            #                'font-size':'18px'
-                                            #            }
-                                            #        ),
-                                            #    ]
-                                            #),
                                         ]
                                     ), 
                                 ]
@@ -708,12 +672,6 @@ app.layout = html.Div(children=[
     )
 ])
 
-def somaLista(lista):
-        
-        if len(lista) == 1:
-            return lista[0]
-        else:
-            return lista[0] + somaLista(lista[1:])
 
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
@@ -818,75 +776,19 @@ def disable_ref_vertical_button(selected_radio, selected_checklist):
                 })
     else:
         return {'display':'none'}
-
-# Callback que habilita e desabilita as configurações de divisao de voltas
+# Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(
-    Output('corpo-divisao-voltas','style'),
-    [Input('switches-input-divisao','value')]
+    Output('add-line-button' , 'labelClassName'),
+    [Input('add-line-button' , 'value')]
 )
-def able_divisao_volta(switch_value):
-    
-    return divisao_voltas.able_divisao_volta(switch_value)
+def change_button_class(value):
 
-# Callback que habilita e desabilita as configurações de setar distancia ou tempo
-@app.callback(
-    [Output('corpo-divisao-tempo','style'),
-     Output('corpo-divisao-distancia','style')],
-    [Input('radios-row','value')]
-)
-def able_tempo_or_distancia(radios_value):
-    
-    return divisao_voltas.able_tempo_or_distancia(radios_value)
+    if('Line' in value):
+        return 'interations-button-pressed button-int'
 
-# Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
-@app.callback(
-    Output('time-input', 'children'),
-    [Input('divisão-voltas-tempo-input', 'value'),
-     Input('input-voltas-button-tempo', 'n_clicks')],
-    [State('time-input', 'children'),
-     State({'type':'input-tempo','index':ALL}, 'value')]
-)
-def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
+    return 'interations-button button-int'
 
-    global tempo_voltas
 
-    new_input = html.Div([
-                    dbc.InputGroup(
-                        [dbc.InputGroupAddon(("Volta {}:".format(i)), 
-                                              addon_type="prepend"
-                                            ), 
-                         dbc.Input(
-                            id={
-                                'type':'input-tempo',
-                                'index':'input-volta-{}'
-                            },
-                            type="number",
-                            min=0,
-                            step=0.01,
-                            value=0
-                         )
-                        ]
-                    ) 
-                    for i in range(1, numero_voltas+1)
-                ])
-
-    children.insert(0, new_input)
-    for i in range(1, len(children)):
-        children.pop(i)
-
-    tempo_div_voltas = [0]
-    if n1:
-        tempo_div_voltas = input_value
-
-        # Seta o array com os valores das voltas somados
-        tempo_voltas = np.zeros(len(tempo_div_voltas))
-
-        for i in range(0, len(tempo_voltas)-1):
-            tempo_voltas[i] = somaLista(tempo_div_voltas[:i+1])
-
-        tempo_voltas[len(tempo_div_voltas)-1] = somaLista(tempo_div_voltas)
-
-    return children
 
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
@@ -900,14 +802,8 @@ def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
-def hide_index_and_read_file(list_of_contents, list_of_names):   
-    
-    global num_dados 
-    
+def hide_index_and_read_file(list_of_contents, list_of_names):     
     leitura_de_arquivos.get_data(list_of_contents, list_of_names)
-
-    num_dados = leitura_de_arquivos.num_dados
-    
     return [
         leitura_de_arquivos.index_page_style,
         leitura_de_arquivos.main_page_style,
@@ -918,6 +814,8 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
         leitura_de_arquivos.files_alert_children
     ]
     
+
+
 # Callback do botão de plotagem de gráficos
 @app.callback(
     [Output('apply-adv-changes-loading','children'),
@@ -968,23 +866,14 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
     return [grafico.changes_loading_children,
             grafico.graph_content_children,
             grafico.modal_button_style,
-            grafico.modal_body_children ,
+            grafico.modal_body_children,
             grafico.plot_loading_children ,
             grafico.ref_line_style ,
             grafico.configuracao_sobreposicao_style
         ]
 
-# Callback que muda a classe do botão de linhas horizontais, se pressionado
-@app.callback(
-    Output('add-line-button' , 'labelClassName'),
-    [Input('add-line-button' , 'value')]
-)
-def change_button_class(value):
 
-    if('Line' in value):
-        return 'interations-button-pressed button-int'
 
-    return 'interations-button button-int'
 
 # Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
 @app.callback (
@@ -998,77 +887,28 @@ def change_button_class(value):
      State("add-line-button", "value"),
      State('horizontal-input','value')]
 )
-def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
+    
+    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value, grafico.ploted_figure)
+    return(Pos_Graphic.figure_id_figure,Pos_Graphic.add_line_button_value)
 
-    if clickData is not None:
-
-        global ploted_figure
-
-        #HORIZONTAL
-        if("Horizontal" in checklist_horizontal):
-
-            if('horizontal-grafico' in radios_value):
-        
-                if("Line" in add_line):
-                    
-                    yref = "y"
-                    curveNumber = clickData['points'][0]['curveNumber']
-                    if(  curveNumber != 0 ):
-                        yref = yref + str(curveNumber+1)
-                    
-                    ploted_figure.add_shape(type="line",
-                                            xref="paper", yref=yref,
-                                            y0 = clickData['points'][0]['y'], y1 = clickData['points'][0]['y'],
-                                            x0 = 0, x1 = 1,
-                                            line = dict(
-                                                color = "black",
-                                                dash = "dot",
-                                                width = 1
-                                            ),
-                                           )
-                    
-                    return [ploted_figure,[]]
-                else:
-                    raise PreventUpdate
-            else:
-                raise PreventUpdate
-        #VERTICAL
-        else:
-            
-            last_figure = go.Figure(ploted_figure)
-            last_figure.add_shape(type = "line",
-                                  yref = "paper",
-                                  x0 = clickData['points'][0]['x'], x1 = clickData['points'][0]['x'],
-                                  y0 = 0, y1 = 1,
-                                  line = dict(
-                                    color = "#505050",
-                                    width = 1.5
-                                  )
-                                 )
-            
-            return [last_figure, dash.no_update]
-    elif clickData is None:
-        # Horizontal definido no input
-        if('horizontal-value' in radios_value) and ("Horizontal" in checklist_horizontal):
-
-            if n1:
-                        
-                ploted_figure.add_shape(type="line",
-                                        xref="paper", yref="y",
-                                        y0 = input_value, y1 = input_value,
-                                        x0 = 0, x1 = 1,
-                                        line = dict(
-                                            color = "black",
-                                            dash = "dot",
-                                            width = 1
-                                        ),
-                                    )
-                
-                return [ploted_figure,[]]
-        else:
-            raise PreventUpdate
-
-
-
+# Callback que habilita e desabilita as configurações de divisao de voltas
+@app.callback(
+    [Output('corpo-divisao-voltas','style'),
+    Output('corpo-divisao-tempo','style'),
+    Output('corpo-divisao-distancia','style'),
+    Output('time-input', 'children')],
+    [Input('switches-input-divisao','value'),
+    Input('radios-row','value'),
+    Input('divisão-voltas-tempo-input', 'value'),
+     Input('input-voltas-button-tempo', 'n_clicks')],
+    [State('time-input', 'children'),
+     State({'type':'input-tempo','index':ALL}, 'value')]
+)
+def _lap_division(switch_value,radios_value,numero_voltas, n1, children, input_value):
+    
+    Pos_Graphic._able_lap_division(switch_value, radios_value,numero_voltas, n1, children, input_value)
+    return (Pos_Graphic.lap_division_style,Pos_Graphic.time_division_style,Pos_Graphic.distance_division_style,Pos_Graphic.time_input_children)
+    
 if __name__ == '__main__':
     app.run_server(debug=True)
