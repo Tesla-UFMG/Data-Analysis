@@ -848,21 +848,17 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              selected_columns_Y, selected_X, filters, filters_subseq, 
                              identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
                              input_div_dist):
-    
-    global tempo_voltas #ja foi usada antes e termina aq
-    global ploted_figure #começa aq e continua
-
     if button_plot != 0 or button_apply != 0:
         grafico.filtros(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
                         
         grafico.plotar(div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
                        selected_columns_Y, selected_X, input_div_dist, tempo_voltas)
+        if(1 in div_switches_value):
+            grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist,tempo_voltas)
+            grafico._overlap(sobreposicao_button,selected_columns_Y, input_div_dist)
     else:
         raise PreventUpdate
-
-    ploted_figure = grafico.ploted_figure
-    
     return [grafico.changes_loading_children,
             grafico.graph_content_children,
             grafico.modal_button_style,
@@ -890,6 +886,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
 def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
     
     Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value, grafico.ploted_figure)
+    
     return(Pos_Graphic.figure_id_figure,Pos_Graphic.add_line_button_value)
 
 # Callback que habilita e desabilita as configurações de divisao de voltas
