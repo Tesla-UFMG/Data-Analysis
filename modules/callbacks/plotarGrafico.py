@@ -238,7 +238,7 @@ class plotarGrafico():
         if('distancia' in div_radios_value):
             
                 if set_div_dist:
-                    n_voltas = len(self.data_copy['Dist'])//input_div_dist
+                    n_voltas = max(self.data_copy['Dist'])//input_div_dist
                     self.configuracao_sobreposicao_style = {'display':'block',
                                                 'border-left-style': 'outset',
                                                 'border-width': '2px',
@@ -269,8 +269,7 @@ class plotarGrafico():
     def _overlap(self,sobreposicao_button,selected_columns_Y, input_div_dist):
         # sobreposição de voltas
         if (sobreposicao_button) :
-            print(sobreposicao_button)
-            n_voltas = len(self.data_copy['Dist'])//input_div_dist
+            n_voltas = max(self.data_copy['Dist'])//input_div_dist
             self.ploted_figure.data = []
             for cont, column_name in enumerate(selected_columns_Y):
                 w = len(self.data_copy[column_name])/max(self.data_copy['Dist'])
