@@ -129,7 +129,9 @@ class plotarGrafico():
     def __init__(self, ploted_figure):
         self.ploted_figure = ploted_figure
         self.data_copy = None
-        self.sobreposicao_switch = False
+        self.lap_division_show_or_hide_style = {
+            "display":"none"
+        }
     def filtros(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
 
@@ -230,13 +232,17 @@ class plotarGrafico():
                                'margin-left': '20px',
                                'margin-top': '15px'
                               }
+        self.lap_division_show_or_hide_style = {'display':'block',
+                               'border-left-style': 'outset',
+                               'border-width': '2px',
+                               'margin-left': '20px'
+                              }
         self.configuracao_sobreposicao_style = dash.no_update
         return
     
 
     def _overlap_lines(self,div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist):
-        if('distancia' in div_radios_value):
-            
+        if('distancia' in div_radios_value):            
                 if set_div_dist:
                     n_voltas = max(self.data_copy['Dist'])//input_div_dist
                     self.configuracao_sobreposicao_style = {'display':'block',
