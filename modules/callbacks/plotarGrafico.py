@@ -129,6 +129,7 @@ class plotarGrafico():
     def __init__(self, ploted_figure):
         self.ploted_figure = ploted_figure
         self.data_copy = None
+        self.sobreposicao_switch = False
     def filtros(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
 
@@ -229,24 +230,31 @@ class plotarGrafico():
                                'margin-left': '20px',
                                'margin-top': '15px'
                               }
-        self.configuracao_sobreposicao_style = {'display':'block',
+        self.configuracao_sobreposicao_style = dash.no_update
+        return
+    
+
+    def _overlap_lines(self,div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist):
+        if('distancia' in div_radios_value):
+            
+                if set_div_dist:
+                    n_voltas = len(self.data_copy['Dist'])//input_div_dist
+                    self.configuracao_sobreposicao_style = {'display':'block',
                                                 'border-left-style': 'outset',
                                                 'border-width': '2px',
                                                 'margin-left': '30px',
                                                 'margin-top': '15px'
                                                }
-        return
-    
-
-    def _overlap_lines(self,div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist,tempo_voltas):
-        if('distancia' in div_radios_value):
-            
-                if set_div_dist:
-                    n_voltas = len(self.data_copy['Dist'])//input_div_dist
-                    
                     for cont, column_name in enumerate(selected_columns_Y):
                         for z in range(1, n_voltas+1):
-                            distance = (np.where(self.data_copy['Dist'] == input_div_dist * z)[0])[0]
+                            lap_location =  input_div_dist * z
+                            while True:
+                                if(not(np.where(self.data_copy['Dist'] == lap_location))[0]):
+                                    lap_location = lap_location + 1
+                                else:
+                                    distance = (np.where(self.data_copy['Dist'] == lap_location)[0])[0]
+                                    break
+
                             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
                                                      x=[self.data_copy[selected_X][distance], self.data_copy[selected_X][distance]],
                                                      mode="lines", 
@@ -256,25 +264,12 @@ class plotarGrafico():
                                           row=cont+1,
                                           col=1
                                          )
-            # Se for por tempo
-        elif('tempo' in div_radios_value):
-
-            for cont, column_name in enumerate(selected_columns_Y):
-                for z in tempo_voltas:
-                    self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-                                                 x=[z, z],
-                                                 mode="lines", 
-                                                 line=go.scatter.Line(color="gray"), 
-                                                 showlegend=False
-                                                ),
-                        row=cont+1,
-                        col=1
-                    )
         self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
 
     def _overlap(self,sobreposicao_button,selected_columns_Y, input_div_dist):
         # sobreposição de voltas
         if (sobreposicao_button) :
+            print(sobreposicao_button)
             n_voltas = len(self.data_copy['Dist'])//input_div_dist
             self.ploted_figure.data = []
             for cont, column_name in enumerate(selected_columns_Y):

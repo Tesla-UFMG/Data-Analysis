@@ -419,14 +419,13 @@ app.layout = html.Div(children=[
                                                                                 },
                                                                                 className='form-label'
                                                                             ),
-                                                                            dbc.Button(
-                                                                                children="Sobrepor",
-                                                                                color="secondary",
-                                                                                className="sovoltas",
-                                                                                id='sobreposicao-button',
-                                                                                style={
-                                                                                    'margin-left':'50px'
-                                                                                }
+                                                                            dbc.Checklist(
+                                                                                options=[
+                                                                                    {"label": "Sobrepor", "value": 1},
+                                                                                ],
+                                                                                id="sobreposicao-button",
+                                                                                value=[],
+                                                                                switch=True,
                                                                             ),
                                                                         ]
                                                                     ),
@@ -830,7 +829,7 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      Input('switches-input-divisao','value'),
      Input('radios-row','value'),
      Input('input-voltas-button-distancia', 'n_clicks'),
-     Input('sobreposicao-button', 'n_clicks')],
+     Input('sobreposicao-button', 'value')],
     [State('dropdown-analise-geral-Y','value'), 
      State('dropdown-analise-geral-X','value'),
      State('filtros-checklist','value'),
@@ -855,7 +854,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
         grafico.plotar(div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
                        selected_columns_Y, selected_X, input_div_dist, tempo_voltas)
         if(1 in div_switches_value):
-            grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist,tempo_voltas)
+            grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist)
             grafico._overlap(sobreposicao_button,selected_columns_Y, input_div_dist)
     else:
         raise PreventUpdate
@@ -865,7 +864,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
             grafico.modal_body_children,
             grafico.plot_loading_children ,
             grafico.ref_line_style ,
-            grafico.configuracao_sobreposicao_style
+            grafico.configuracao_sobreposicao_style,
         ]
 
 
