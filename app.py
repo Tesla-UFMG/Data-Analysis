@@ -808,15 +808,13 @@ def change_button_class(value):
 )
 def hide_index_and_read_file(list_of_contents, list_of_names):     
     leitura_de_arquivos.get_data(list_of_contents, list_of_names)
-    return [
-        leitura_de_arquivos.index_page_style,
+    return [leitura_de_arquivos.index_page_style,
         leitura_de_arquivos.main_page_style,
         leitura_de_arquivos.analise_Y_options,
         leitura_de_arquivos.analis_X_options,
         leitura_de_arquivos.upload_loading_children,
         leitura_de_arquivos.files_alert_open,
-        leitura_de_arquivos.files_alert_children
-    ]
+        leitura_de_arquivos.files_alert_children]
     
 
 
@@ -861,7 +859,9 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                        selected_columns_Y, selected_X, input_div_dist, tempo_voltas)
         if(1 in div_switches_value):
             grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist)
-            grafico._overlap(sobreposicao_button,selected_columns_Y, input_div_dist)
+            grafico._overlap(sobreposicao_button,selected_columns_Y, input_div_dist, selected_X)
+        else:
+            grafico.configuracao_sobreposicao_style = {"display":"none"}
     else:
         raise PreventUpdate
     return [grafico.changes_loading_children,
@@ -871,12 +871,7 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
             grafico.plot_loading_children ,
             grafico.ref_line_style ,
             grafico.configuracao_sobreposicao_style,
-            grafico.lap_division_show_or_hide_style
-        ]
-
-
-
-
+            grafico.lap_division_show_or_hide_style]
 # Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
 @app.callback (
     [Output("figure-id","figure"),
@@ -887,12 +882,13 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
      Input('set-reference-button','n_clicks')],
     [State("figure-id","relayoutData"),
      State("add-line-button", "value"),
-     State('horizontal-input','value')]
+     State('horizontal-input','value'),
+     State('dropdown-analise-geral-X','value'),
+     State('dropdown-analise-geral-Y','value')]
 )
-def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value,selected_X, selected_columns_Y):
     
-    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value, grafico.ploted_figure)
-    
+    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value, selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)    
     return(Pos_Graphic.figure_id_figure,Pos_Graphic.add_line_button_value)
 
 # Callback que habilita e desabilita as configurações de divisao de voltas

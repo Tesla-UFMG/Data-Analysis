@@ -2,7 +2,6 @@
 class Chunks:
     
     @staticmethod
-    def Chunks(lista, n):
-        for i in range(0, len(lista), n):
-            yield lista[i:i + n]
+    def Chunks(lista, distance, next_distance):
+        yield lista[distance : next_distance]
     
