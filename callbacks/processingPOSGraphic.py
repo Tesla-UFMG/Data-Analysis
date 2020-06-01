@@ -7,12 +7,12 @@ import dash_bootstrap_components as dbc
 import numpy as np
 #------------------------------------------#
 
-def somaLista(lista):
+def _soma_lista(lista):
         
     if len(lista) == 1:
         return lista[0]
     else:
-        return lista[0] + somaLista(lista[1:])
+        return lista[0] + _soma_lista(lista[1:])
 
 class processingPOSGraphic:
 
@@ -145,9 +145,9 @@ class processingPOSGraphic:
                     self.tempo_voltas = np.zeros(len(tempo_div_voltas))
 
                     for i in range(0, len(self.tempo_voltas)-1):
-                        self.tempo_voltas[i] = somaLista(tempo_div_voltas[:i+1])
+                        self.tempo_voltas[i] = _soma_lista(tempo_div_voltas[:i+1])
 
-                    self.tempo_voltas[len(tempo_div_voltas)-1] = somaLista(tempo_div_voltas)
+                    self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
         elif(switch_value == [] or not switch_value):
             self.lap_division_style =  {'display': 'none'}
             self.time_division_style = {'display': 'none'}

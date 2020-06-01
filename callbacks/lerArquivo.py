@@ -1,8 +1,10 @@
+#------------- Import Library -------------#
 import pandas as pd
 import io
 import base64
 from dash.exceptions import PreventUpdate
 import dash
+#------------------------------------------#
 
 class lerArquivo:
 
@@ -17,7 +19,7 @@ class lerArquivo:
         self.files_alert_open = False
         self.files_alert_children = []
 
-    def get_data(self, list_of_contents, list_of_names):
+    def _get_data(self, list_of_contents, list_of_names):
 
         if list_of_contents is not None:
 

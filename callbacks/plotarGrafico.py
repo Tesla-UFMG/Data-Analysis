@@ -71,7 +71,7 @@ unidades_dados_hash = {
 }
 
 # Função que faz as conversões de unidade nos dados dos arquivos, aplicando cada função da tabela hash de conversão no seu respectivo dado
-def trataDados(selected_x, selected_y, data):
+def _trata_dados(selected_x, selected_y, data):
 
     selected_y_copy = selected_y.copy()
 
@@ -88,7 +88,7 @@ def trataDados(selected_x, selected_y, data):
     return data
 
 # Funçao de Media Movel
-def smooth(y, box_pts):
+def _smooth(y, box_pts):
 
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
@@ -96,7 +96,7 @@ def smooth(y, box_pts):
     return y_smooth
 
 # Corpo de opções avançadas de filtros
-def element_modal_body(column_name):
+def _element_modal_body(column_name):
         
     html_generated = [
         html.Div(
@@ -223,7 +223,7 @@ def element_modal_body(column_name):
     return html_generated
 
 # Filtro de Passa-Bandas
-def element_bandpass_filter(data, lowcut, highcut, fs, order=5):
+def _element_bandpass_filter(data, lowcut, highcut, fs, order=5):
         
     nyq = 0.5 * fs
     low = lowcut / nyq
@@ -234,7 +234,7 @@ def element_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 # Divide lista
-def Chunks(lista, distance, next_distance):
+def _chunks(lista, distance, next_distance):
         yield lista[distance : next_distance]
 
 class plotarGrafico():
@@ -244,7 +244,7 @@ class plotarGrafico():
         self.data_copy = None
         self.lap_division_show_or_hide_style = {"display":"none"}
         
-    def filtros(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
+    def _filters(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
 
         self.data_copy = data.copy()
@@ -257,11 +257,11 @@ class plotarGrafico():
             if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
 
                 for column in selected_columns_Y:
-                    self.data_copy[column] = smooth(signal.medfilt(self.data_copy[column], filters_subseq), filters_subseq)
+                    self.data_copy[column] = _smooth(signal.medfilt(self.data_copy[column], filters_subseq), filters_subseq)
             elif 'Média Móvel' in filters:
 
                 for column in selected_columns_Y:
-                    self.data_copy[column] = smooth(self.data_copy[column], filters_subseq)
+                    self.data_copy[column] = _smooth(self.data_copy[column], filters_subseq)
             elif 'Filtro Mediana' in filters:
 
                 for column in selected_columns_Y:
@@ -272,7 +272,7 @@ class plotarGrafico():
             for cont, id in enumerate(identificador):
                 if('Passa-Banda' in bandpass_check[cont]):
 
-                    self.data_copy[id['index']] = element_bandpass_filter(self.data_copy[id['index']], 
+                    self.data_copy[id['index']] = _element_bandpass_filter(self.data_copy[id['index']], 
                                                                           bandpass_inf[cont],
                                                                           bandpass_sup[cont],
                                                                           fs=60
@@ -289,15 +289,15 @@ class plotarGrafico():
                                                                        polyorder = savitzky_poly[cont]
                                                                       )
 
-        trataDados(selected_X, selected_columns_Y, self.data_copy)
-
+        _trata_dados(selected_X, selected_columns_Y, self.data_copy)
+    
         return
 
-    def plotar(self, selected_columns_Y, selected_X):
+    def _plot(self, selected_columns_Y, selected_X):
 
         modal_itens = []
         self.debuger = False
-
+                
         self.ploted_figure = make_subplots(rows=len(selected_columns_Y),
                                            cols=1, 
                                            shared_xaxes=True, 
@@ -326,7 +326,7 @@ class plotarGrafico():
                                              col=1
                                             )
 
-            modal_itens.extend(element_modal_body(column_name))
+            modal_itens.extend(_element_modal_body(column_name))
 
         self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
         self.changes_loading_children = []
@@ -391,8 +391,8 @@ class plotarGrafico():
                                             break
                                     break
 
-                            dist_use = list(Chunks(self.data_copy[selected_X], distance, next_distance))
-                            data_use = list(Chunks(self.data_copy[column_name], distance, next_distance))
+                            dist_use = list(_chunks(self.data_copy[selected_X], distance, next_distance))
+                            data_use = list(_chunks(self.data_copy[column_name], distance, next_distance))
                 
                             self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                                                     y=data_use[0], 
@@ -402,8 +402,8 @@ class plotarGrafico():
                                                          col=1,
                                                         )
 
-                        dist_use = list(Chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
-                        data_use = list(Chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))                      
+                        dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
+                        data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))                      
                         self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                                                 y=data_use[0], 
                                                                 name="Volta {}".format(i+2 )
@@ -464,8 +464,8 @@ class plotarGrafico():
                                     break
                             break
 
-                    dist_use = list(Chunks(self.data_copy[selected_X], distance, next_distance))
-                    data_use = list(Chunks(self.data_copy[column_name], distance, next_distance))
+                    dist_use = list(_chunks(self.data_copy[selected_X], distance, next_distance))
+                    data_use = list(_chunks(self.data_copy[column_name], distance, next_distance))
                     offset = self.data_copy[selected_X][distance]
                     self.ploted_figure.add_trace(go.Scatter(x=(dist_use[0]-offset), 
                                                             y=data_use[0], 
@@ -475,8 +475,8 @@ class plotarGrafico():
                                                  col=1,
                                                 )
                 
-                dist_use = list(Chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
-                data_use = list(Chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))
+                dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
+                data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))
                 offset = self.data_copy[selected_X][next_distance]                      
                 self.ploted_figure.add_trace(
                     go.Scatter(x=(dist_use[0]-offset), y=data_use[0], name="Volta {}".format(i+2 )),

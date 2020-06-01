@@ -798,9 +798,9 @@ def change_button_class(value):
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
-def hide_index_and_read_file(list_of_contents, list_of_names):
+def _read_file(list_of_contents, list_of_names):
 
-    leitura_de_arquivos.get_data(list_of_contents, list_of_names)
+    leitura_de_arquivos._get_data(list_of_contents, list_of_names)
     
     return [
         leitura_de_arquivos.index_page_style,
@@ -841,16 +841,16 @@ def hide_index_and_read_file(list_of_contents, list_of_names):
      State({'type':'savitzky-poly', 'index': ALL}, 'value'),
      State('input-div-distancia', 'value')]
 )
-def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
+def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
                              selected_columns_Y, selected_X, filters, filters_subseq, 
                              identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
                              input_div_dist):
 
     if button_plot != 0 or button_apply != 0:
-        grafico.filtros(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
+        grafico._filters(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
                         
-        grafico.plotar(selected_columns_Y, selected_X)
+        grafico._plot(selected_columns_Y, selected_X)
 
         if(1 in div_switches_value):
             grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist)
