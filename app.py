@@ -5,28 +5,19 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_daq as daq
-import pandas as pd
-import numpy as np
-from scipy import signal
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ClientsideFunction, MATCH, ALL
 from dash.exceptions import PreventUpdate
-import io
-import base64
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import dash_bootstrap_components as dbc
 import visdcc
 #------------------------------------------#
 
 #-------------- Import Pages --------------#
-from modules.functions.somaLista import somaLista
-from modules.callbacks.processingPOSGraphic import processingPOSGraphic
-from modules.callbacks.lerArquivo import lerArquivo
-from modules.callbacks.plotarGrafico import plotarGrafico
+from callbacks.processingPOSGraphic import processingPOSGraphic
+from callbacks.lerArquivo import lerArquivo
+from callbacks.plotarGrafico import plotarGrafico
 #------------------------------------------#
 
 #---------- Instanciando Objetos ----------#
-soma_Lista = somaLista()
 Pos_Graphic = processingPOSGraphic()
 leitura_de_arquivos = lerArquivo(None,None)
 grafico = plotarGrafico(None)
@@ -780,6 +771,7 @@ def disable_ref_vertical_button(selected_radio, selected_checklist):
                 })
     else:
         return {'display':'none'}
+
 # Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(
     Output('add-line-button' , 'labelClassName'),
@@ -806,17 +798,19 @@ def change_button_class(value):
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
-def hide_index_and_read_file(list_of_contents, list_of_names):     
+def hide_index_and_read_file(list_of_contents, list_of_names):
+
     leitura_de_arquivos.get_data(list_of_contents, list_of_names)
-    return [leitura_de_arquivos.index_page_style,
+    
+    return [
+        leitura_de_arquivos.index_page_style,
         leitura_de_arquivos.main_page_style,
         leitura_de_arquivos.analise_Y_options,
         leitura_de_arquivos.analis_X_options,
         leitura_de_arquivos.upload_loading_children,
         leitura_de_arquivos.files_alert_open,
-        leitura_de_arquivos.files_alert_children]
-    
-
+        leitura_de_arquivos.files_alert_children
+    ]
 
 # Callback do botão de plotagem de gráficos
 @app.callback(
@@ -851,27 +845,33 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
                              selected_columns_Y, selected_X, filters, filters_subseq, 
                              identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
                              input_div_dist):
+
     if button_plot != 0 or button_apply != 0:
         grafico.filtros(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
                         
-        grafico.plotar(div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
-                       selected_columns_Y, selected_X, input_div_dist, tempo_voltas)
+        grafico.plotar(selected_columns_Y, selected_X)
+
         if(1 in div_switches_value):
             grafico._overlap_lines(div_radios_value,selected_columns_Y,selected_X,input_div_dist, set_div_dist)
+
             grafico._overlap(sobreposicao_button,selected_columns_Y, input_div_dist, selected_X)
         else:
             grafico.configuracao_sobreposicao_style = {"display":"none"}
     else:
         raise PreventUpdate
-    return [grafico.changes_loading_children,
-            grafico.graph_content_children,
-            grafico.modal_button_style,
-            grafico.modal_body_children,
-            grafico.plot_loading_children ,
-            grafico.ref_line_style ,
-            grafico.configuracao_sobreposicao_style,
-            grafico.lap_division_show_or_hide_style]
+
+    return [
+        grafico.changes_loading_children,
+        grafico.graph_content_children,
+        grafico.modal_button_style,
+        grafico.modal_body_children,
+        grafico.plot_loading_children ,
+        grafico.ref_line_style ,
+        grafico.configuracao_sobreposicao_style,
+        grafico.lap_division_show_or_hide_style
+    ]
+
 # Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
 @app.callback (
     [Output("figure-id","figure"),
@@ -880,34 +880,43 @@ def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_
      Input("checklist-horizontal", "value"),
      Input('horizontal-row','value'),
      Input('set-reference-button','n_clicks')],
-    [State("figure-id","relayoutData"),
-     State("add-line-button", "value"),
+    [State("add-line-button", "value"),
      State('horizontal-input','value'),
      State('dropdown-analise-geral-X','value'),
      State('dropdown-analise-geral-Y','value')]
 )
-def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value,selected_X, selected_columns_Y):
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, selected_X, selected_columns_Y):
     
-    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value, selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)    
-    return(Pos_Graphic.figure_id_figure,Pos_Graphic.add_line_button_value)
+    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, 
+                                         selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)
+
+    return(
+        Pos_Graphic.figure_id_figure, 
+        Pos_Graphic.add_line_button_value
+    )
 
 # Callback que habilita e desabilita as configurações de divisao de voltas
 @app.callback(
     [Output('corpo-divisao-voltas','style'),
-    Output('corpo-divisao-tempo','style'),
-    Output('corpo-divisao-distancia','style'),
-    Output('time-input', 'children')],
+     Output('corpo-divisao-tempo','style'),
+     Output('corpo-divisao-distancia','style'),
+     Output('time-input', 'children')],
     [Input('switches-input-divisao','value'),
-    Input('radios-row','value'),
-    Input('divisão-voltas-tempo-input', 'value'),
+     Input('radios-row','value'),
+     Input('divisão-voltas-tempo-input', 'value'),
      Input('input-voltas-button-tempo', 'n_clicks')],
-    [State('time-input', 'children'),
-     State({'type':'input-tempo','index':ALL}, 'value')]
+    [State({'type':'input-tempo','index':ALL}, 'value')]
 )
-def _lap_division(switch_value,radios_value,numero_voltas, n1, children, input_value):
+def _lap_division(switch_value, radios_value, numero_voltas, n1, input_value):
     
-    Pos_Graphic._able_lap_division(switch_value, radios_value,numero_voltas, n1, children, input_value)
-    return (Pos_Graphic.lap_division_style,Pos_Graphic.time_division_style,Pos_Graphic.distance_division_style,Pos_Graphic.time_input_children)
+    Pos_Graphic._able_lap_division(switch_value, radios_value, numero_voltas, n1, input_value)
+
+    return (
+        Pos_Graphic.lap_division_style, 
+        Pos_Graphic.time_division_style, 
+        Pos_Graphic.distance_division_style, 
+        Pos_Graphic.time_input_children
+    )
     
 if __name__ == '__main__':
     app.run_server(debug=True)
