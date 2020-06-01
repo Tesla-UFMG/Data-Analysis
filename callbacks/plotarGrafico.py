@@ -95,6 +95,7 @@ def smooth(y, box_pts):
 
     return y_smooth
 
+# Corpo de opções avançadas de filtros
 def element_modal_body(column_name):
         
     html_generated = [
@@ -221,6 +222,7 @@ def element_modal_body(column_name):
 
     return html_generated
 
+# Filtro de Passa-Bandas
 def element_bandpass_filter(data, lowcut, highcut, fs, order=5):
         
     nyq = 0.5 * fs
@@ -231,6 +233,7 @@ def element_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
     return y
 
+# Divide lista
 def Chunks(lista, distance, next_distance):
         yield lista[distance : next_distance]
 
