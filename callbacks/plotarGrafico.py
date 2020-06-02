@@ -10,8 +10,6 @@ import dash_daq as daq
 import dash_bootstrap_components as dbc
 #------------------------------------------#
 
-converted_data = []
-
 # Dicionário(HASH) com todas as funções de conversão de unidades de cada dado 
 tratamento_dados_hash = {
     'Intensidade_Frenagem': lambda x: x/10,
@@ -79,11 +77,8 @@ def _trata_dados(selected_x, selected_y, data):
         selected_y_copy.append(selected_x)
 
     for coluna in selected_y_copy:
-        if not(coluna in converted_data):
-            if(coluna in tratamento_dados_hash):
-                data[coluna] = tratamento_dados_hash[coluna](data[coluna])
-
-            converted_data.append(coluna)
+        if(coluna in tratamento_dados_hash):
+            data[coluna] = tratamento_dados_hash[coluna](data[coluna])
         
     return data
 
