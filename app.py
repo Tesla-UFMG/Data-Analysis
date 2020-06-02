@@ -330,7 +330,7 @@ app.layout = html.Div(children=[
                                                                                                 value=[]
                                                                                             ),
                                                                                             # Escolher definir valor ou definir no gráfico
-                                                                                            dbc.RadioItems(
+                                                                                            dbc.Checklist(
                                                                                                 id="horizontal-row",
                                                                                                 style={
                                                                                                     'position':'relative',
@@ -340,6 +340,7 @@ app.layout = html.Div(children=[
                                                                                                     {"label": "Definir no gráfico", "value": "horizontal-grafico"},
                                                                                                     {"label": "Definir valor", "value": "horizontal-value", "disable":True},
                                                                                                 ],
+                                                                                                switch=True,
                                                                                                 value=[]
                                                                                             ),
                                                                                             html.Div(
@@ -394,9 +395,7 @@ app.layout = html.Div(children=[
                                                                     ),
                                                                     html.Div(
                                                                         className="divisão-content",
-                                                                        style={
-                                                                                    "display":"none"
-                                                                            },
+                                                                        style={"display":"none"},
                                                                         id = "lap-division-show-or-hide",
                                                                         children=[
                                                                             # Opção para selecionar divisão de voltas
@@ -618,7 +617,6 @@ app.layout = html.Div(children=[
                                                 ]
                                             ),
                                             # Conteudo do Tab
-                                            
                                         ]
                                     ), 
                                 ]

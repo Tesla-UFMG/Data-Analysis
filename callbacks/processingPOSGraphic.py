@@ -41,13 +41,17 @@ class processingPOSGraphic:
                         if(curveNumber != 0):
                             yref = yref + str(curveNumber+1)
 
-                        ploted_figure.add_trace(go.Scatter(y= [clickData['points'][0]['y'],clickData['points'][0]['y']],
-                                                           x = [min(data_copy[selected_X]), max(data_copy[selected_X])],
-                                                           line=dict(color='gray', width=0.5,
-                                                           dash='dot'),
-                                                           showlegend = False
-                                                          )
+                        ploted_figure.add_shape(type="line",
+                                                xref="paper", yref=yref,
+                                                y0=clickData['points'][0]['y'], y1=clickData['points'][0]['y'],
+                                                x0=0, x1=1,
+                                                line=dict(
+                                                    color="black",
+                                                    dash="dot",
+                                                    width=1
+                                                ),
                                                )
+
                         ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
                         self.figure_id_figure = ploted_figure
                         self.add_line_button_value = []
