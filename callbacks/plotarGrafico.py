@@ -403,7 +403,8 @@ class plotarGrafico():
                                                         )
 
                         dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
-                        data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))                      
+                        data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))  
+
                         self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                                                 y=data_use[0], 
                                                                 name="Volta {}".format(i+2 )
@@ -466,7 +467,9 @@ class plotarGrafico():
 
                     dist_use = list(_chunks(self.data_copy[selected_X], distance, next_distance))
                     data_use = list(_chunks(self.data_copy[column_name], distance, next_distance))
+
                     offset = self.data_copy[selected_X][distance]
+
                     self.ploted_figure.add_trace(go.Scatter(x=(dist_use[0]-offset), 
                                                             y=data_use[0], 
                                                             name="Volta {}".format(i+1)
@@ -477,11 +480,16 @@ class plotarGrafico():
                 
                 dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
                 data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))
-                offset = self.data_copy[selected_X][next_distance]                      
-                self.ploted_figure.add_trace(
-                    go.Scatter(x=(dist_use[0]-offset), y=data_use[0], name="Volta {}".format(i+2 )),
-                    row=cont+1, col=1,
-                )
+
+                offset = self.data_copy[selected_X][next_distance]           
+
+                self.ploted_figure.add_trace(go.Scatter(x=(dist_use[0]-offset), 
+                                                        y=data_use[0], 
+                                                        name="Volta {}".format(i+2 )
+                                                        ),
+                                             row=cont+1, 
+                                             col=1,
+                                            )
 
             self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
         
