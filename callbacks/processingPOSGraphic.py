@@ -101,12 +101,7 @@ class processingPOSGraphic:
             else:
                 raise PreventUpdate
     
-    def _able_lap_division(self, switch_value, radios_value, numero_voltas, n1, input_value):
-
-        if (switch_value == [1]):
-
-            self.lap_division_style =  {'display': 'inline-block'}
-
+    def _able_lap_division(self, radios_value, numero_voltas, n1, input_value):
             if ('distancia' == radios_value):
 
                 self.time_division_style = {'display': 'none'}
@@ -152,14 +147,6 @@ class processingPOSGraphic:
                         self.tempo_voltas[i] = _soma_lista(tempo_div_voltas[:i+1])
 
                     self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
-        elif(switch_value == [] or not switch_value):
-            self.lap_division_style =  {'display': 'none'}
-            self.time_division_style = {'display': 'none'}
-            self.distance_division_style =  {'display': 'none'}
-            self.time_input_children = []
-        else:
-            raise PreventUpdate
-
-        return
+            return
         
     

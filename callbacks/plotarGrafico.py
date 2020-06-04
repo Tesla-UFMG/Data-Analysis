@@ -238,6 +238,7 @@ class plotarGrafico():
         self.ploted_figure = ploted_figure
         self.data_copy = None
         self.lap_division_show_or_hide_style = {"display":"none"}
+        self.plot_color = "blue"
         
     def _filters(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
@@ -284,7 +285,7 @@ class plotarGrafico():
                                                                        polyorder = savitzky_poly[cont]
                                                                       )
 
-        _trata_dados(selected_X, selected_columns_Y, self.data_copy)
+        self.data_copy = _trata_dados(selected_X, selected_columns_Y, self.data_copy)
     
         return
 
@@ -305,7 +306,10 @@ class plotarGrafico():
                                                         x=self.data_copy[selected_X], 
                                                         mode="lines", 
                                                         name=column_name, 
-                                                        hovertemplate = "%{y} " + unidades_dados_hash[column_name]
+                                                        hovertemplate = "%{y} " + unidades_dados_hash[column_name],
+                                                        line = dict(
+                                                            color = self.plot_color
+                                                        )
                                                        ), 
                                              row=cont+1, 
                                              col=1
@@ -315,7 +319,10 @@ class plotarGrafico():
                                                         x=self.data_copy[selected_X],
                                                         mode="lines", 
                                                         name=column_name, 
-                                                        hovertemplate = "%{y}"
+                                                        hovertemplate = "%{y}",
+                                                        line = dict(
+                                                            color = self.plot_color
+                                                        )
                                                        ), 
                                              row=cont+1, 
                                              col=1
@@ -348,16 +355,11 @@ class plotarGrafico():
 
         return
     
-    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist):
-
+    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist, lap_highlight):
         if('distancia' in div_radios_value):
-
             if set_div_dist:
-
                 if (input_div_dist and input_div_dist != 0):
-
                     n_voltas = max(self.data_copy['Dist'])//input_div_dist
-
                     self.configuracao_sobreposicao_style = {'display':'block',
                                                             'border-left-style': 'outset',
                                                             'border-width': '2px',
@@ -368,10 +370,8 @@ class plotarGrafico():
 
                     for cont, column_name in enumerate(selected_columns_Y):
                         for i in range(0, n_voltas):
-
                             lap_location =  input_div_dist * i
                             next_lap_location = input_div_dist * (i + 1)
-
                             while True:
                                 if(not(np.where(self.data_copy['Dist'] == lap_location))[0]):
                                     lap_location = lap_location + 1
@@ -385,42 +385,60 @@ class plotarGrafico():
                                             next_distance = (np.where(self.data_copy['Dist'] == next_lap_location)[0])[0]
                                             break
                                     break
-
                             dist_use = list(_chunks(self.data_copy[selected_X], distance, next_distance))
                             data_use = list(_chunks(self.data_copy[column_name], distance, next_distance))
-                
+                            if(lap_highlight):
+                                self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
+                                                                        y=data_use[0], 
+                                                                        name="Volta {}".format(i+1)
+                                                                    ),                                                
+                                                            row=cont+1, 
+                                                            col=1,
+                                                            )
+                            else:
+                                self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
+                                                                        y=data_use[0],
+                                                                        mode = "lines",
+                                                                        name="Volta {}".format(i+1),
+                                                                        line=dict(
+                                                                                    color = self.plot_color
+                                                                                )
+                                                                    ),                                                
+                                                            row=cont+1, 
+                                                            col=1,
+                                                            )
+                        dist_use = list(_chunks(self.data_copy[selected_X], next_distance, len(self.data_copy[selected_X])))
+                        data_use = list(_chunks(self.data_copy[column_name], next_distance, len(self.data_copy[selected_X])))
+                        if(lap_highlight):
                             self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                                                     y=data_use[0], 
-                                                                    name="Volta {}".format(i+1)
-                                                                   ),                                                
-                                                         row=cont+1, 
-                                                         col=1,
+                                                                    name="Volta {}".format(i+2)
+                                                                    ),                                                
+                                                        row=cont+1, 
+                                                        col=1,
                                                         )
-
-                        dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
-                        data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))  
-
-                        self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
-                                                                y=data_use[0], 
-                                                                name="Volta {}".format(i+2 )
-                                                               ),
-                                                     row=cont+1, 
-                                                     col=1, 
-                                                    )
-
-                    self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-                    
+                        else:
+                            self.ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
+                                                                    y=data_use[0],
+                                                                    mode = "lines",
+                                                                    name="Volta {}".format(i+2),
+                                                                        line=dict(
+                                                                                    color= self.plot_color
+                                                                                )
+                                                                    ),                                                               
+                                                        row=cont+1, 
+                                                        col=1,
+                                                        )
+                    self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')                    
                     for cont, column_name in enumerate(selected_columns_Y):
                         for z in range(1, n_voltas+1):
                             lap_location =  input_div_dist * z
-
                             while True:
                                 if(not(np.where(self.data_copy['Dist'] == lap_location))[0]):
                                     lap_location = lap_location + 1
                                 else:
                                     distance = (np.where(self.data_copy['Dist'] == lap_location)[0])[0]
                                     break
-
                             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
                                                                     x=[self.data_copy[selected_X][distance], self.data_copy[selected_X][distance]],
                                                                     mode="lines", 
@@ -429,8 +447,7 @@ class plotarGrafico():
                                                                    ),
                                                          row=cont+1,
                                                          col=1
-                                                        )
-                
+                                                        )                
                 self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
 
     def _overlap(self, sobreposicao_button, selected_columns_Y, input_div_dist, selected_X):
@@ -473,8 +490,8 @@ class plotarGrafico():
                                                  col=1,
                                                 )
                 
-                dist_use = list(_chunks(self.data_copy[selected_X], next_distance, max(self.data_copy[selected_X])))
-                data_use = list(_chunks(self.data_copy[column_name], next_distance, max(self.data_copy[selected_X])))
+                dist_use = list(_chunks(self.data_copy[selected_X], next_distance, len(self.data_copy[selected_X])))
+                data_use = list(_chunks(self.data_copy[column_name], next_distance, len(self.data_copy[selected_X])))
 
                 offset = self.data_copy[selected_X][next_distance]           
 
