@@ -432,7 +432,7 @@ app.layout = html.Div(children=[
                                                                                 style={
                                                                                     'display': 'none'
                                                                                 }
-                                                                            ),                                                                            
+                                                                            ),
                                                                         ]
                                                                     ),
                                                                     # Configuração de Sobreposição de Voltas
@@ -536,153 +536,158 @@ app.layout = html.Div(children=[
                                                     ),
                                                 ]
                                             ),
-                                    html.Div(
-                                        children = [
-                                            html.H6(
-                                                children = [
-                                                    "Cor do grafico"
-                                                ],
-                                                style = {
-                                                    "color" : "black"
-                                                }
-                                            ),
-                                            dcc.Dropdown(
-                                                id = "graphic-plot-color",
-                                                options = [
-                                                    {"label":"Azul", "value":"blue"},
-                                                    {"label":"Preto", "value":"black"}
-                                                ],
-                                                value = "blue",
-                                            )
-                                        ]                                                        
-                                    ),
-                                    html.Div(
-                                        children = [
-                                            html.H6(
-                                                children = [
-                                                    "Ajustar a Divisao de Voltas Manualmente"
+                                            html.Div(
+                                                children=[
+                                                    html.H6(
+                                                        children=[
+                                                            "Cor do grafico"
+                                                        ],
+                                                        style={
+                                                            "color": "black"
+                                                        }
+                                                    ),
+                                                    dcc.Dropdown(
+                                                        id="graphic-plot-color",
+                                                        options=[
+                                                            {"label": "Azul",
+                                                             "value": "blue"},
+                                                            {"label": "Preto",
+                                                             "value": "black"}
+                                                        ],
+                                                        value="blue",
+                                                    )
                                                 ]
                                             ),
-                                            # Conteudo divisão de voltas
                                             html.Div(
-                                                id="corpo-divisao-voltas",
-                                                className="divisao-sub-content",
-                                                style = {'display': 'inline-block'},
                                                 children=[
-                                                # Checklist de Distancia ou Tempo
-                                                    dbc.RadioItems(
-                                                        id="radios-row",
-                                                        options=[
-                                                            {"label": "Distância", "value": "distancia"},
-                                                            {"label": "Tempo", "value": "tempo"},
-                                                        ],
-                                                        value= "distancia"
-                                                    ),
-                                                    # Conteudo do Item selecionado
-                                                    html.Div(
-                                                        className="checklist-selected",
+                                                    html.H6(
                                                         children=[
-                                                        # Se Tempo for Selecionado
-                                                        html.Div(
-                                                            className="if-tempo-selected",
-                                                            id="corpo-divisao-tempo",
-                                                            style={
-                                                                'display': 'none'},
-                                                            children=[
-                                                            # Selecionar número de voltas
-                                                                html.H4(
-                                                                    children='Número de Voltas:',
-                                                                    className='form-label',
-                                                                    style={
-                                                                        'margin-top': '8px', 'font-size': '1rem'}
-                                                                ),
-                                                                daq.NumericInput(
-                                                                    id='divisão-voltas-tempo-input',
-                                                                    value=1,
-                                                                    min=1,
-                                                                    max=100,
-                                                                    style={
-                                                                        'position': 'relative',
-                                                                        'top': '4px'
-                                                                    }
-                                                                ),
-                                                                # Setando o valor de cada volta
-                                                                html.H4(
-                                                                    children='Defina o tempo de cada volta (s.ms):',
-                                                                    className='form-label',
-                                                                    style={
-                                                                        'margin-top': '8px', 'font-size': '1rem'}
-                                                                ),
-                                                                html.Div(
-                                                                    id="time-input",
-                                                                    style={
-                                                                        'margin-top': '8px',
-                                                                        'margin-bottom': '8px'
-                                                                    },
-                                                                    children=[]
-                                                                ),
-                                                                dbc.Button(
-                                                                    children="Set",
-                                                                    color="secondary",
-                                                                    className="set-numero-voltas",
-                                                                    id='input-voltas-button-tempo',
-                                                                    style={
-                                                                        'margin-bottom': '6px'
-                                                                    }
-                                                                ),
-                                                            ]
-                                                        ),
-                                                        # Se Distancia for Selecionado
-                                                        html.Div(
-                                                            className="if-dist-selected",
-                                                            id="corpo-divisao-distancia",
-                                                            style={
-                                                                'display': 'none'
-                                                            },
-                                                            children=[
-                                                                # Selecionar a distância das voltas
-                                                                html.H4(
-                                                                children='Distância das Voltas:',
-                                                                className='form-label',
-                                                                style={
-                                                                    'margin-top': '8px', 'font-size': '1rem'
-                                                                }
-                                                                ),
-                                                                dbc.InputGroup(
-                                                                    [dbc.InputGroupAddon("Distancia", addon_type="prepend"),
-                                                                     dbc.Input(
-                                                                        placeholder="Distância em metros",
-                                                                        type="number",
-                                                                        min=0,
-                                                                        id="input-div-distancia",
-                                                                        value = 278
-                                                                    )
-                                                                    ],
-                                                                    style={
-                                                                        'margin-top': '8px',
-                                                                        'margin-bottom': '8px'
-                                                                    }
-                                                                ),
-                                                                    dbc.Button(
-                                                                        children="Set",
-                                                                        color="secondary",
-                                                                        className="set-distancia-voltas",
-                                                                        id='input-voltas-button-distancia',
+                                                            "Ajustar a Divisao de Voltas Manualmente"
+                                                        ]
+                                                    ),
+                                                    # Conteudo divisão de voltas
+                                                    html.Div(
+                                                        id="corpo-divisao-voltas",
+                                                        className="divisao-sub-content",
+                                                        style={
+                                                            'display': 'inline-block'},
+                                                        children=[
+                                                            # Checklist de Distancia ou Tempo
+                                                            dbc.RadioItems(
+                                                                id="radios-row",
+                                                                options=[
+                                                                    {"label": "Distância",
+                                                                     "value": "distancia"},
+                                                                    {"label": "Tempo",
+                                                                     "value": "tempo"},
+                                                                ],
+                                                                value="distancia"
+                                                            ),
+                                                            # Conteudo do Item selecionado
+                                                            html.Div(
+                                                                className="checklist-selected",
+                                                                children=[
+                                                                    # Se Tempo for Selecionado
+                                                                    html.Div(
+                                                                        className="if-tempo-selected",
+                                                                        id="corpo-divisao-tempo",
                                                                         style={
-                                                                            'margin-bottom': '6px'
-                                                                        },
-                                                                        n_clicks = 1
+                                                                            'display': 'none'},
+                                                                        children=[
+                                                                            # Selecionar número de voltas
+                                                                            html.H4(
+                                                                                children='Número de Voltas:',
+                                                                                className='form-label',
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'}
+                                                                            ),
+                                                                            daq.NumericInput(
+                                                                                id='divisão-voltas-tempo-input',
+                                                                                value=1,
+                                                                                min=1,
+                                                                                max=100,
+                                                                                style={
+                                                                                    'position': 'relative',
+                                                                                    'top': '4px'
+                                                                                }
+                                                                            ),
+                                                                            # Setando o valor de cada volta
+                                                                            html.H4(
+                                                                                children='Defina o tempo de cada volta (s.ms):',
+                                                                                className='form-label',
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'}
+                                                                            ),
+                                                                            html.Div(
+                                                                                id="time-input",
+                                                                                style={
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px'
+                                                                                },
+                                                                                children=[]
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                children="Set",
+                                                                                color="secondary",
+                                                                                className="set-numero-voltas",
+                                                                                id='input-voltas-button-tempo',
+                                                                                style={
+                                                                                    'margin-bottom': '6px'
+                                                                                }
+                                                                            ),
+                                                                        ]
                                                                     ),
-                                                            ]
-                                                        ),
+                                                                    # Se Distancia for Selecionado
+                                                                    html.Div(
+                                                                        className="if-dist-selected",
+                                                                        id="corpo-divisao-distancia",
+                                                                        style={
+                                                                            'display': 'none'
+                                                                        },
+                                                                        children=[
+                                                                            # Selecionar a distância das voltas
+                                                                            html.H4(
+                                                                                children='Distância das Voltas:',
+                                                                                className='form-label',
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'
+                                                                                }
+                                                                            ),
+                                                                            dbc.InputGroup(
+                                                                                [dbc.InputGroupAddon("Distancia", addon_type="prepend"),
+                                                                                 dbc.Input(
+                                                                                    placeholder="Distância em metros",
+                                                                                    type="number",
+                                                                                    min=0,
+                                                                                    id="input-div-distancia",
+                                                                                    value=278
+                                                                                )
+                                                                                ],
+                                                                                style={
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px'
+                                                                                }
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                children="Set",
+                                                                                color="secondary",
+                                                                                className="set-distancia-voltas",
+                                                                                id='input-voltas-button-distancia',
+                                                                                style={
+                                                                                    'margin-bottom': '6px'
+                                                                                },
+                                                                                n_clicks=1
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                ]
+                                                            ),
                                                         ]
                                                     ),
                                                 ]
-                                            ),
-                                        ]
-                                    )
+                                            )
                                             # Conteudo do Tab
-                                    ]
+                                        ]
                                     ),
 
                                 ]
@@ -1001,9 +1006,10 @@ def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, 
      Input('input-voltas-button-tempo', 'n_clicks')],
     [State({'type': 'input-tempo', 'index': ALL}, 'value')]
 )
-def _lap_division (radios_value, numero_voltas, n1, input_value):
+def _lap_division(radios_value, numero_voltas, n1, input_value):
 
-    Pos_Graphic._able_lap_division(radios_value, numero_voltas, n1, input_value)
+    Pos_Graphic._able_lap_division(
+        radios_value, numero_voltas, n1, input_value)
 
     return (
         Pos_Graphic.time_division_style,

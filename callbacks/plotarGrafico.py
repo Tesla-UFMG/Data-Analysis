@@ -329,14 +329,12 @@ class plotarGrafico():
                                             )
 
             modal_itens.extend(_element_modal_body(column_name))
-
         self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
         self.changes_loading_children = []
         self.graph_content_children = dcc.Graph(
                                             figure= self.ploted_figure,
                                             id='figure-id',
-                                            config={'autosizable' : True}
-                                        ),
+                                            config={'autosizable' : True})                                          
         self.modal_button_style = {'display':'inline'}
         self.modal_body_children = modal_itens
         self.plot_loading_children = []
@@ -402,7 +400,8 @@ class plotarGrafico():
                                                                         name="Volta {}".format(i+1),
                                                                         line=dict(
                                                                                     color = self.plot_color
-                                                                                )
+                                                                                ),
+                                                                        showlegend=False
                                                                     ),                                                
                                                             row=cont+1, 
                                                             col=1,
@@ -424,7 +423,8 @@ class plotarGrafico():
                                                                     name="Volta {}".format(i+2),
                                                                         line=dict(
                                                                                     color= self.plot_color
-                                                                                )
+                                                                                ),
+                                                                    showlegend=False
                                                                     ),                                                               
                                                         row=cont+1, 
                                                         col=1,
