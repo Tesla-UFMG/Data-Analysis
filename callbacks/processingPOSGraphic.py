@@ -25,7 +25,8 @@ class processingPOSGraphic:
         self.distance_division_style =  {'display': 'none'}
         self.time_input_children = []
     
-    def _display_reference_lines(self, clickData, checklist_horizontal, radios_value, n1, add_line, input_value, selected_X, selected_columns_Y, ploted_figure, data_copy):
+    def _display_reference_lines(self, clickData, checklist_horizontal, radios_value, n1, add_line, input_value, selected_X, 
+                                 selected_columns_Y, ploted_figure, data_copy):
         
         if clickData is not None:
 
@@ -53,6 +54,7 @@ class processingPOSGraphic:
                                                )
 
                         ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
+                        
                         self.figure_id_figure = ploted_figure
                         self.add_line_button_value = []
                         
@@ -74,6 +76,7 @@ class processingPOSGraphic:
                                           width=1.5
                                       )
                                      )
+                                     
                 self.figure_id_figure = last_figure
                 self.add_line_button_value = dash.no_update
 
@@ -84,6 +87,7 @@ class processingPOSGraphic:
             if('horizontal-value' in radios_value) and ("Horizontal" in checklist_horizontal):
 
                 if n1:
+
                     ploted_figure.add_shape(type="line",
                                             xref="paper", yref="y",
                                             y0=input_value, y1=input_value,
@@ -94,6 +98,7 @@ class processingPOSGraphic:
                                                 width=1
                                             ),
                                            )
+
                     self.figure_id_figure = ploted_figure
                     self.add_line_button_value = []
 
@@ -102,51 +107,51 @@ class processingPOSGraphic:
                 raise PreventUpdate
     
     def _able_lap_division(self, radios_value, numero_voltas, n1, input_value):
-            if ('distancia' == radios_value):
 
-                self.time_division_style = {'display': 'none'}
-                self.distance_division_style = {'display': 'inline-block'}
-            elif ('tempo' == radios_value):
+        if ('distancia' == radios_value):
 
-                self.time_division_style = {'display': 'inline-block'}
-                self.distance_division_style =  {'display': 'none'}
+            self.time_division_style = {'display': 'none'}
+            self.distance_division_style = {'display': 'inline-block'}
+        elif ('tempo' == radios_value):
 
-                new_input = html.Div([
-                    dbc.InputGroup(
-                        [dbc.InputGroupAddon(("Volta {}:".format(i)),
-                                              addon_type="prepend"
-                                            ),
-                         dbc.Input(
-                                id={
-                                    'type': 'input-tempo',
-                                    'index': 'input-volta-{}'
-                                },
-                                type="number",
-                                min=0,
-                                step=0.01,
-                                value = 0
-                         )
-                        ]
-                    )
-                    for i in range(1, numero_voltas+1)
-                ])
+            self.time_division_style = {'display': 'inline-block'}
+            self.distance_division_style =  {'display': 'none'}
 
-                self.time_input_children.insert(0, new_input)
+            new_input = html.Div([
+                dbc.InputGroup(
+                    [dbc.InputGroupAddon(("Volta {}:".format(i)), addon_type="prepend"),
+                        dbc.Input(
+                            id={
+                                'type': 'input-tempo',
+                                'index': 'input-volta-{}'
+                            },
+                            type="number",
+                            min=0,
+                            step=0.01,
+                            value = 0
+                        )
+                    ]
+                )
+                for i in range(1, numero_voltas+1)
+            ])
 
-                for i in range(1, len(self.time_input_children)):
-                    self.time_input_children.pop(i)
+            self.time_input_children.insert(0, new_input)
 
-                tempo_div_voltas = [0]
-                if n1:
-                    tempo_div_voltas = input_value
+            for i in range(1, len(self.time_input_children)):
+                self.time_input_children.pop(i)
 
-                    # Seta o array com os valores das voltas somados
-                    self.tempo_voltas = np.zeros(len(tempo_div_voltas))
+            tempo_div_voltas = [0]
+            if n1:
+                tempo_div_voltas = input_value
 
-                    for i in range(0, len(self.tempo_voltas)-1):
-                        self.tempo_voltas[i] = _soma_lista(tempo_div_voltas[:i+1])
+                # Seta o array com os valores das voltas somados
+                self.tempo_voltas = np.zeros(len(tempo_div_voltas))
 
-                    self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
-            return
+                for i in range(0, len(self.tempo_voltas)-1):
+                    self.tempo_voltas[i] = _soma_lista(tempo_div_voltas[:i+1])
+
+                self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
+                
+        return
         
     

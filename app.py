@@ -31,15 +31,6 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.scripts.config.serve_locally = True
 
-#--------------- Global var ---------------#
-num_dados = None  # Número de colunas dos arquivos de dados
-data = None  # Pandas Dataframe com os dados utilizados
-ploted_figure = None  # Armazena os dados da dcc.Graph() figure plotada
-# Armazena os valores dos tempos de cada volta (divisão de voltas)
-tempo_voltas = [0]
-#------------------------------------------#
-
-
 # LAYOUT DA PAGINA
 app.layout = html.Div(children=[
     # Layout NavBar
@@ -659,8 +650,7 @@ app.layout = html.Div(children=[
                                                                                     placeholder="Distância em metros",
                                                                                     type="number",
                                                                                     min=0,
-                                                                                    id="input-div-distancia",
-                                                                                    value=278
+                                                                                    id="input-div-distancia"
                                                                                 )
                                                                                 ],
                                                                                 style={
@@ -686,10 +676,8 @@ app.layout = html.Div(children=[
                                                     ),
                                                 ]
                                             )
-                                            # Conteudo do Tab
                                         ]
                                     ),
-
                                 ]
                             )
                         ]
@@ -742,7 +730,6 @@ app.layout = html.Div(children=[
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
 
-
 @app.callback(
     Output({'type': 'advchanges-collapse', 'index': MATCH}, 'is_open'),
     [Input({'type': 'advchanges-button-collapse', 'index': MATCH}, 'n_clicks')],
@@ -776,8 +763,6 @@ def disable_inputs_savitzky(checklist):
     return [True, True]
 
 # Callback de abrir/fechar o modal de configurações avançadas
-
-
 @app.callback(
     Output("modal-graph-config", "is_open"),
     [Input("modal-button", "n_clicks"), Input("close-modal", "n_clicks")],
@@ -791,8 +776,6 @@ def toggle_modal(n1, n2, is_open):
     return is_open
 
 # Callback que habilita e desabilita o INPUT de média móvel
-
-
 @app.callback(
     Output('media-movel-input', 'disabled'),
     [Input('filtros-checklist', 'value')]
@@ -805,8 +788,6 @@ def disable_media_movel_input(selected_filters):
         return True
 
 # Callback que habilita e desabilita os radioItens de linha de referência horizontal
-
-
 @app.callback(
     Output('horizontal-row', 'options'),
     [Input('checklist-horizontal', 'value')]
@@ -821,8 +802,6 @@ def disable_radioItens_ref_horizontal(selected_checklist):
                 {"label": "Definir valor", "value": "horizontal-value", "disabled": True},)
 
 # Callback que habilita e desabilita o INPUT de linha de referencia horizontal
-
-
 @app.callback(
     Output('set-input-div', 'style'),
     [Input('horizontal-row', 'value'),
@@ -840,8 +819,6 @@ def disable_ref_horizontal_input(selected_radio, selected_checklist):
         return {'display': 'none'}
 
 # Callback que habilita e desabilita o botão de acrescentar linha de referência horizontal no gráfico
-
-
 @app.callback(
     Output('graph-control-panel', 'style'),
     [Input('horizontal-row', 'value'),
@@ -857,8 +834,6 @@ def disable_ref_vertical_button(selected_radio, selected_checklist):
         return {'display': 'none'}
 
 # Callback que muda a classe do botão de linhas horizontais, se pressionado
-
-
 @app.callback(
     Output('add-line-button', 'labelClassName'),
     [Input('add-line-button', 'value')]
@@ -869,7 +844,6 @@ def change_button_class(value):
         return 'interations-button-pressed button-int'
 
     return 'interations-button button-int'
-
 
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
@@ -898,8 +872,6 @@ def _read_file(list_of_contents, list_of_names):
     ]
 
 # Callback do botão de plotagem de gráficos
-
-
 @app.callback(
     [Output('apply-adv-changes-loading', 'children'),
      Output('Graph-content', 'children'),
@@ -937,15 +909,18 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
                 input_div_dist, graphic_plot_color_value):
 
     if button_plot != 0 or button_apply != 0:
-        grafico.plot_color = graphic_plot_color_value
+
+        #grafico.plot_color = graphic_plot_color_value
         grafico._filters(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                          bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
         grafico._plot(selected_columns_Y, selected_X)
+
         if(1 in div_switches_value):
-            grafico._overlap_lines(div_radios_value, selected_columns_Y,
-                                   selected_X, input_div_dist, set_div_dist, lap_highlight)
-            grafico._overlap(sobreposicao_button,
-                             selected_columns_Y, input_div_dist, selected_X)
+            
+            grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, 
+                                   input_div_dist, set_div_dist, lap_highlight)
+            grafico._overlap(sobreposicao_button, selected_columns_Y, 
+                             input_div_dist, selected_X)
             grafico.lap_highlight_style = {
                 'margin-top': '8px',
                 'margin-bottom': '8px',
@@ -970,8 +945,6 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
     ]
 
 # Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
-
-
 @app.callback(
     [Output("figure-id", "figure"),
      Output("add-line-button", "value")],
@@ -984,7 +957,8 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
      State('dropdown-analise-geral-X', 'value'),
      State('dropdown-analise-geral-Y', 'value')]
 )
-def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, selected_X, selected_columns_Y):
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, 
+                             selected_X, selected_columns_Y):
 
     Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value,
                                          selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)
@@ -995,8 +969,6 @@ def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, 
     )
 
 # Callback que habilita e desabilita as configurações de divisao de voltas
-
-
 @app.callback(
     [Output('corpo-divisao-tempo', 'style'),
      Output('corpo-divisao-distancia', 'style'),
@@ -1008,8 +980,7 @@ def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, 
 )
 def _lap_division(radios_value, numero_voltas, n1, input_value):
 
-    Pos_Graphic._able_lap_division(
-        radios_value, numero_voltas, n1, input_value)
+    Pos_Graphic._able_lap_division(radios_value, numero_voltas, n1, input_value)
 
     return (
         Pos_Graphic.time_division_style,
