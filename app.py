@@ -5,29 +5,22 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_daq as daq
-import pandas as pd
-import numpy as np
-from scipy import signal
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ClientsideFunction, MATCH, ALL
 from dash.exceptions import PreventUpdate
-import io
-import base64
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import dash_bootstrap_components as dbc
 import visdcc
 #------------------------------------------#
 
 #-------------- Import Pages --------------#
-from modules.functions.trataDados import Trata_dados
-from modules.functions.filtros import Filtros
-from modules.callbacks.divVoltas import DivVoltas
+from callbacks.processingPOSGraphic import processingPOSGraphic
+from callbacks.lerArquivo import lerArquivo
+from callbacks.plotarGrafico import plotarGrafico
 #------------------------------------------#
 
 #---------- Instanciando Objetos ----------#
-dados_tratados = Trata_dados()
-filtros = Filtros()
-divisao_voltas = DivVoltas()
+Pos_Graphic = processingPOSGraphic()
+leitura_de_arquivos = lerArquivo(None, None)
+grafico = plotarGrafico(None)
 #------------------------------------------#
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -38,23 +31,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.scripts.config.serve_locally = True
 
-#--------------- Global var ---------------#
-num_dados = None #Número de colunas dos arquivos de dados
-data = None #Pandas Dataframe com os dados utilizados
-data_copy = None #Cópia da variável data para a 
-eixoY = None #Armazena as colunas que estão plotadas
-ploted_figure = None #Armazena os dados da dcc.Graph() figure plotada
-tempo_voltas = [0] #Armazena os valores dos tempos de cada volta (divisão de voltas)
-#------------------------------------------#
-
-
 # LAYOUT DA PAGINA
 app.layout = html.Div(children=[
     # Layout NavBar
     html.Header(
         children=[
             html.Nav(
-                style={"background-color":"black"},
+                style={"background-color": "black"},
                 className="navbar navbar-expand-md navbar-dark",
                 children=[
                     html.A(
@@ -71,7 +54,7 @@ app.layout = html.Div(children=[
                         children=[
                             html.Ul(
                                 className="navbar-nav ml-5",
-                                children = [
+                                children=[
                                     html.Li(
                                         className="nav-item",
                                         children=[
@@ -102,12 +85,12 @@ app.layout = html.Div(children=[
                                         children="Salvar",
                                         outline=True,
                                         color="success"
-                                    ), 
+                                    ),
                                     dbc.Button(
                                         children="Exportar",
                                         color="success"
                                     )
-                                ],                               
+                                ],
                             ),
                         ]
                     )
@@ -128,11 +111,11 @@ app.layout = html.Div(children=[
                 duration=5000,
                 dismissable=True,
                 color="danger",
-                fade = True,
+                fade=True,
                 id="upload-files-alert",
                 is_open=False,
                 className="mx-4",
-                style={"top":"15px"}
+                style={"top": "15px"}
             ),
             # Layout da parte central, com o escrito e botao
             html.Div(
@@ -165,12 +148,12 @@ app.layout = html.Div(children=[
                                                     dcc.Upload(
                                                         children=[
                                                             'Upload de arquivos'
-                                                        ], 
+                                                        ],
                                                         id="upload-data",
                                                         className="btn btn-primary px-4 py-3 upload-btn",
                                                         style={
-                                                            'background-color':'#4ed840',
-                                                            'border-color':'#0d0d0d'
+                                                            'background-color': '#4ed840',
+                                                            'border-color': '#0d0d0d'
                                                         },
                                                         multiple=True
                                                     ),
@@ -198,13 +181,13 @@ app.layout = html.Div(children=[
                         parent_className='justify-content-center set-eighty-width',
                         content_className='tab-content',
                         colors={
-                            'border':'black',
-                            'primary':'#4ed840',
-                            'background':'grey'
+                            'border': 'black',
+                            'primary': '#4ed840',
+                            'background': 'grey'
                         },
                         children=[
                             dcc.Tab(
-                                #Primeiro Tab (Analise Geral)
+                                # Primeiro Tab (Analise Geral)
                                 label='Análise Geral',
                                 value='tab-1',
                                 children=[
@@ -219,7 +202,7 @@ app.layout = html.Div(children=[
                                                     html.H1(
                                                         children=[
                                                             'Opções de Plotagem'
-                                                        ]   
+                                                        ]
                                                     )
                                                 ]
                                             ),
@@ -257,7 +240,8 @@ app.layout = html.Div(children=[
                                                             ),
                                                             html.Div(
                                                                 className='config-pre-plot',
-                                                                style={'display':'flex'},
+                                                                style={
+                                                                    'display': 'flex'},
                                                                 children=[
                                                                     # Configuraçao Filtros
                                                                     html.Div(
@@ -272,18 +256,23 @@ app.layout = html.Div(children=[
                                                                             dcc.Checklist(
                                                                                 id='filtros-checklist',
                                                                                 options=[
-                                                                                    {'label': 'Média Móvel', 'value': 'Média Móvel'},
-                                                                                    {'label': 'Filtro Mediana', 'value': 'Filtro Mediana'}
+                                                                                    {'label': 'Média Móvel',
+                                                                                        'value': 'Média Móvel'},
+                                                                                    {'label': 'Filtro Mediana',
+                                                                                        'value': 'Filtro Mediana'}
                                                                                 ],
-                                                                                inputStyle = {'margin-right':'3px'},
-                                                                                labelStyle =  {'margin-right':'8px'},
+                                                                                inputStyle={
+                                                                                    'margin-right': '3px'},
+                                                                                labelStyle={
+                                                                                    'margin-right': '8px'},
                                                                                 value=[]
                                                                             ),
                                                                             # Selecionar valor de subsequencia do filtro
                                                                             html.H4(
                                                                                 children='Subsequência do filtro média móvel',
                                                                                 className='form-label',
-                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'}
                                                                             ),
                                                                             daq.NumericInput(
                                                                                 id='media-movel-input',
@@ -298,7 +287,7 @@ app.layout = html.Div(children=[
                                                                         id='config-ref-line',
                                                                         className='ref-line',
                                                                         style={
-                                                                            'display':'none'
+                                                                            'display': 'none'
                                                                         },
                                                                         children=[
                                                                             # Título
@@ -324,7 +313,7 @@ app.layout = html.Div(children=[
                                                                                     html.Div(
                                                                                         className='definir-valor-horizontal',
                                                                                         style={
-                                                                                            'position':'relative',
+                                                                                            'position': 'relative',
                                                                                             'left': '10px'
                                                                                         },
                                                                                         children=[
@@ -334,28 +323,31 @@ app.layout = html.Div(children=[
                                                                                                 options=[
                                                                                                     {'label': 'Linha Horizontal', 'value': 'Horizontal'}
                                                                                                 ],
-                                                                                                inputStyle = {'margin-right':'8px'},
-                                                                                                labelStyle =  {'margin-right':'8px'},
+                                                                                                inputStyle={
+                                                                                                    'margin-right': '8px'},
+                                                                                                labelStyle={
+                                                                                                    'margin-right': '8px'},
                                                                                                 value=[]
                                                                                             ),
                                                                                             # Escolher definir valor ou definir no gráfico
-                                                                                            dbc.RadioItems(
+                                                                                            dbc.Checklist(
                                                                                                 id="horizontal-row",
                                                                                                 style={
-                                                                                                    'position':'relative',
+                                                                                                    'position': 'relative',
                                                                                                     'left': '10px'
                                                                                                 },
                                                                                                 options=[
                                                                                                     {"label": "Definir no gráfico", "value": "horizontal-grafico"},
-                                                                                                    {"label": "Definir valor", "value": "horizontal-value", "disable":True},
+                                                                                                    {"label": "Definir valor", "value": "horizontal-value", "disable": True},
                                                                                                 ],
+                                                                                                switch=True,
                                                                                                 value=[]
                                                                                             ),
                                                                                             html.Div(
                                                                                                 className='horizontal-input-set',
                                                                                                 id='set-input-div',
                                                                                                 style={
-                                                                                                    'display':'none'
+                                                                                                    'display': 'none'
                                                                                                 },
                                                                                                 children=[
                                                                                                     daq.NumericInput(
@@ -366,8 +358,8 @@ app.layout = html.Div(children=[
                                                                                                     ),
                                                                                                     dbc.Button(
                                                                                                         style={
-                                                                                                            'position':'relative',
-                                                                                                            'left':'15px'
+                                                                                                            'position': 'relative',
+                                                                                                            'left': '15px'
                                                                                                         },
                                                                                                         children="Set",
                                                                                                         color="secondary",
@@ -382,14 +374,14 @@ app.layout = html.Div(children=[
                                                                                                 className="interactive-graph-box",
                                                                                                 style={
                                                                                                     'margin': '10px 0px 0px 40px'
-                                                                                                    },
+                                                                                                },
                                                                                                 children=[
                                                                                                     dcc.Checklist(
                                                                                                         id="add-line-button",
                                                                                                         labelClassName="interations-button button-int",
                                                                                                         options=[
-                                                                                                            {'label':'+ Line', 'value':'Line'}
-                                                                                                            ],
+                                                                                                            {'label': '+ Line', 'value': 'Line'}
+                                                                                                        ],
                                                                                                         inputClassName="bg-plus",
                                                                                                         value=[]
                                                                                                     )
@@ -398,7 +390,40 @@ app.layout = html.Div(children=[
                                                                                         ]
                                                                                     ),
                                                                                 ]
-                                                                            ),     
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                    html.Div(
+                                                                        className="divisão-content",
+                                                                        style={
+                                                                            "display": "none"},
+                                                                        id="lap-division-show-or-hide",
+                                                                        children=[
+                                                                            # Opção para selecionar divisão de voltas
+                                                                            dbc.Checklist(
+                                                                                options=[
+                                                                                    {"label": "Divisão de Voltas", "value": 1},
+                                                                                ],
+                                                                                id="switches-input-divisao",
+                                                                                value=[],
+                                                                                switch=True,
+                                                                                style={
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px',
+                                                                                    'font-size': '18px'
+                                                                                }
+                                                                            ),
+                                                                            dbc.Checklist(
+                                                                                options=[
+                                                                                    {"label": "Destacar as Voltas", "value": 1},
+                                                                                ],
+                                                                                id="switches-destacar-voltas",
+                                                                                value=[],
+                                                                                switch=True,
+                                                                                style={
+                                                                                    'display': 'none'
+                                                                                }
+                                                                            ),
                                                                         ]
                                                                     ),
                                                                     # Configuração de Sobreposição de Voltas
@@ -406,7 +431,7 @@ app.layout = html.Div(children=[
                                                                         className="config-sobreposicao",
                                                                         id="config-sobreposicao",
                                                                         style={
-                                                                            'display':'none'
+                                                                            'display': 'none'
                                                                         },
                                                                         children=[
                                                                             # Título
@@ -419,14 +444,14 @@ app.layout = html.Div(children=[
                                                                                 },
                                                                                 className='form-label'
                                                                             ),
-                                                                            dbc.Button(
-                                                                                children="Sobrepor",
-                                                                                color="secondary",
-                                                                                className="sovoltas",
-                                                                                id='sobreposicao-button',
-                                                                                style={
-                                                                                    'margin-left':'50px'
-                                                                                }
+                                                                            dbc.Checklist(
+                                                                                options=[
+                                                                                    {"label": "Sobrepor",
+                                                                                        "value": 1},
+                                                                                ],
+                                                                                id="sobreposicao-button",
+                                                                                value=[],
+                                                                                switch=True,
                                                                             ),
                                                                         ]
                                                                     ),
@@ -439,15 +464,18 @@ app.layout = html.Div(children=[
                                                                 children=[
                                                                     'Plotar',
                                                                     dbc.Spinner(
-                                                                        spinner_style = {'display':'inline-block', 'margin':'0 0 0 .5rem'},
+                                                                        spinner_style={
+                                                                            'display': 'inline-block', 'margin': '0 0 0 .5rem'},
                                                                         size='sm',
                                                                         children=[
-                                                                            html.Div(id="plot-loading")
+                                                                            html.Div(
+                                                                                id="plot-loading")
                                                                         ]
                                                                     )
                                                                 ],
                                                                 color="success",
-                                                                style={'margin':'20px 0px 20px 0px'},
+                                                                style={
+                                                                    'margin': '20px 0px 20px 0px'},
                                                                 n_clicks_timestamp=0
                                                             )
                                                         ]
@@ -460,13 +488,15 @@ app.layout = html.Div(children=[
                                                 children=[
                                                     dcc.Graph(
                                                         id='figure-id',
-                                                        config={'autosizable' : False},
-                                                        style={'display':'none'}
+                                                        config={
+                                                            'autosizable': False},
+                                                        style={
+                                                            'display': 'none'}
                                                     ),
                                                 ]
                                             ),
                                             # Botão de Opções Avançadas
-                                            html.Br(), 
+                                            html.Br(),
                                             dbc.Button(
                                                 children="Opções avançadas",
                                                 color="secondary",
@@ -477,24 +507,7 @@ app.layout = html.Div(children=[
                                     )
                                 ]
                             ),
-                            # #Segundo Tab (Grafico Customizados)
-                            # dcc.Tab(
-                            #     label='Gráficos customizados',
-                            #     value='tab-2',
-                            #     children=[
-                            #         dcc.Graph(
-                            #             figure={
-                            #                 'data': [
-                            #                     {'x': [1, 2, 3], 'y': [1, 4, 1],
-                            #                         'type': 'bar', 'name': 'SF'},
-                            #                     {'x': [1, 2, 3], 'y': [1, 2, 3],
-                            #                     'type': 'bar', 'name': u'Montréal'},
-                            #                 ]
-                            #             }
-                            #         )
-                            #     ]
-                            # ),
-                            #Terceiro Tab (Configuraçoes)
+                            # Terceiro Tab (Configuraçoes)
                             dcc.Tab(
                                 label='Configurações',
                                 value='tab-3',
@@ -510,42 +523,56 @@ app.layout = html.Div(children=[
                                                     html.H1(
                                                         children=[
                                                             'Configurações Gerais'
-                                                        ]   
+                                                        ]
+                                                    ),
+                                                ]
+                                            ),
+                                            html.Div(
+                                                children=[
+                                                    html.H6(
+                                                        children=[
+                                                            "Cor do grafico"
+                                                        ],
+                                                        style={
+                                                            "color": "black"
+                                                        }
+                                                    ),
+                                                    dcc.Dropdown(
+                                                        id="graphic-plot-color",
+                                                        options=[
+                                                            {"label": "Azul",
+                                                             "value": "blue"},
+                                                            {"label": "Preto",
+                                                             "value": "black"}
+                                                        ],
+                                                        value="blue",
                                                     )
                                                 ]
                                             ),
-                                            # Conteudo do Tab
                                             html.Div(
-                                                className="divisão-content",
                                                 children=[
-                                                    # Opção para selecionar divisão de voltas
-                                                    dbc.Checklist(
-                                                        options=[
-                                                            {"label": "Divisão de Voltas", "value": 1},
-                                                        ],
-                                                        id="switches-input-divisao",
-                                                        value=[],
-                                                        switch=True,
-                                                        style={
-                                                            'margin-top':'8px',
-                                                            'margin-bottom':'8px',
-                                                            'font-size':'18px'
-                                                        }
+                                                    html.H6(
+                                                        children=[
+                                                            "Ajustar a Divisao de Voltas Manualmente"
+                                                        ]
                                                     ),
                                                     # Conteudo divisão de voltas
                                                     html.Div(
                                                         id="corpo-divisao-voltas",
                                                         className="divisao-sub-content",
-                                                        style={'display':'none'},
+                                                        style={
+                                                            'display': 'inline-block'},
                                                         children=[
                                                             # Checklist de Distancia ou Tempo
                                                             dbc.RadioItems(
                                                                 id="radios-row",
                                                                 options=[
-                                                                    {"label": "Distância", "value": "distancia"},
-                                                                    {"label": "Tempo", "value": "tempo"},
+                                                                    {"label": "Distância",
+                                                                     "value": "distancia"},
+                                                                    {"label": "Tempo",
+                                                                     "value": "tempo"},
                                                                 ],
-                                                                value=[]
+                                                                value="distancia"
                                                             ),
                                                             # Conteudo do Item selecionado
                                                             html.Div(
@@ -555,13 +582,15 @@ app.layout = html.Div(children=[
                                                                     html.Div(
                                                                         className="if-tempo-selected",
                                                                         id="corpo-divisao-tempo",
-                                                                        style={'display':'none'},
+                                                                        style={
+                                                                            'display': 'none'},
                                                                         children=[
                                                                             # Selecionar número de voltas
                                                                             html.H4(
                                                                                 children='Número de Voltas:',
                                                                                 className='form-label',
-                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'}
                                                                             ),
                                                                             daq.NumericInput(
                                                                                 id='divisão-voltas-tempo-input',
@@ -569,23 +598,24 @@ app.layout = html.Div(children=[
                                                                                 min=1,
                                                                                 max=100,
                                                                                 style={
-                                                                                    'position':'relative',
-                                                                                    'top':'4px'
+                                                                                    'position': 'relative',
+                                                                                    'top': '4px'
                                                                                 }
                                                                             ),
                                                                             # Setando o valor de cada volta
                                                                             html.H4(
                                                                                 children='Defina o tempo de cada volta (s.ms):',
                                                                                 className='form-label',
-                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'}
                                                                             ),
                                                                             html.Div(
                                                                                 id="time-input",
                                                                                 style={
-                                                                                    'margin-top':'8px',
-                                                                                    'margin-bottom':'8px'
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px'
                                                                                 },
-                                                                                children= []
+                                                                                children=[]
                                                                             ),
                                                                             dbc.Button(
                                                                                 children="Set",
@@ -593,7 +623,7 @@ app.layout = html.Div(children=[
                                                                                 className="set-numero-voltas",
                                                                                 id='input-voltas-button-tempo',
                                                                                 style={
-                                                                                    'margin-bottom':'6px'
+                                                                                    'margin-bottom': '6px'
                                                                                 }
                                                                             ),
                                                                         ]
@@ -602,26 +632,30 @@ app.layout = html.Div(children=[
                                                                     html.Div(
                                                                         className="if-dist-selected",
                                                                         id="corpo-divisao-distancia",
-                                                                        style={'display':'none'},
+                                                                        style={
+                                                                            'display': 'none'
+                                                                        },
                                                                         children=[
                                                                             # Selecionar a distância das voltas
                                                                             html.H4(
                                                                                 children='Distância das Voltas:',
                                                                                 className='form-label',
-                                                                                style={'margin-top':'8px', 'font-size':'1rem'}
+                                                                                style={
+                                                                                    'margin-top': '8px', 'font-size': '1rem'
+                                                                                }
                                                                             ),
                                                                             dbc.InputGroup(
-                                                                                [dbc.InputGroupAddon("Distancia", addon_type="prepend"), 
+                                                                                [dbc.InputGroupAddon("Distancia", addon_type="prepend"),
                                                                                  dbc.Input(
                                                                                     placeholder="Distância em metros",
                                                                                     type="number",
                                                                                     min=0,
                                                                                     id="input-div-distancia"
-                                                                                 )
+                                                                                )
                                                                                 ],
                                                                                 style={
-                                                                                    'margin-top':'8px',
-                                                                                    'margin-bottom':'8px'
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px'
                                                                                 }
                                                                             ),
                                                                             dbc.Button(
@@ -630,38 +664,20 @@ app.layout = html.Div(children=[
                                                                                 className="set-distancia-voltas",
                                                                                 id='input-voltas-button-distancia',
                                                                                 style={
-                                                                                    'margin-bottom':'6px'
-                                                                                }
+                                                                                    'margin-bottom': '6px'
+                                                                                },
+                                                                                n_clicks=1
                                                                             ),
                                                                         ]
                                                                     ),
                                                                 ]
                                                             ),
-                                                        ]   
+                                                        ]
                                                     ),
                                                 ]
-                                            ),
-                                            #html.Div(
-                                            #    className="sobreposicao-content",
-                                            #    children=[
-                                            #        # Opção para selecionar sobreposição de voltas
-                                            #        dbc.Checklist(
-                                            #            options=[
-                                            #                {"label": "Sobreposição de Voltas", "value": 1},
-                                            #            ],
-                                            #            id="switches-input-sobreposicao",
-                                            #            value=[],
-                                            #            switch=True,
-                                            #            style={
-                                            #                'margin-top':'8px',
-                                            #                'margin-bottom':'8px',
-                                            #                'font-size':'18px'
-                                            #            }
-                                            #        ),
-                                            #    ]
-                                            #),
+                                            )
                                         ]
-                                    ), 
+                                    ),
                                 ]
                             )
                         ]
@@ -673,8 +689,8 @@ app.layout = html.Div(children=[
 
     # Layout botão de Configurações avançadas
     dbc.Modal(
-        contentClassName = 'modal-content',
-        children = [
+        contentClassName='modal-content',
+        children=[
             # Título
             dbc.ModalHeader(
                 children="Configurações avançadas de plotagem",
@@ -687,16 +703,18 @@ app.layout = html.Div(children=[
             # Parte de baixo
             dbc.ModalFooter(
                 children=[
-                    dbc.Button("Fechar", id="close-modal", className="ml-auto tesla-button"),
+                    dbc.Button("Fechar", id="close-modal",
+                               className="ml-auto tesla-button"),
                     dbc.Spinner(
-                        children = [
-                            dbc.Button("Aplicar", id="apply-adv-changes-button", className="tesla-button", n_clicks_timestamp=0),
+                        children=[
+                            dbc.Button("Aplicar", id="apply-adv-changes-button",
+                                       className="tesla-button", n_clicks_timestamp=0),
                             html.Div(
                                 id="apply-adv-changes-loading"
                             )
                         ],
                         size="sm",
-                        spinner_style = {'margin': '0 37px'},
+                        spinner_style={'margin': '0 37px'},
                         color="success"
                     )
                 ],
@@ -708,234 +726,40 @@ app.layout = html.Div(children=[
     )
 ])
 
-# Dicionário(HASH) com todas as unidades dos dados conhecidos
-unidades_dados_hash = {
-    'Intensidade_Frenagem': '%',
-    'Timer': 's',
-    'V_motor_D':'RPM',
-    'V_motor_E':'RPM',
-    'Volante': 'graus',
-    'Speed_LR': 'km/h',
-    'Speed_RR': 'km/h',
-    'Pedal': '%',
-    'AccelX': 'G',
-    'AccelY': 'G',
-    'AccelZ': 'G',
-    'GyroX': 'graus/s',
-    'GyroY': 'graus/s',
-    'GyroZ': 'graus/s',
-    'Temp_pack0_1': 'ºC',
-    'Temp_pack0_2': 'ºC',
-    'Temp_pack1_1': 'ºC',
-    'Temp_pack1_2': 'ºC',
-    'Temp_pack2_1': 'ºC',
-    'Temp_pack2_2': 'ºC',
-    'Temp_pack3_1': 'ºC',
-    'Temp_pack3_2': 'ºC',
-    'Temp_pack4_1': 'ºC',
-    'Temp_pack4_2': 'ºC',
-    'Temp_pack5_1': 'ºC',
-    'Temp_pack5_2': 'ºC',
-    'Tempmediabb': 'ºC',
-    'Tempmaxbb': 'ºC',
-    'TempInv_D1': 'ºC',
-    'TempInv_D2': 'ºC',
-    'TempInv_E1': 'ºC',
-    'TempInv_E2': 'ºC',
-    'TempInt2': 'ºC',
-    'TempInt': 'ºC',
-    'Temp': 'ºC',
-    'Tensao_GLV': 'mV',
-    'Volt_BAT': 'mV',
-    'Tensaototal': 'mV',
-    'Hodometro_P': 'm',
-    'Hodometro_T': 'm',
-    'Dist': 'm'
-}
-
-# Função de filtro passa-banda
-def butter_bandpass(data, lowcut, highcut, fs, order=5):
-        
-    nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
-    b, a = signal.butter(order, [low, high], btype='band')
-
-    y = signal.lfilter(b, a, data)
-
-    return y
-
-# Função que cria o corpo HTML do modal. Cada Chamada dessa função retorna um Bootstrap collapse para o dado passado como parâmetro
-def generate_element_modal_body(column_name):
-
-    html_generated = [
-        html.Div(
-            id={
-                'type': 'advconfig-data',
-                'index': column_name
-            },
-            children = [
-                dbc.Button(
-                    children=[
-                        column_name,
-                        html.I(
-                            className='dropdown-triangle'
-                        )
-                    ],
-                    color="secondary", 
-                    block=True,
-                    id = {
-                        'type':'advchanges-button-collapse',
-                        'index': column_name
-                    },
-                    style={'margin':'5px 0'},
-                    n_clicks=0
-                ),
-                dbc.Collapse(
-                    id= {
-                        'type':'advchanges-collapse',
-                        'index': column_name
-                    },
-                    children=[
-                        html.H4(
-                            children='Filtros Adicionais',
-                            className='adv-config-subtitle',
-                        ),
-                        dcc.Checklist(
-                            id={
-                                'type':'bandpass-checklist',
-                                'index': column_name
-                            },
-                            options=[
-                                {'label': 'Passa-Banda', 'value': 'Passa-Banda'},
-                            ],
-                            inputStyle = {'margin-right':'3px'},
-                            labelStyle =  {'margin-right':'8px'},
-                            value=[]
-                        ),
-                        dbc.Row(
-                            children=[
-                                dbc.Col(
-                                    daq.NumericInput(
-                                        id={
-                                            'type':"bandpass-inf-limit",
-                                            'index': column_name
-                                        },
-                                        label={'label':'limite inferior (Hz)'},
-                                        min=1,
-                                        max=15,
-                                        value=1
-                                    )
-                                ),
-                                dbc.Col(
-                                    daq.NumericInput(
-                                        id={
-                                            'type':"bandpass-sup-limit",
-                                            'index': column_name
-                                        },
-                                        label={'label':'limite superior (Hz)'},
-                                        min=1,
-                                        max=15,
-                                        value=15
-                                    )
-                                )
-                            ]
-                        ),
-                        dcc.Checklist(
-                            id={
-                                'type':"savitzky-checklist",
-                                'index': column_name
-                            },
-                            options=[
-                                {'label': 'Filtro savitzky-golay (Passa-baixas)', 'value': 'Filtro savitzky-golay'},
-                            ],
-                            inputStyle = {'margin-right':'3px'},
-                            labelStyle =  {'margin-right':'8px'},
-                            value=[]
-                        ),
-                        dbc.Row(
-                            children=[
-                                dbc.Col(
-                                    daq.NumericInput(
-                                        id={
-                                            'type':"savitzky-cut",
-                                            'index': column_name
-                                        },
-                                        label={'label':'Tamanho da subsequência'},
-                                        min=0,
-                                        max=20,
-                                        value=5
-                                    )
-                                ),
-                                dbc.Col(
-                                    daq.NumericInput(
-                                        id={
-                                            'type':"savitzky-poly",
-                                            'index': column_name
-                                        },
-                                        label={'label':'Grau polinomial'},
-                                        min=0,
-                                        max=5,
-                                        value=1
-                                    )
-                                )
-                            ]
-                        ),
-                        dbc.Row(
-                            className="divider"
-                        )
-                    ]
-                )
-            ]
-        )
-    ]
-
-    return html_generated
-
-# Função utilizada para somar os valores de uma lista
-def soma_lista(lista):
-
-    if len(lista) == 1:
-        return lista[0]
-    else:
-        return lista[0] + soma_lista(lista[1:])
-
-# Função que divide o array de distancia pelas voltas
-def chunks(lista, n):
-    for i in range(0, len(lista), n):
-        yield lista[i:i + n]
 
 # Desativa as exceptions ligadas aos callbacks, permitindo a criação de callbacks envolvendo IDs que ainda não foram criados
 app.config['suppress_callback_exceptions'] = True
 
 @app.callback(
-    Output({'type':'advchanges-collapse','index': MATCH}, 'is_open'),
-    [Input({'type':'advchanges-button-collapse','index': MATCH}, 'n_clicks')],
-    [State({'type':'advchanges-collapse','index': MATCH}, 'is_open')]
+    Output({'type': 'advchanges-collapse', 'index': MATCH}, 'is_open'),
+    [Input({'type': 'advchanges-button-collapse', 'index': MATCH}, 'n_clicks')],
+    [State({'type': 'advchanges-collapse', 'index': MATCH}, 'is_open')]
 )
 def toggle_collapse(n_clicks, is_open):
     if(n_clicks):
         return not is_open
     return is_open
 
-@app.callback(
-    [Output({'type':"bandpass-inf-limit",'index': MATCH},'disabled'),
-     Output({'type':"bandpass-sup-limit",'index': MATCH},'disabled')],
-    [Input({'type':'bandpass-checklist','index': MATCH}, 'value')]
-) 
-def disable_inputs_passabanda(checklist):
-    if('Passa-Banda' in checklist):
-        return [False,False]
-    return [True, True]
 
 @app.callback(
-    [Output({'type':"savitzky-cut",'index': MATCH},'disabled'),
-     Output({'type':"savitzky-poly",'index': MATCH},'disabled')],
-    [Input({'type':'savitzky-checklist','index': MATCH}, 'value')]
-) 
+    [Output({'type': "bandpass-inf-limit", 'index': MATCH}, 'disabled'),
+     Output({'type': "bandpass-sup-limit", 'index': MATCH}, 'disabled')],
+    [Input({'type': 'bandpass-checklist', 'index': MATCH}, 'value')]
+)
+def disable_inputs_passabanda(checklist):
+    if('Passa-Banda' in checklist):
+        return [False, False]
+    return [True, True]
+
+
+@app.callback(
+    [Output({'type': "savitzky-cut", 'index': MATCH}, 'disabled'),
+     Output({'type': "savitzky-poly", 'index': MATCH}, 'disabled')],
+    [Input({'type': 'savitzky-checklist', 'index': MATCH}, 'value')]
+)
 def disable_inputs_savitzky(checklist):
     if('Filtro savitzky-golay' in checklist):
-        return [False,False]
+        return [False, False]
     return [True, True]
 
 # Callback de abrir/fechar o modal de configurações avançadas
@@ -948,16 +772,16 @@ def toggle_modal(n1, n2, is_open):
 
     if n1 or n2:
         return not is_open
-    
+
     return is_open
 
 # Callback que habilita e desabilita o INPUT de média móvel
 @app.callback(
-    Output('media-movel-input','disabled'),
-    [Input('filtros-checklist','value')]
+    Output('media-movel-input', 'disabled'),
+    [Input('filtros-checklist', 'value')]
 )
 def disable_media_movel_input(selected_filters):
-    
+
     if ('Média Móvel' in selected_filters) or ('Filtro Mediana' in selected_filters):
         return False
     else:
@@ -965,369 +789,54 @@ def disable_media_movel_input(selected_filters):
 
 # Callback que habilita e desabilita os radioItens de linha de referência horizontal
 @app.callback(
-    Output('horizontal-row','options'),
-    [Input('checklist-horizontal','value')]
+    Output('horizontal-row', 'options'),
+    [Input('checklist-horizontal', 'value')]
 )
 def disable_radioItens_ref_horizontal(selected_checklist):
 
     if('Horizontal' in selected_checklist):
-        return ({"label": "Definir no gráfico", "value": "horizontal-grafico"}, 
+        return ({"label": "Definir no gráfico", "value": "horizontal-grafico"},
                 {"label": "Definir valor", "value": "horizontal-value", "disabled": True},)
     else:
-        return ({"label": "Definir no gráfico", "value": "horizontal-grafico", "disabled": True}, 
+        return ({"label": "Definir no gráfico", "value": "horizontal-grafico", "disabled": True},
                 {"label": "Definir valor", "value": "horizontal-value", "disabled": True},)
 
 # Callback que habilita e desabilita o INPUT de linha de referencia horizontal
 @app.callback(
-    Output('set-input-div','style'),
-    [Input('horizontal-row','value'),
-     Input('checklist-horizontal','value')]
+    Output('set-input-div', 'style'),
+    [Input('horizontal-row', 'value'),
+     Input('checklist-horizontal', 'value')]
 )
 def disable_ref_horizontal_input(selected_radio, selected_checklist):
-    
+
     if('horizontal-value' in selected_radio) and ('Horizontal' in selected_checklist):
         return ({'display': 'flex',
-                 'position':'relative',
-                 'left':'20px',
-                 'top':'10px'
-                })
+                 'position': 'relative',
+                 'left': '20px',
+                 'top': '10px'
+                 })
     else:
-        return {'display':'none'}
+        return {'display': 'none'}
 
 # Callback que habilita e desabilita o botão de acrescentar linha de referência horizontal no gráfico
 @app.callback(
-    Output('graph-control-panel','style'),
-    [Input('horizontal-row','value'),
-     Input('checklist-horizontal','value')]
+    Output('graph-control-panel', 'style'),
+    [Input('horizontal-row', 'value'),
+     Input('checklist-horizontal', 'value')]
 )
 def disable_ref_vertical_button(selected_radio, selected_checklist):
 
     if('Horizontal' in selected_checklist) and ('horizontal-grafico' in selected_radio):
         return ({'margin': '10px 0px 0px 40px',
                  'display': 'block'
-                })
+                 })
     else:
-        return {'display':'none'}
-
-# Callback que habilita e desabilita as configurações de divisao de voltas
-@app.callback(
-    Output('corpo-divisao-voltas','style'),
-    [Input('switches-input-divisao','value')]
-)
-def able_divisao_volta(switch_value):
-    
-    return divisao_voltas.able_divisao_volta(switch_value)
-
-# Callback que habilita e desabilita as configurações de setar distancia ou tempo
-@app.callback(
-    [Output('corpo-divisao-tempo','style'),
-     Output('corpo-divisao-distancia','style')],
-    [Input('radios-row','value')]
-)
-def able_tempo_or_distancia(radios_value):
-    
-    return divisao_voltas.able_tempo_or_distancia(radios_value)
-
-# Callback que define a quantidade de inputs para o tempo das voltas e guarda os tempos no array
-@app.callback(
-    Output('time-input', 'children'),
-    [Input('divisão-voltas-tempo-input', 'value'),
-     Input('input-voltas-button-tempo', 'n_clicks')],
-    [State('time-input', 'children'),
-     State({'type':'input-tempo','index':ALL}, 'value')]
-)
-def quantidade_input_div_voltas(numero_voltas, n1, children, input_value):
-
-    global tempo_voltas
-
-    new_input = html.Div([
-                    dbc.InputGroup(
-                        [dbc.InputGroupAddon(("Volta {}:".format(i)), 
-                                              addon_type="prepend"
-                                            ), 
-                         dbc.Input(
-                            id={
-                                'type':'input-tempo',
-                                'index':'input-volta-{}'
-                            },
-                            type="number",
-                            min=0,
-                            step=0.01,
-                            value=0
-                         )
-                        ]
-                    ) 
-                    for i in range(1, numero_voltas+1)
-                ])
-
-    children.insert(0, new_input)
-    for i in range(1, len(children)):
-        children.pop(i)
-
-    tempo_div_voltas = [0]
-    if n1:
-        tempo_div_voltas = input_value
-
-        # Seta o array com os valores das voltas somados
-        tempo_voltas = np.zeros(len(tempo_div_voltas))
-
-        for i in range(0, len(tempo_voltas)-1):
-            tempo_voltas[i] = soma_lista(tempo_div_voltas[:i+1])
-
-        tempo_voltas[len(tempo_div_voltas)-1] = soma_lista(tempo_div_voltas)
-
-    return children
-
-# Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
-@app.callback(
-    [Output('index-page', 'style'), 
-     Output('main-page', 'style'),
-     Output('dropdown-analise-geral-Y', 'options'),
-     Output('dropdown-analise-geral-X', 'options'),
-     Output('upload-data-loading','children'), 
-     Output('upload-files-alert','is_open'), 
-     Output('upload-files-alert', 'children')],
-    [Input('upload-data', 'contents')],
-    [State('upload-data', 'filename')]
-)
-def hide_index_and_read_file(list_of_contents, list_of_names):
-
-    global data
-    global num_dados
-
-    if list_of_contents is not None:
-        if ('legenda.txt' in list_of_names):
-            if len(list_of_names) >= 2:
-                files = dict(zip(list_of_names, list_of_contents))
-                legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
-                legenda = [name.split()[0][0].upper() + name.split()[0][1:] for name in legenda.columns.values]
-
-                try:
-                    for nome_do_arquivo in files:
-                        if(nome_do_arquivo != 'legenda.txt'):
-                            data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), delimiter='\t', names=legenda, index_col=False)
-                except:
-                    return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "Os arquivos de dados não são do tipo .txt"]
-                
-                options = []
-                num_dados = len(legenda)
-                
-                for cont, column_name in enumerate(legenda):
-                    options.append( {'label' : column_name, 'value' : column_name} )
-
-                return [{'display': 'none'}, {'display':'inline'}, options, options, [], dash.no_update, dash.no_update]
-            else:
-                return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo de dados do tipo .txt"]    
-        else:
-            return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, True, "É necessário o upload de um arquivo chamado legenda.txt"]
-    else:
-        raise PreventUpdate
-        
-# Callback do botão de plotagem de gráficos
-@app.callback(
-    [Output('apply-adv-changes-loading','children'),
-     Output('Graph-content','children'),
-     Output('modal-button','style'),
-     Output('modal-body','children'),
-     Output('plot-loading','children'),
-     Output('config-ref-line', 'style'),
-     Output('config-sobreposicao','style')],
-    [Input('plot-button','n_clicks_timestamp'),
-     Input('apply-adv-changes-button','n_clicks_timestamp'),
-     Input('switches-input-divisao','value'),
-     Input('radios-row','value'),
-     Input('input-voltas-button-distancia', 'n_clicks'),
-     Input('sobreposicao-button', 'n_clicks')],
-    [State('dropdown-analise-geral-Y','value'), 
-     State('dropdown-analise-geral-X','value'),
-     State('filtros-checklist','value'),
-     State('media-movel-input','value'),
-     State({'type': 'advconfig-data', 'index': ALL}, 'id'),
-     State({'type': 'bandpass-checklist', 'index': ALL}, 'value'),
-     State({'type':'bandpass-inf-limit', 'index': ALL}, 'value'),
-     State({'type':'bandpass-sup-limit', 'index': ALL}, 'value'),
-     State({'type': 'savitzky-checklist', 'index': ALL}, 'value'),
-     State({'type':'savitzky-cut', 'index': ALL}, 'value'),
-     State({'type':'savitzky-poly', 'index': ALL}, 'value'),
-     State('input-div-distancia', 'value')]
-)
-def plot_graph_analise_geral(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button,
-                             selected_columns_Y, selected_X, filters, filters_subseq, 
-                             identificador, bandpass_check, bandpass_inf, bandpass_sup , savitzky_check, savitzky_cut, savitzky_poly,
-                             input_div_dist):
-    
-    global data_copy
-    global data
-    global empty_ploted_figure
-    global ploted_figure
-    global eixoY
-    global tempo_voltas
-
-    if button_plot != 0 or button_apply != 0:
-        modal_itens = []
-
-        if int(button_plot) > int(button_apply):
-            eixoY = selected_columns_Y
-            dados_tratados.trataDados(selected_X, selected_columns_Y, data)
-            data_copy = data.copy()
-
-            if filters_subseq % 2 == 0:
-                filters_subseq = filters_subseq + 1
-
-            if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
-
-                for column in selected_columns_Y:
-                    data_copy[column] = filtros.smooth(signal.medfilt(data_copy[column], filters_subseq), filters_subseq)
-            elif 'Média Móvel' in filters:
-
-                for column in selected_columns_Y:
-                    data_copy[column] = filtros.smooth(data_copy[column], filters_subseq)
-            elif 'Filtro Mediana' in filters:
-
-                for column in selected_columns_Y:
-                    data_copy[column] = signal.medfilt(data_copy[column], np.array(filters_subseq))
-
-        elif(int(button_plot) < int(button_apply)):
-
-            for cont, id in enumerate(identificador):
-                if('Passa-Banda' in bandpass_check[cont]):
-
-                    data_copy[id['index']] = butter_bandpass(data_copy[id['index']], 
-                                                             bandpass_inf[cont],
-                                                             bandpass_sup[cont],
-                                                             fs=60
-                                                            )
-
-                if('Filtro savitzky-golay' in savitzky_check[cont]):
-
-                    window_length = savitzky_cut[cont]
-                    if window_length % 2 == 0:
-                        window_length += 1
-
-                    data_copy[id['index']] = signal.savgol_filter(data_copy[id['index']],
-                                                                  window_length=window_length,
-                                                                  polyorder=savitzky_poly[cont]
-                                                                 )
-
-        #fig = empty_ploted_figure
-        fig = make_subplots(rows=len(selected_columns_Y),
-                            cols=1, 
-                            shared_xaxes=True, 
-                            vertical_spacing=0.0
-                           )
-
-        for cont, column_name in enumerate(selected_columns_Y):
-            if (column_name in unidades_dados_hash):
-                fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                         x=data_copy[selected_X], 
-                                         mode="lines", 
-                                         name=column_name, 
-                                         hovertemplate = "%{y} " + unidades_dados_hash[column_name]
-                                        ), 
-                              row=cont+1, 
-                              col=1
-                             )
-            else:
-                fig.add_trace(go.Scatter(y=data_copy[column_name], 
-                                         x=data_copy[selected_X],
-                                         mode="lines", 
-                                         name=column_name, 
-                                         hovertemplate = "%{y}"
-                                        ), 
-                              row=cont+1, 
-                              col=1
-                             )
-
-            modal_itens.extend( generate_element_modal_body(column_name) )
-
-        # Acresenta traços de divisão de voltas
-        if(1 in div_switches_value):
-            
-            # Se for por distância
-            if('distancia' in div_radios_value):
-
-                if set_div_dist:
-                    n_voltas = len(data_copy['Dist'])//input_div_dist
-                    
-                    for cont, column_name in enumerate(selected_columns_Y):
-                        for z in range(1, n_voltas+1):
-                            fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                    x=[input_div_dist*z, input_div_dist*z],                                     # array com os valores dos tempos das voltas 
-                                                    mode="lines", 
-                                                    line=go.scatter.Line(color="gray"), 
-                                                    showlegend=False
-                                                    ),
-                                        row=cont+1,
-                                        col=1
-                                        )
-            # Se for por tempo
-            elif('tempo' in div_radios_value):
-
-                for cont, column_name in enumerate(selected_columns_Y):
-                    for z in tempo_voltas:
-                        fig.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],   # linha reta do valor minimo ao maximo do dado 
-                                                 x=[z, z],                                                       # array com os valores dos tempos das voltas 
-                                                 mode="lines", 
-                                                 line=go.scatter.Line(color="gray"), 
-                                                 showlegend=False
-                                                ),
-                                      row=cont+1,
-                                      col=1
-                                     )
-
-        # sobreposição de voltas
-        if (sobreposicao_button) :
-            fig.data = []
-
-            for cont, column_name in enumerate(selected_columns_Y):
-                w = len(data_copy[column_name])/max(data_copy['Dist'])
-                b = w * input_div_dist
-                w = int(b)
-                dist_use = list(chunks(data_copy['Dist'], w))
-                data_use = list(chunks(data_copy[column_name], w))
-                
-                for i in range(0, n_voltas+1):
-                    fig.add_trace(
-                        go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
-                        row=cont+1, col=1
-                    )
-
-        fig['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-
-        ploted_figure = fig
-
-        return [
-            [],
-            dcc.Graph(
-                figure=fig,
-                id='figure-id',
-                config={'autosizable' : False}
-            ),
-            {'display':'inline'},
-            modal_itens,
-            [],
-            {'display':'block',
-             'border-left-style': 'outset',
-             'border-width': '2px',
-             'margin-left': '20px',
-             'margin-top': '15px'
-            },
-            {'display':'block',
-             'border-left-style': 'outset',
-             'border-width': '2px',
-             'margin-left': '30px',
-             'margin-top': '15px'
-            }
-        ]
-
-    else:
-        #TRATAR ERRO
-        raise PreventUpdate
+        return {'display': 'none'}
 
 # Callback que muda a classe do botão de linhas horizontais, se pressionado
 @app.callback(
-    Output('add-line-button' , 'labelClassName'),
-    [Input('add-line-button' , 'value')]
+    Output('add-line-button', 'labelClassName'),
+    [Input('add-line-button', 'value')]
 )
 def change_button_class(value):
 
@@ -1336,94 +845,148 @@ def change_button_class(value):
 
     return 'interations-button button-int'
 
-# Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
-@app.callback (
-    [Output("figure-id","figure"),
-     Output("add-line-button", "value")],
-    [Input("figure-id","clickData"),
-     Input("checklist-horizontal", "value"),
-     Input('horizontal-row','value'),
-     Input('set-reference-button','n_clicks')],
-    [State("figure-id","relayoutData"),
-     State("add-line-button", "value"),
-     State('horizontal-input','value')]
+# Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
+@app.callback(
+    [Output('index-page', 'style'),
+     Output('main-page', 'style'),
+     Output('dropdown-analise-geral-Y', 'options'),
+     Output('dropdown-analise-geral-X', 'options'),
+     Output('upload-data-loading', 'children'),
+     Output('upload-files-alert', 'is_open'),
+     Output('upload-files-alert', 'children')],
+    [Input('upload-data', 'contents')],
+    [State('upload-data', 'filename')]
 )
-def display_reference_lines(clickData, checklist_horizontal, radios_value, n1, zoom_options, add_line, input_value):
+def _read_file(list_of_contents, list_of_names):
 
-    if clickData is not None:
+    leitura_de_arquivos._get_data(list_of_contents, list_of_names)
 
-        global ploted_figure
+    return [
+        leitura_de_arquivos.index_page_style,
+        leitura_de_arquivos.main_page_style,
+        leitura_de_arquivos.analise_Y_options,
+        leitura_de_arquivos.analis_X_options,
+        leitura_de_arquivos.upload_loading_children,
+        leitura_de_arquivos.files_alert_open,
+        leitura_de_arquivos.files_alert_children
+    ]
 
-        #HORIZONTAL
-        if("Horizontal" in checklist_horizontal):
+# Callback do botão de plotagem de gráficos
+@app.callback(
+    [Output('apply-adv-changes-loading', 'children'),
+     Output('Graph-content', 'children'),
+     Output('modal-button', 'style'),
+     Output('modal-body', 'children'),
+     Output('plot-loading', 'children'),
+     Output('config-ref-line', 'style'),
+     Output('config-sobreposicao', 'style'),
+     Output('lap-division-show-or-hide', 'style'),
+     Output("switches-destacar-voltas", "style")],
+    [Input('plot-button', 'n_clicks_timestamp'),
+     Input('apply-adv-changes-button', 'n_clicks_timestamp'),
+     Input('switches-input-divisao', 'value'),
+     Input('radios-row', 'value'),
+     Input('input-voltas-button-distancia', 'n_clicks'),
+     Input('sobreposicao-button', 'value'),
+     Input("switches-destacar-voltas", "value")],
+    [State('dropdown-analise-geral-Y', 'value'),
+     State('dropdown-analise-geral-X', 'value'),
+     State('filtros-checklist', 'value'),
+     State('media-movel-input', 'value'),
+     State({'type': 'advconfig-data', 'index': ALL}, 'id'),
+     State({'type': 'bandpass-checklist', 'index': ALL}, 'value'),
+     State({'type': 'bandpass-inf-limit', 'index': ALL}, 'value'),
+     State({'type': 'bandpass-sup-limit', 'index': ALL}, 'value'),
+     State({'type': 'savitzky-checklist', 'index': ALL}, 'value'),
+     State({'type': 'savitzky-cut', 'index': ALL}, 'value'),
+     State({'type': 'savitzky-poly', 'index': ALL}, 'value'),
+     State('input-div-distancia', 'value'),
+     State('graphic-plot-color', 'value')]
+)
+def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button, lap_highlight,
+                selected_columns_Y, selected_X, filters, filters_subseq,
+                identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
+                input_div_dist, graphic_plot_color_value):
 
-            if('horizontal-grafico' in radios_value):
-        
-                if("Line" in add_line):
-                    
-                    yref = "y"
-                    curveNumber = clickData['points'][0]['curveNumber']
-                    if(  curveNumber != 0 ):
-                        yref = yref + str(curveNumber+1)
-                    
-                    ploted_figure.add_shape(type="line",
-                                            xref="paper", yref=yref,
-                                            y0 = clickData['points'][0]['y'], y1 = clickData['points'][0]['y'],
-                                            x0 = 0, x1 = 1,
-                                            line = dict(
-                                                color = "black",
-                                                dash = "dot",
-                                                width = 1
-                                            ),
-                                           )
-                    
-                    return [ploted_figure,[]]
-                else:
-                    raise PreventUpdate
-            else:
-                raise PreventUpdate
-        #VERTICAL
-        else:
+    if button_plot != 0 or button_apply != 0:
+
+        #grafico.plot_color = graphic_plot_color_value
+        grafico._filters(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
+                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
+        grafico._plot(selected_columns_Y, selected_X)
+
+        if(1 in div_switches_value):
             
-            last_figure = go.Figure(ploted_figure)
-            last_figure.add_shape(type = "line",
-                                  yref = "paper",
-                                  x0 = clickData['points'][0]['x'], x1 = clickData['points'][0]['x'],
-                                  y0 = 0, y1 = 1,
-                                  line = dict(
-                                    color = "#505050",
-                                    width = 1.5
-                                  )
-                                 )
-            
-            return [last_figure, dash.no_update]
-    elif clickData is None:
-        # Horizontal definido no input
-        if('horizontal-value' in radios_value) and ("Horizontal" in checklist_horizontal):
-
-            if n1:
-                        
-                ploted_figure.add_shape(type="line",
-                                        xref="paper", yref="y",
-                                        y0 = input_value, y1 = input_value,
-                                        x0 = 0, x1 = 1,
-                                        line = dict(
-                                            color = "black",
-                                            dash = "dot",
-                                            width = 1
-                                        ),
-                                    )
-                
-                return [ploted_figure,[]]
+            grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, 
+                                   input_div_dist, set_div_dist, lap_highlight)
+            grafico._overlap(sobreposicao_button, selected_columns_Y, 
+                             input_div_dist, selected_X)
+            grafico.lap_highlight_style = {
+                'margin-top': '8px',
+                'margin-bottom': '8px',
+                'font-size': '18px'
+            }
         else:
-            raise PreventUpdate
+            grafico.configuracao_sobreposicao_style = {"display": "none"}
+            grafico.lap_highlight_style = {"display": "none"}
+    else:
+        raise PreventUpdate
 
-# Callback que aciona a sobreposição de voltas (por distância)
-#@app.callback(
+    return [
+        grafico.changes_loading_children,
+        grafico.graph_content_children,
+        grafico.modal_button_style,
+        grafico.modal_body_children,
+        grafico.plot_loading_children,
+        grafico.ref_line_style,
+        grafico.configuracao_sobreposicao_style,
+        grafico.lap_division_show_or_hide_style,
+        grafico.lap_highlight_style
+    ]
 
-#)
-#def sobreposicao_voltas():
+# Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
+@app.callback(
+    [Output("figure-id", "figure"),
+     Output("add-line-button", "value")],
+    [Input("figure-id", "clickData"),
+     Input("checklist-horizontal", "value"),
+     Input('horizontal-row', 'value'),
+     Input('set-reference-button', 'n_clicks')],
+    [State("add-line-button", "value"),
+     State('horizontal-input', 'value'),
+     State('dropdown-analise-geral-X', 'value'),
+     State('dropdown-analise-geral-Y', 'value')]
+)
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, 
+                             selected_X, selected_columns_Y):
 
+    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value,
+                                         selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)
+
+    return(
+        Pos_Graphic.figure_id_figure,
+        Pos_Graphic.add_line_button_value
+    )
+
+# Callback que habilita e desabilita as configurações de divisao de voltas
+@app.callback(
+    [Output('corpo-divisao-tempo', 'style'),
+     Output('corpo-divisao-distancia', 'style'),
+     Output('time-input', 'children')],
+    [Input('radios-row', 'value'),
+     Input('divisão-voltas-tempo-input', 'value'),
+     Input('input-voltas-button-tempo', 'n_clicks')],
+    [State({'type': 'input-tempo', 'index': ALL}, 'value')]
+)
+def _lap_division(radios_value, numero_voltas, n1, input_value):
+
+    Pos_Graphic._able_lap_division(radios_value, numero_voltas, n1, input_value)
+
+    return (
+        Pos_Graphic.time_division_style,
+        Pos_Graphic.distance_division_style,
+        Pos_Graphic.time_input_children
+    )
 
 
 if __name__ == '__main__':
