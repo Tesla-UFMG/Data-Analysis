@@ -918,7 +918,7 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
         if(1 in div_switches_value):
             
             grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, 
-                                   input_div_dist, set_div_dist, lap_highlight)
+                                   input_div_dist, set_div_dist, lap_highlight, Pos_Graphic.tempo_voltas)
             grafico._overlap(sobreposicao_button, selected_columns_Y, 
                              input_div_dist, selected_X)
             grafico.lap_highlight_style = {

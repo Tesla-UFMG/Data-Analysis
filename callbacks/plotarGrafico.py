@@ -427,7 +427,7 @@ class plotarGrafico():
 
         return
     
-    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist, lap_highlight):
+    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist, lap_highlight, tempo_voltas):
 
         if('distancia' in div_radios_value):
 
@@ -455,23 +455,41 @@ class plotarGrafico():
                                                                     mode="lines", 
                                                                     line=go.scatter.Line(color="gray"), 
                                                                     showlegend=False
-                                                                   ),
-                                                         row=cont+1,
-                                                         col=1
+                                                                    ),
+                                                        row=cont+1,
+                                                        col=1
                                                         )
-        # elif('tempo' in div_radios_value):
+        elif('tempo' in div_radios_value):
+            for cont, column_name in enumerate(selected_columns_Y):
+                for z in tempo_voltas:
+                    self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
+                                                            x=[z, z],
+                                                            mode="lines", 
+                                                            line=go.scatter.Line(color="gray"), 
+                                                            showlegend=False
+                                                           ),
+                                                 row=cont+1,
+                                                 col=1
+                                                )
 
+        # elif('tempo' in div_radios_value):
         #     for cont, column_name in enumerate(selected_columns_Y):
         #         for z in tempo_voltas:
+        #             data_in_timer = np.where(self.data_copy['Timer'] == z)[0]
+                    
+        #             if (not(np.where(self.data_copy['Timer'] == z))[0]):
+        #                 data_in_timer = np.where(self.data_copy['Timer'] == z+1)[0]
+        #                 print(data_in_timer)
+
         #             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-        #                                     x=[z, z],
-        #                                     mode="lines", 
-        #                                     line=go.scatter.Line(color="gray"), 
-        #                                     showlegend=False
-        #                                     ),
-        #                         row=cont+1,
-        #                         col=1
-        #                         )
+        #                                                     x=[min(self.data_copy[selected_X][data_in_timer])*z, min(self.data_copy[selected_X][data_in_timer])*z],
+        #                                                     mode="lines", 
+        #                                                     line=go.scatter.Line(color="gray"), 
+        #                                                     showlegend=False
+        #                                                    ),
+        #                                          row=cont+1,
+        #                                          col=1
+        #                                         )
 
     def _overlap(self, sobreposicao_button, selected_columns_Y, input_div_dist, selected_X):
 
