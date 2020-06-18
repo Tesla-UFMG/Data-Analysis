@@ -393,12 +393,22 @@ app.layout = html.Div(children=[
                                                                             ),
                                                                         ]
                                                                     ),
+                                                                    # Configuração Divisão de Voltas
                                                                     html.Div(
+                                                                        id="lap-division-show-or-hide",
                                                                         className="divisão-content",
                                                                         style={
-                                                                            "display": "none"},
-                                                                        id="lap-division-show-or-hide",
+                                                                            "display": "none"
+                                                                        },
                                                                         children=[
+                                                                            html.H4(
+                                                                                children='Divisão de voltas',
+                                                                                style={
+                                                                                    'position': 'relative',
+                                                                                    'bottom': '15px'
+                                                                                },
+                                                                                className='form-label'
+                                                                            ),
                                                                             # Opção para selecionar divisão de voltas
                                                                             dbc.Checklist(
                                                                                 options=[
@@ -410,7 +420,9 @@ app.layout = html.Div(children=[
                                                                                 style={
                                                                                     'margin-top': '8px',
                                                                                     'margin-bottom': '8px',
-                                                                                    'font-size': '18px'
+                                                                                    'font-size': '18px',
+                                                                                    'position': 'relative',
+                                                                                    'bottom': '15px'
                                                                                 }
                                                                             ),
                                                                             dbc.Checklist(
@@ -439,19 +451,24 @@ app.layout = html.Div(children=[
                                                                                 children='Sobreposição de Voltas',
                                                                                 style={
                                                                                     'position': 'relative',
-                                                                                    'left': '10px',
                                                                                     'bottom': '15px'
                                                                                 },
                                                                                 className='form-label'
                                                                             ),
                                                                             dbc.Checklist(
                                                                                 options=[
-                                                                                    {"label": "Sobrepor",
-                                                                                        "value": 1},
+                                                                                    {"label": "Sobrepor", "value": 1},
                                                                                 ],
                                                                                 id="sobreposicao-button",
                                                                                 value=[],
                                                                                 switch=True,
+                                                                                style={
+                                                                                    'margin-top': '8px',
+                                                                                    'margin-bottom': '8px',
+                                                                                    'font-size': '18px',
+                                                                                    'position': 'relative',
+                                                                                    'bottom': '15px'
+                                                                                }
                                                                             ),
                                                                         ]
                                                                     ),
@@ -465,17 +482,21 @@ app.layout = html.Div(children=[
                                                                     'Plotar',
                                                                     dbc.Spinner(
                                                                         spinner_style={
-                                                                            'display': 'inline-block', 'margin': '0 0 0 .5rem'},
+                                                                            'display': 'inline-block', 
+                                                                            'margin': '0 0 0 .5rem'
+                                                                        },
                                                                         size='sm',
                                                                         children=[
                                                                             html.Div(
-                                                                                id="plot-loading")
+                                                                                id="plot-loading"
+                                                                            )
                                                                         ]
                                                                     )
                                                                 ],
                                                                 color="success",
                                                                 style={
-                                                                    'margin': '20px 0px 20px 0px'},
+                                                                    'margin': '20px 0px 20px 0px'
+                                                                },
                                                                 n_clicks_timestamp=0
                                                             )
                                                         ]
@@ -489,9 +510,11 @@ app.layout = html.Div(children=[
                                                     dcc.Graph(
                                                         id='figure-id',
                                                         config={
-                                                            'autosizable': False},
+                                                            'autosizable': False
+                                                        },
                                                         style={
-                                                            'display': 'none'}
+                                                            'display': 'none'
+                                                        }
                                                     ),
                                                 ]
                                             ),
@@ -514,7 +537,7 @@ app.layout = html.Div(children=[
                                 children=[
                                     # Conteudo Terceiro Tab
                                     html.Div(
-                                        className='config-page',
+                                        className="config-page",
                                         children=[
                                             # Título
                                             html.Div(
@@ -529,48 +552,33 @@ app.layout = html.Div(children=[
                                             ),
                                             html.Div(
                                                 children=[
-                                                    html.H6(
-                                                        children=[
-                                                            "Cor do grafico"
-                                                        ],
-                                                        style={
-                                                            "color": "black"
-                                                        }
-                                                    ),
-                                                    dcc.Dropdown(
-                                                        id="graphic-plot-color",
+                                                    dbc.Checklist(
                                                         options=[
-                                                            {"label": "Azul",
-                                                             "value": "blue"},
-                                                            {"label": "Preto",
-                                                             "value": "black"}
+                                                            {"label": "Ajustar a Divisão de Voltas Manualmente", "value": 1},
                                                         ],
-                                                        value="blue",
-                                                    )
-                                                ]
-                                            ),
-                                            html.Div(
-                                                children=[
-                                                    html.H6(
-                                                        children=[
-                                                            "Ajustar a Divisao de Voltas Manualmente"
-                                                        ]
+                                                        id="div-voltas-manual",
+                                                        value=[],
+                                                        switch=True,
+                                                        style={
+                                                            'margin-left': '20px',
+                                                            'margin-top': '10px',
+                                                            'padding-bottom': '10px',
+                                                        }
                                                     ),
                                                     # Conteudo divisão de voltas
                                                     html.Div(
                                                         id="corpo-divisao-voltas",
                                                         className="divisao-sub-content",
                                                         style={
-                                                            'display': 'inline-block'},
+                                                            'display': 'none'
+                                                        },
                                                         children=[
                                                             # Checklist de Distancia ou Tempo
                                                             dbc.RadioItems(
                                                                 id="radios-row",
                                                                 options=[
-                                                                    {"label": "Distância",
-                                                                     "value": "distancia"},
-                                                                    {"label": "Tempo",
-                                                                     "value": "tempo"},
+                                                                    {"label": "Distância", "value": "distancia"},
+                                                                    {"label": "Tempo", "value": "tempo"},
                                                                 ],
                                                                 value="distancia"
                                                             ),
@@ -583,14 +591,17 @@ app.layout = html.Div(children=[
                                                                         className="if-tempo-selected",
                                                                         id="corpo-divisao-tempo",
                                                                         style={
-                                                                            'display': 'none'},
+                                                                            'display': 'none'
+                                                                        },
                                                                         children=[
                                                                             # Selecionar número de voltas
                                                                             html.H4(
                                                                                 children='Número de Voltas:',
                                                                                 className='form-label',
                                                                                 style={
-                                                                                    'margin-top': '8px', 'font-size': '1rem'}
+                                                                                    'margin-top': '8px', 
+                                                                                    'font-size': '1rem'
+                                                                                }
                                                                             ),
                                                                             daq.NumericInput(
                                                                                 id='divisão-voltas-tempo-input',
@@ -607,7 +618,9 @@ app.layout = html.Div(children=[
                                                                                 children='Defina o tempo de cada volta (s.ms):',
                                                                                 className='form-label',
                                                                                 style={
-                                                                                    'margin-top': '8px', 'font-size': '1rem'}
+                                                                                    'margin-top': '8px', 
+                                                                                    'font-size': '1rem'
+                                                                                }
                                                                             ),
                                                                             html.Div(
                                                                                 id="time-input",
@@ -641,7 +654,8 @@ app.layout = html.Div(children=[
                                                                                 children='Distância das Voltas:',
                                                                                 className='form-label',
                                                                                 style={
-                                                                                    'margin-top': '8px', 'font-size': '1rem'
+                                                                                    'margin-top': '8px', 
+                                                                                    'font-size': '1rem'
                                                                                 }
                                                                             ),
                                                                             dbc.InputGroup(
@@ -651,7 +665,7 @@ app.layout = html.Div(children=[
                                                                                     type="number",
                                                                                     min=0,
                                                                                     id="input-div-distancia"
-                                                                                )
+                                                                                 )
                                                                                 ],
                                                                                 style={
                                                                                     'margin-top': '8px',
@@ -703,12 +717,19 @@ app.layout = html.Div(children=[
             # Parte de baixo
             dbc.ModalFooter(
                 children=[
-                    dbc.Button("Fechar", id="close-modal",
-                               className="ml-auto tesla-button"),
+                    dbc.Button(
+                        "Fechar", 
+                        id="close-modal",
+                        className="ml-auto tesla-button"
+                    ),
                     dbc.Spinner(
                         children=[
-                            dbc.Button("Aplicar", id="apply-adv-changes-button",
-                                       className="tesla-button", n_clicks_timestamp=0),
+                            dbc.Button(
+                                "Aplicar", 
+                                id="apply-adv-changes-button",
+                                className="tesla-button", 
+                                n_clicks_timestamp = 0
+                            ),
                             html.Div(
                                 id="apply-adv-changes-loading"
                             )
@@ -845,6 +866,29 @@ def change_button_class(value):
 
     return 'interations-button button-int'
 
+# Callback que habilita a divisão de voltas manual (Tab de configurações gerais)
+@app.callback(
+    [Output('corpo-divisao-voltas', 'style'),
+     Output('div-voltas-manual', 'style')],
+    [Input('div-voltas-manual', 'value')]
+)
+def able_manual_division(value):
+
+    if (1 in value):
+        return (
+            {'display': 'inline-block'},
+            {'margin-left': '20px',
+             'margin-top': '10px',
+             'margin-bottom': '5px'}
+        )
+    else:
+        return (
+            {'display': 'none'},
+            {'margin-left': '20px',
+             'margin-top': '10px',
+             'padding-bottom': '10px'}
+        )
+
 # Callback para o Upload de arquivos, montagem do dataFrame e do html do modal
 @app.callback(
     [Output('index-page', 'style'),
@@ -900,17 +944,15 @@ def _read_file(list_of_contents, list_of_names):
      State({'type': 'savitzky-checklist', 'index': ALL}, 'value'),
      State({'type': 'savitzky-cut', 'index': ALL}, 'value'),
      State({'type': 'savitzky-poly', 'index': ALL}, 'value'),
-     State('input-div-distancia', 'value'),
-     State('graphic-plot-color', 'value')]
+     State('input-div-distancia', 'value')]
 )
 def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button, lap_highlight,
                 selected_columns_Y, selected_X, filters, filters_subseq,
                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
-                input_div_dist, graphic_plot_color_value):
+                input_div_dist):
 
     if button_plot != 0 or button_apply != 0:
 
-        #grafico.plot_color = graphic_plot_color_value
         grafico._filters(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                          bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
         grafico._plot(selected_columns_Y, selected_X)
@@ -924,7 +966,9 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
             grafico.lap_highlight_style = {
                 'margin-top': '8px',
                 'margin-bottom': '8px',
-                'font-size': '18px'
+                'font-size': '18px',
+                'position': 'relative',
+                'bottom': '15px'
             }
         else:
             grafico.configuracao_sobreposicao_style = {"display": "none"}
@@ -951,21 +995,25 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
     [Input("figure-id", "clickData"),
      Input("checklist-horizontal", "value"),
      Input('horizontal-row', 'value'),
-     Input('set-reference-button', 'n_clicks')],
+     Input('set-reference-button', 'n_clicks'),
+     Input("switches-destacar-voltas", "value"),
+     Input('radios-row', 'value'),
+     Input('divisão-voltas-tempo-input', 'value'),
+     Input('sobreposicao-button', 'value')],
     [State("add-line-button", "value"),
      State('horizontal-input', 'value'),
      State('dropdown-analise-geral-X', 'value'),
      State('dropdown-analise-geral-Y', 'value')]
 )
-def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, 
-                             selected_X, selected_columns_Y):
+def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, lap_highlight, div_radios_value, numero_voltas, sobreposicao_button,
+                             add_line, input_value, selected_X, selected_columns_Y):
 
-    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value,
-                                         selected_X, selected_columns_Y, grafico.ploted_figure, grafico.data_copy)
+    Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, lap_highlight, div_radios_value, 
+                                         numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, grafico.ploted_figure, grafico.n_voltas)
 
     return(
         Pos_Graphic.figure_id_figure,
-        Pos_Graphic.add_line_button_value
+        Pos_Graphic.add_line_button_value,
     )
 
 # Callback que habilita e desabilita as configurações de divisao de voltas

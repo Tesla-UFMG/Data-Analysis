@@ -25,8 +25,8 @@ class processingPOSGraphic:
         self.distance_division_style =  {'display': 'none'}
         self.time_input_children = []
     
-    def _display_reference_lines(self, clickData, checklist_horizontal, radios_value, n1, add_line, input_value, selected_X, 
-                                 selected_columns_Y, ploted_figure, data_copy):
+    def _display_reference_lines(self, clickData, checklist_horizontal, radios_value, n1, add_line, input_value, lap_highlight, div_radios_value, 
+                                 numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, ploted_figure, n_voltas):
         
         if clickData is not None:
 
@@ -36,27 +36,64 @@ class processingPOSGraphic:
                 if('horizontal-grafico' in radios_value):
 
                     if("Line" in add_line):
-
-                        yref = "y"
-                        curveNumber = clickData['points'][0]['curveNumber']
-                        if(curveNumber != 0):
-                            yref = yref + str(curveNumber+1)
-
-                        ploted_figure.add_shape(type="line",
-                                                xref="paper", yref=yref,
-                                                y0=clickData['points'][0]['y'], y1=clickData['points'][0]['y'],
-                                                x0=0, x1=1,
-                                                line=dict(
-                                                    color="black",
-                                                    dash="dot",
-                                                    width=1
-                                                ),
-                                               )
-
-                        ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
                         
-                        self.figure_id_figure = ploted_figure
-                        self.add_line_button_value = []
+                        if (lap_highlight or sobreposicao_button):
+
+                            yref = "y"
+                            curveNumber = clickData['points'][0]['curveNumber']
+
+                            if('distancia' in div_radios_value):
+                                x_voltas = n_voltas
+                            elif('tempo' in div_radios_value):
+                                x_voltas = numero_voltas
+
+                            new_curveNumber = curveNumber//(x_voltas+1)
+
+                            if(curveNumber != 0):
+                                if (curveNumber % (x_voltas) == 0):
+                                    yref = yref + str(new_curveNumber)
+                                else:
+                                    yref = yref + str(new_curveNumber+1)
+
+                            if (yref == "y0"):
+                                yref = "y"
+
+                            ploted_figure.add_shape(type="line",
+                                                    xref="paper", yref=yref,
+                                                    y0=clickData['points'][0]['y'], y1=clickData['points'][0]['y'],
+                                                    x0=0, x1=1,
+                                                    line=dict(
+                                                        color="black",
+                                                        dash="dot",
+                                                        width=1
+                                                    ),
+                                                )
+
+                            ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
+                            
+                            self.figure_id_figure = ploted_figure
+                            self.add_line_button_value = []
+                        else:
+                            yref = "y"
+                            curveNumber = clickData['points'][0]['curveNumber']
+                            if(curveNumber != 0):
+                                yref = yref + str(curveNumber+1)
+
+                            ploted_figure.add_shape(type="line",
+                                                    xref="paper", yref=yref,
+                                                    y0=clickData['points'][0]['y'], y1=clickData['points'][0]['y'],
+                                                    x0=0, x1=1,
+                                                    line=dict(
+                                                        color="black",
+                                                        dash="dot",
+                                                        width=1
+                                                    ),
+                                                )
+
+                            ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
+                            
+                            self.figure_id_figure = ploted_figure
+                            self.add_line_button_value = []
                         
                         return
                     else:
@@ -153,5 +190,3 @@ class processingPOSGraphic:
                 self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
                 
         return
-        
-    

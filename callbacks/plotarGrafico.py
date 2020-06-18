@@ -317,6 +317,7 @@ class plotarGrafico():
         self.ploted_figure = ploted_figure
         self.data_copy = None
         self.lap_division_show_or_hide_style = {"display":"none"}
+        self.n_voltas = None
 
     def _filters(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
@@ -408,7 +409,8 @@ class plotarGrafico():
         self.graph_content_children = dcc.Graph(
                                             figure= self.ploted_figure,
                                             id='figure-id',
-                                            config={'autosizable' : True})                                          
+                                            config={'autosizable' : True}
+                                        )                                          
         self.modal_button_style = {'display':'inline'}
         self.modal_body_children = modal_itens
         self.plot_loading_children = []
@@ -416,12 +418,14 @@ class plotarGrafico():
                                'border-left-style': 'outset',
                                'border-width': '2px',
                                'margin-left': '20px',
-                               'margin-top': '15px'
+                               'margin-top': '15px',
+                               'padding': '0.01em 16px 0.01em 10px'
                               }
         self.lap_division_show_or_hide_style = {'display':'block',
                                                 'border-left-style': 'outset',
                                                 'border-width': '2px',
-                                                'margin-left': '20px'
+                                                'margin-left': '20px',
+                                                'margin-top': '15px'
                                                }
         self.configuracao_sobreposicao_style = dash.no_update
 
@@ -436,8 +440,9 @@ class plotarGrafico():
                 self.configuracao_sobreposicao_style = {'display':'block',
                                                         'border-left-style': 'outset',
                                                         'border-width': '2px',
-                                                        'margin-left': '30px',
-                                                        'margin-top': '15px'
+                                                        'margin-left': '10px',
+                                                        'margin-top': '15px',
+                                                        'padding': '0.01em 16px'
                                                         }
 
                 n_voltas = len(self.data_copy['Dist'])//input_div_dist
@@ -459,6 +464,8 @@ class plotarGrafico():
                                                         row=cont+1,
                                                         col=1
                                                         )
+
+                self.n_voltas = n_voltas
         elif('tempo' in div_radios_value):
             for cont, column_name in enumerate(selected_columns_Y):
                 for z in tempo_voltas:
@@ -512,57 +519,3 @@ class plotarGrafico():
                         go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
                         row=cont+1, col=1
                     )
-        
-        # if (sobreposicao_button):
-
-        #     n_voltas = max(self.data_copy['Dist'])//input_div_dist
-        #     self.ploted_figure.data = []
-
-        #     for cont, column_name in enumerate(selected_columns_Y):
-
-        #         for i in range(0, n_voltas):
-        #             lap_location =  input_div_dist * i
-        #             next_lap_location = input_div_dist * (i + 1)
-
-        #             while True:
-        #                 if(not(np.where(self.data_copy['Dist'] == lap_location))[0]):
-        #                     lap_location = lap_location + 1
-        #                 else:
-        #                     distance = (np.where(self.data_copy['Dist'] == lap_location)[0])[0]
-
-        #                     while True:
-        #                         if(not(np.where(self.data_copy['Dist'] == next_lap_location))[0]):
-        #                             next_lap_location = next_lap_location + 1
-        #                         else:
-        #                             next_distance = (np.where(self.data_copy['Dist'] == next_lap_location)[0])[0]
-        #                             break
-        #                     break
-
-        #             dist_use = list(_chunks(self.data_copy[selected_X], distance, next_distance))
-        #             data_use = list(_chunks(self.data_copy[column_name], distance, next_distance))
-
-        #             offset = self.data_copy[selected_X][distance]
-
-        #             self.ploted_figure.add_trace(go.Scatter(x=(dist_use[0]-offset), 
-        #                                                     y=data_use[0], 
-        #                                                     name="Volta {}".format(i+1)
-        #                                                    ),                                                
-        #                                          row=cont+1, 
-        #                                          col=1,
-        #                                         )
-                
-        #         dist_use = list(_chunks(self.data_copy[selected_X], next_distance, len(self.data_copy[selected_X])))
-        #         data_use = list(_chunks(self.data_copy[column_name], next_distance, len(self.data_copy[selected_X])))
-
-        #         offset = self.data_copy[selected_X][next_distance]           
-
-        #         self.ploted_figure.add_trace(go.Scatter(x=(dist_use[0]-offset), 
-        #                                                 y=data_use[0], 
-        #                                                 name="Volta {}".format(i+2 )
-        #                                                 ),
-        #                                      row=cont+1, 
-        #                                      col=1,
-        #                                     )
-
-        #     self.ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-        
