@@ -241,34 +241,25 @@ def _chunks_overlap(lista, n):
 
 # Destaca as voltas dividas, colorindo
 def _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, ploted_figure, data_copy):
-
     ploted_figure.data = []
-
     for cont, column_name in enumerate(selected_columns_Y):
-
         for i in range(0, n_voltas):
-
             lap_location =  input_div_dist * i
             next_lap_location = input_div_dist * (i + 1)
-
             while True:
                 if(not(np.where(data_copy['Dist'] == lap_location))[0]):
                     lap_location = lap_location + 1
                 else:
                     distance = (np.where(data_copy['Dist'] == lap_location)[0])[0]
-
                     while True:
                         if(not(np.where(data_copy['Dist'] == next_lap_location))[0]):
                             next_lap_location = next_lap_location + 1
                         else:
                             next_distance = (np.where(data_copy['Dist'] == next_lap_location)[0])[0]
                             break
-
                     break
-
             dist_use = list(_chunks(data_copy[selected_X], distance, next_distance))
             data_use = list(_chunks(data_copy[column_name], distance, next_distance))
-
             ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                                y=data_use[0], 
                                                name="Volta {}".format(i+1)
@@ -276,10 +267,8 @@ def _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, ploted_
                                     row=cont+1, 
                                     col=1,
                                    )
-
         dist_use = list(_chunks(data_copy[selected_X], next_distance, len(data_copy[selected_X])))
         data_use = list(_chunks(data_copy[column_name], next_distance, len(data_copy[selected_X])))
-
         ploted_figure.add_trace(go.Scatter(x=dist_use[0], 
                                            y=data_use[0], 
                                            name="Volta {}".format(i+2)
@@ -287,20 +276,16 @@ def _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, ploted_
                                 row=cont+1, 
                                 col=1,
                                )
-
     ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const') 
-
     for cont, column_name in enumerate(selected_columns_Y):
         for z in range(1, n_voltas+1):
             lap_location =  input_div_dist * z
-
             while True:
                 if(not(np.where(data_copy['Dist'] == lap_location))[0]):
                     lap_location = lap_location + 1
                 else:
                     distance = (np.where(data_copy['Dist'] == lap_location)[0])[0]
                     break
-
             ploted_figure.add_trace(go.Scatter(y=[min(data_copy[column_name]), max(data_copy[column_name])],
                                                x=[data_copy[selected_X][distance], data_copy[selected_X][distance]],
                                                mode="lines", 
@@ -308,17 +293,13 @@ def _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, ploted_
                                                showlegend=False
                                               ),
                                     row=cont+1,
-                                    col=1
-                                   )
-
+                                    col=1)
 class plotarGrafico():
-
     def __init__(self, ploted_figure):
         self.ploted_figure = ploted_figure
         self.data_copy = None
         self.lap_division_show_or_hide_style = {"display":"none"}
         self.n_voltas = None
-
     def _filters(self, button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
                 bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, data):
 
@@ -434,9 +415,7 @@ class plotarGrafico():
     def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist, lap_highlight, tempo_voltas):
 
         if('distancia' in div_radios_value):
-
             if set_div_dist:
-
                 self.configuracao_sobreposicao_style = {'display':'block',
                                                         'border-left-style': 'outset',
                                                         'border-width': '2px',
@@ -444,19 +423,21 @@ class plotarGrafico():
                                                         'margin-top': '15px',
                                                         'padding': '0.01em 16px'
                                                         }
-
-                n_voltas = len(self.data_copy['Dist'])//input_div_dist
-
+                n_voltas = max(self.data_copy['Dist'])//input_div_dist
                 if(lap_highlight):
-
                     _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, self.ploted_figure, self.data_copy)
                 else:
-                    data_in_dist = np.where(self.data_copy['Dist'] == input_div_dist)[0]
-
                     for cont, column_name in enumerate(selected_columns_Y):
                         for z in range(1, n_voltas+1):
+                            lap_location =  input_div_dist * z
+                            while True:
+                                if(not(np.where(self.data_copy['Dist'] == lap_location))[0]):
+                                    lap_location = lap_location + 1
+                                else:
+                                    distance = (np.where(self.data_copy['Dist'] == lap_location)[0])[0]
+                                    break
                             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-                                                                    x=[min(self.data_copy[selected_X][data_in_dist])*z, min(self.data_copy[selected_X][data_in_dist])*z],
+                                                                    x=[self.data_copy[selected_X][distance], self.data_copy[selected_X][distance]],
                                                                     mode="lines", 
                                                                     line=go.scatter.Line(color="gray"), 
                                                                     showlegend=False
@@ -464,7 +445,6 @@ class plotarGrafico():
                                                         row=cont+1,
                                                         col=1
                                                         )
-
                 self.n_voltas = n_voltas
         elif('tempo' in div_radios_value):
             for cont, column_name in enumerate(selected_columns_Y):
@@ -505,7 +485,7 @@ class plotarGrafico():
             self.ploted_figure.data = []
             
             # Se for dividido por distancia   ?E se for dividido por tempo?
-            n_voltas = len(self.data_copy['Dist'])//input_div_dist
+            n_voltas = max(self.data_copy['Dist'])//input_div_dist
 
             for cont, column_name in enumerate(selected_columns_Y):
 

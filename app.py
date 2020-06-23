@@ -82,6 +82,11 @@ app.layout = html.Div(children=[
                                 className="mr-1 ml-auto",
                                 children=[
                                     dbc.Button(
+                                        id = "txt-button",
+                                        children = "Gerar Txt",
+                                        color = "success"
+                                    ),
+                                    dbc.Button(
                                         children="Salvar",
                                         outline=True,
                                         color="success"
@@ -117,48 +122,98 @@ app.layout = html.Div(children=[
                 className="mx-4",
                 style={"top": "15px"}
             ),
+            dbc.Alert(
+                duration=2000,
+                dismissable=True,
+                color="danger",
+                fade=True,
+                id="txt-alert",
+                is_open=False,
+                className="mx-4"
+            ),
             # Layout da parte central, com o escrito e botao
             html.Div(
-                id="index-page",
-                className="container center-content",
-                children=[
+                id = "txt-creation-tab",
+                style = {"display":"none"},
+                children = [
                     html.Div(
-                        className="row align-items-center justify-content-center no-opacity",
+                        id = "txt-line-display",                        
+                        children = [
+                            dbc.ButtonGroup(
+                                size="md",
+                                className="mr-1 ml-auto",
+                                id = "txt-buttongroup",
+                                children=[
+                                    dbc.Button(
+                                        id = "txt-button-init",
+                                        children="Iniciar",
+                                        outline=True,
+                                        color="success"
+                                    ),
+                                    dbc.Button(
+                                        id = "txt-button-cancel",
+                                        children = "Cancelar",
+                                        color = "success"
+                                    ),  
+                                    dbc.Button(
+                                        id = "txt-button-back",
+                                        style = {"display":"none"},
+                                        children="Voltar",
+                                        outline=True,
+                                        color="success"
+                                    )                                   
+                                ]   
+                            )
+                        ]
+                    )
+                ]
+            ),
+            html.Div(
+                id = "txt-index-page-hide",
+                children = [
+                    html.Div(
+                        id="index-page",
+                        className="container center-content",
                         children=[
                             html.Div(
-                                className="col-md-8 text-center",
+                                className="row align-items-center justify-content-center no-opacity",
                                 children=[
-                                    # Definiçao dos escritos
                                     html.Div(
-                                        className="text",
+                                        className="col-md-8 text-center",
                                         children=[
-                                            # H1 = Fonte maior, Título
-                                            html.H1(
-                                                children='Análise de dados NK319'
-                                            ),
-                                            # H4 = Fonte menor, subtítulo
-                                            html.H4(
-                                                className="mb-5",
-                                                children='Fórmula Tesla UFMG'
-                                            ),
-                                            # Layout botão
-                                            dbc.Spinner(
-                                                color='success',
+                                            # Definiçao dos escritos
+                                            html.Div(
+                                                className="text",
                                                 children=[
-                                                    dcc.Upload(
-                                                        children=[
-                                                            'Upload de arquivos'
-                                                        ],
-                                                        id="upload-data",
-                                                        className="btn btn-primary px-4 py-3 upload-btn",
-                                                        style={
-                                                            'background-color': '#4ed840',
-                                                            'border-color': '#0d0d0d'
-                                                        },
-                                                        multiple=True
+                                                    # H1 = Fonte maior, Título
+                                                    html.H1(
+                                                        children='Análise de dados NK319'
                                                     ),
-                                                    html.Div(
-                                                        id="upload-data-loading"
+                                                    # H4 = Fonte menor, subtítulo
+                                                    html.H4(
+                                                        className="mb-5",
+                                                        children='Fórmula Tesla UFMG'
+                                                    ),
+                                                    # Layout botão
+                                                    dbc.Spinner(
+                                                        color='success',
+                                                        children=[
+                                                            dcc.Upload(
+                                                                children=[
+                                                                    'Upload de arquivos'
+                                                                ],
+                                                                id="upload-data",
+                                                                className="btn btn-primary px-4 py-3 upload-btn",
+                                                                style={
+                                                                    'background-color': '#4ed840',
+                                                                    'border-color': '#0d0d0d'
+                                                                },
+                                                                multiple=True
+                                                            ),
+                                                            html.Div(
+                                                                id="upload-data-loading"
+                                                            )
+                                                        ]
                                                     )
                                                 ]
                                             )
@@ -167,10 +222,9 @@ app.layout = html.Div(children=[
                                 ]
                             )
                         ]
-                    )
+                    ),
                 ]
             ),
-
             # Segunda pagina, com graficos e configuraçoes
             html.Div(
                 id="main-page",
@@ -664,7 +718,8 @@ app.layout = html.Div(children=[
                                                                                     placeholder="Distância em metros",
                                                                                     type="number",
                                                                                     min=0,
-                                                                                    id="input-div-distancia"
+                                                                                    id="input-div-distancia",
+                                                                                    value = 278
                                                                                  )
                                                                                 ],
                                                                                 style={
@@ -1035,7 +1090,28 @@ def _lap_division(radios_value, numero_voltas, n1, input_value):
         Pos_Graphic.distance_division_style,
         Pos_Graphic.time_input_children
     )
+@app.callback(
+    [Output("txt-index-page-hide", "style"),
+     Output("txt-creation-tab", "style"),
+     Output("txt-button-back", "style"),
+     Output("txt-alert","children"),
+     Output("txt-alert", "is_open")],    
+    [Input("txt-button", "n_clicks"),
+    Input("txt-button-cancel", "n_clicks"),
+    Input("txt-button-init", "n_clicks")]
+)  
+def _txt_creation(txt_button_n_clicks,txt_button_cancel_n_clicks, txt_button_init_n_clicks):
+    
+    leitura_de_arquivos._read_sd_card(txt_button_init_n_clicks)
+    leitura_de_arquivos._txt_create(txt_button_n_clicks,txt_button_cancel_n_clicks)
 
+    return(
+        leitura_de_arquivos.txt_index_page_hide_style,
+        leitura_de_arquivos.txt_creation_tab,
+        leitura_de_arquivos.txt_button_back_style,
+        leitura_de_arquivos.txt_alert_children,
+        leitura_de_arquivos.txt_alert_open
+    )
 
 if __name__ == '__main__':
     app.run_server(debug=True)

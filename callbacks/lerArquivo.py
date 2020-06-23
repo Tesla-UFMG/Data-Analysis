@@ -4,7 +4,56 @@ import io
 import base64
 from dash.exceptions import PreventUpdate
 import dash
+import logging
+import itertools
+import platform
+import serial
+import serial.tools.list_ports
+import time
+import dash_bootstrap_components as dbc
+import os                                                                       
+import multiprocessing 
 #------------------------------------------#
+def comp(linha,arquivo):
+    for i in range(0,7):
+        if not linha:
+            return -1
+        if linha[i] != arquivo[i]:
+            return -1
+        else:
+            print(linha[i], arquivo[i])
+    return 1
+def sd_read():
+    ports = list(serial.tools.list_ports.comports())
+    for p in ports:
+        print(p[0])
+    stm = serial.Serial(str(p[0]),baudrate = 115200, timeout = 0.5)
+    c_file = "text3.txt"
+    a = "1".encode('utf-8')
+    stm.write(a)
+    test_flag = []
+    garbage = open(c_file,"w")
+    while (1):
+            line = stm.readline().decode("ascii").translate({ord('\x00'): None})   
+            print(line)             
+            if comp(line,"Arquivo") == 1:
+                c_file =  line.rstrip("\r\n")
+                if(not test_flag or test_flag == c_file[-1]):
+                    test_flag = c_file[-1]
+                    c_file = c_file[:-1]
+                    c_file =  c_file.rstrip("\tCodigo do  Teste ") + ".txt"
+                    print(c_file,test_flag) 
+                    garbage = open(c_file,"w")
+                else:
+                    print("end")
+                    break
+            else:
+                if(not test_flag or test_flag == line[-2]):
+                    garbage.write(line)
+                else:
+                    garbage.close()
+                    print("end")
+                    break
 
 class lerArquivo:
 
@@ -18,6 +67,15 @@ class lerArquivo:
         self.upload_loading_children = []
         self.files_alert_open = False
         self.files_alert_children = []
+        self.txt_index_page_hide_style = {}
+        self.txt_creation_tab = {"display":"none"}
+        self.txt_button_n_clicks = None
+        self.txt_button_cancel_n_clicks = None
+        self.txt_button_init_n_clicks = None
+        self.txt_button_back_style = {"display":"none"}
+        self.restriction = False
+        self.txt_alert_children = []
+        self.txt_alert_open = False
 
     def _get_data(self, list_of_contents, list_of_names):
 
@@ -83,3 +141,40 @@ class lerArquivo:
                 self.files_alert_children = "É necessário o upload de um arquivo chamado legenda.txt"
         else:
             raise PreventUpdate
+    
+
+    def _txt_create(self,txt_button_n_clicks,txt_button_cancel_n_clicks):
+        if(self.restriction and (txt_button_n_clicks != self.txt_button_n_clicks)):
+            self.txt_alert_children = "Nenhum PORT Detectado"
+            self.txt_alert_open = True
+            self.txt_index_page_hide_style = {}
+            self.txt_creation_tab = {"display":"none"}
+            self.txt_button_n_clicks = txt_button_n_clicks
+        else:
+            self.txt_alert_children = []
+            self.txt_alert_open = False
+        if(txt_button_n_clicks != self.txt_button_n_clicks):
+            self.txt_index_page_hide_style = {"display":"none"}
+            self.txt_creation_tab = {"top": "15px"}
+        self.txt_button_n_clicks = txt_button_n_clicks
+        if(txt_button_cancel_n_clicks != self.txt_button_cancel_n_clicks):
+            self.txt_index_page_hide_style = {}
+            self.txt_creation_tab = {"display":"none"}
+        self.txt_button_cancel_n_clicks = txt_button_cancel_n_clicks
+
+    def _read_sd_card(self,txt_button_init_n_clicks):
+        ports = list(serial.tools.list_ports.comports())
+        for p in ports:
+            print(p[0])
+        if(ports):
+            self.restriction = False
+            if(txt_button_init_n_clicks != self.txt_button_init_n_clicks):
+                print("a")
+                p = multiprocessing.Process(target = sd_read)
+                p.start()
+                self.txt_button_back_style = []
+                self.txt_index_page_hide_style = {}
+                self.txt_creation_tab = {"display":"none"}
+        else:
+            self.restriction = True
+        self.txt_button_init_n_clicks = txt_button_init_n_clicks
