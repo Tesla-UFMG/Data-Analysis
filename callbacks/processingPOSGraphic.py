@@ -56,16 +56,12 @@ class processingPOSGraphic:
                                 else:
                                     yref = yref + str(new_curveNumber + 1)
 
-                            print(yref)
-
                             for i in range(1, len(selected_columns_Y)):
                                 if (curveNumber == i * (x_voltas + 1)):
                                     yref = clean_yref + str(new_curveNumber + 1)
 
                             if (yref == "y0"):
                                 yref = "y1"
-
-                            print(yref)
 
                             ploted_figure.add_shape(type="line",
                                                     xref="paper", yref=yref,
