@@ -40,6 +40,7 @@ class processingPOSGraphic:
                         if (lap_highlight or sobreposicao_button):
 
                             yref = "y"
+                            clean_yref = yref
                             curveNumber = clickData['points'][0]['curveNumber']
 
                             if('distancia' in div_radios_value):
@@ -47,16 +48,24 @@ class processingPOSGraphic:
                             elif('tempo' in div_radios_value):
                                 x_voltas = numero_voltas
 
-                            new_curveNumber = curveNumber//(x_voltas+1)
+                            new_curveNumber = curveNumber // (x_voltas + 1)
 
                             if(curveNumber != 0):
-                                if (curveNumber % (x_voltas) == 0):
+                                if (curveNumber % (x_voltas + 1) == 0):
                                     yref = yref + str(new_curveNumber)
                                 else:
-                                    yref = yref + str(new_curveNumber+1)
+                                    yref = yref + str(new_curveNumber + 1)
+
+                            print(yref)
+
+                            for i in range(1, len(selected_columns_Y)):
+                                if (curveNumber == i * (x_voltas + 1)):
+                                    yref = clean_yref + str(new_curveNumber + 1)
 
                             if (yref == "y0"):
-                                yref = "y"
+                                yref = "y1"
+
+                            print(yref)
 
                             ploted_figure.add_shape(type="line",
                                                     xref="paper", yref=yref,
