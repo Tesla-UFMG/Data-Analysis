@@ -932,7 +932,8 @@ def _read_file(list_of_contents, list_of_names):
      Input('radios-row', 'value'),
      Input('input-voltas-button-distancia', 'n_clicks'),
      Input('sobreposicao-button', 'value'),
-     Input("switches-destacar-voltas", "value")],
+     Input("switches-destacar-voltas", "value"),
+     Input('div-voltas-manual', 'value')],
     [State('dropdown-analise-geral-Y', 'value'),
      State('dropdown-analise-geral-X', 'value'),
      State('filtros-checklist', 'value'),
@@ -946,7 +947,7 @@ def _read_file(list_of_contents, list_of_names):
      State({'type': 'savitzky-poly', 'index': ALL}, 'value'),
      State('input-div-distancia', 'value')]
 )
-def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button, lap_highlight,
+def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value, set_div_dist, sobreposicao_button, lap_highlight, overlap_manually,
                 selected_columns_Y, selected_X, filters, filters_subseq,
                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
                 input_div_dist):
@@ -959,7 +960,7 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
 
         if(1 in div_switches_value):
             
-            grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, 
+            grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, overlap_manually,
                                    input_div_dist, set_div_dist, lap_highlight, Pos_Graphic.tempo_voltas)
             grafico._overlap(sobreposicao_button, selected_columns_Y, 
                              input_div_dist, selected_X)

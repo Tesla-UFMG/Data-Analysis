@@ -431,72 +431,103 @@ class plotarGrafico():
 
         return
     
-    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, input_div_dist, set_div_dist, lap_highlight, tempo_voltas):
+    def _overlap_lines(self, div_radios_value, selected_columns_Y, selected_X, overlap_manually, input_div_dist, set_div_dist, lap_highlight, tempo_voltas):
+        
+        if (overlap_manually):
 
-        if('distancia' in div_radios_value):
+            if('distancia' in div_radios_value):
 
-            if set_div_dist:
+                if set_div_dist:
 
-                self.configuracao_sobreposicao_style = {'display':'block',
-                                                        'border-left-style': 'outset',
-                                                        'border-width': '2px',
-                                                        'margin-left': '10px',
-                                                        'margin-top': '15px',
-                                                        'padding': '0.01em 16px'
-                                                        }
+                    self.configuracao_sobreposicao_style = {'display':'block',
+                                                            'border-left-style': 'outset',
+                                                            'border-width': '2px',
+                                                            'margin-left': '10px',
+                                                            'margin-top': '15px',
+                                                            'padding': '0.01em 16px'
+                                                            }
 
-                n_voltas = len(self.data_copy['Dist'])//input_div_dist
+                    n_voltas = len(self.data_copy['Dist'])//input_div_dist
 
-                if(lap_highlight):
+                    if(lap_highlight):
 
-                    _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, self.ploted_figure, self.data_copy)
-                else:
-                    data_in_dist = np.where(self.data_copy['Dist'] == input_div_dist)[0]
+                        _highlight(selected_columns_Y, selected_X, n_voltas, input_div_dist, self.ploted_figure, self.data_copy)
+                    else:
+                        data_in_dist = np.where(self.data_copy['Dist'] == input_div_dist)[0]
 
-                    for cont, column_name in enumerate(selected_columns_Y):
-                        for z in range(1, n_voltas+1):
-                            self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-                                                                    x=[min(self.data_copy[selected_X][data_in_dist])*z, min(self.data_copy[selected_X][data_in_dist])*z],
-                                                                    mode="lines", 
-                                                                    line=go.scatter.Line(color="gray"), 
-                                                                    showlegend=False
-                                                                    ),
-                                                        row=cont+1,
-                                                        col=1
-                                                        )
+                        for cont, column_name in enumerate(selected_columns_Y):
+                            for z in range(1, n_voltas+1):
+                                self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
+                                                                        x=[min(self.data_copy[selected_X][data_in_dist])*z, min(self.data_copy[selected_X][data_in_dist])*z],
+                                                                        mode="lines", 
+                                                                        line=go.scatter.Line(color="gray"), 
+                                                                        showlegend=False
+                                                                        ),
+                                                            row=cont+1,
+                                                            col=1
+                                                            )
 
-                self.n_voltas = n_voltas
-        elif('tempo' in div_radios_value):
+                    self.n_voltas = n_voltas
+            elif('tempo' in div_radios_value):
+                for cont, column_name in enumerate(selected_columns_Y):
+                    for z in tempo_voltas:
+                        self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
+                                                                x=[z, z],
+                                                                mode="lines", 
+                                                                line=go.scatter.Line(color="gray"), 
+                                                                showlegend=False
+                                                            ),
+                                                    row=cont+1,
+                                                    col=1
+                                                    )
+
+            # elif('tempo' in div_radios_value):
+            #     for cont, column_name in enumerate(selected_columns_Y):
+            #         for z in tempo_voltas:
+            #             data_in_timer = np.where(self.data_copy['Timer'] == z)[0]
+                        
+            #             if (not(np.where(self.data_copy['Timer'] == z))[0]):
+            #                 data_in_timer = np.where(self.data_copy['Timer'] == z+1)[0]
+            #                 print(data_in_timer)
+
+            #             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
+            #                                                     x=[min(self.data_copy[selected_X][data_in_timer])*z, min(self.data_copy[selected_X][data_in_timer])*z],
+            #                                                     mode="lines", 
+            #                                                     line=go.scatter.Line(color="gray"), 
+            #                                                     showlegend=False
+            #                                                    ),
+            #                                          row=cont+1,
+            #                                          col=1
+            #                                         )
+        #Divisão pelo beacon
+        else:
+            self.configuracao_sobreposicao_style = {'display':'block',
+                                                    'border-left-style': 'outset',
+                                                    'border-width': '2px',
+                                                    'margin-left': '10px',
+                                                    'margin-top': '15px',
+                                                    'padding': '0.01em 16px'
+                                                   }
+
+            laps_value = []
+            
+            laps = np.where(self.data_copy['Beacon'] == 1)[0]
+
+            for i in range(0, len(laps)-1):
+                if (laps[i] + 1 != laps[i + 1]):
+                    laps_value.append(laps[i])
+
             for cont, column_name in enumerate(selected_columns_Y):
-                for z in tempo_voltas:
+                for z in range(1, len(laps_value)+1):
                     self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-                                                            x=[z, z],
+                                                            x=[self.data_copy[selected_X][laps_value[z-1]], self.data_copy[selected_X][laps_value[z-1]]],
                                                             mode="lines", 
                                                             line=go.scatter.Line(color="gray"), 
                                                             showlegend=False
-                                                           ),
-                                                 row=cont+1,
-                                                 col=1
+                                                            ),
+                                                row=cont+1,
+                                                col=1
                                                 )
-
-        # elif('tempo' in div_radios_value):
-        #     for cont, column_name in enumerate(selected_columns_Y):
-        #         for z in tempo_voltas:
-        #             data_in_timer = np.where(self.data_copy['Timer'] == z)[0]
-                    
-        #             if (not(np.where(self.data_copy['Timer'] == z))[0]):
-        #                 data_in_timer = np.where(self.data_copy['Timer'] == z+1)[0]
-        #                 print(data_in_timer)
-
-        #             self.ploted_figure.add_trace(go.Scatter(y=[min(self.data_copy[column_name]), max(self.data_copy[column_name])],
-        #                                                     x=[min(self.data_copy[selected_X][data_in_timer])*z, min(self.data_copy[selected_X][data_in_timer])*z],
-        #                                                     mode="lines", 
-        #                                                     line=go.scatter.Line(color="gray"), 
-        #                                                     showlegend=False
-        #                                                    ),
-        #                                          row=cont+1,
-        #                                          col=1
-        #                                         )
 
     def _overlap(self, sobreposicao_button, selected_columns_Y, input_div_dist, selected_X):
 
