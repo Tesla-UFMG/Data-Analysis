@@ -5,6 +5,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_daq as daq
+import dash_table
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ClientsideFunction, MATCH, ALL
 from dash.exceptions import PreventUpdate
@@ -196,6 +197,7 @@ app.layout = html.Div(children=[
                                                     ),
                                                     # Layout botão
                                                     dbc.Spinner(
+                                                        id = "upload-button",
                                                         color='success',
                                                         children=[
                                                             dcc.Upload(
@@ -277,21 +279,15 @@ app.layout = html.Div(children=[
                                                         multi=False,
                                                         placeholder='Selecione as grandezas do eixo X'
                                                     ),
-                                                    # Configuraçao Eixo Y
-                                                    html.H4(
-                                                        children='EIXO Y',
-                                                        className='form-label'
-                                                    ),
                                                     html.Div(
                                                         className='row-drop',
                                                         children=[
                                                             # Dropdown para selecionar coluna de dados para o eixo Y
-                                                            dcc.Dropdown(
-                                                                id='dropdown-analise-geral-Y',
-                                                                className='',
-                                                                multi=True,
-                                                                placeholder='Selecione as grandezas do eixo Y'
-                                                            ),
+                                                            # Configuraçao Eixo Y
+                                                            html.Div(
+                                                                id = "Y-Axis-Dropdown",
+                                                                children = []                                                              
+                                                            ),                                                            
                                                             html.Div(
                                                                 className='config-pre-plot',
                                                                 style={
@@ -526,6 +522,20 @@ app.layout = html.Div(children=[
                                                                             ),
                                                                         ]
                                                                     ),
+                                                                    html.Div(   
+                                                                        id = "show-quick-report",
+                                                                        style = {"display":"none"},                                                                    
+                                                                        children = [
+                                                                            dbc.Button(
+                                                                                id ="quick-report",
+                                                                                className="tesla-button",
+                                                                                children = [
+                                                                                    "Relatorio_Rapido",
+                                                                                ],
+                                                                                size = "sm"
+                                                                            )
+                                                                        ]
+                                                                    )
                                                                 ]
                                                             ),
                                                             # Botão de Plotagem
@@ -579,6 +589,34 @@ app.layout = html.Div(children=[
                                                 color="secondary",
                                                 className="mr-1 hiden modal-open-button-style",
                                                 id='modal-button'
+                                            ),
+                                            html.Div(
+                                                id = "quick-report-table",
+                                                style = {
+                                                    "margin": "20px 0px 20px 0px",	
+                                                    },
+                                                children = [
+                                                    dash_table.DataTable(
+                                                        id = 'dash-table',
+                                                        style_cell_conditional = [
+                                                            {"if":{"column_id": "Dado"},"width":"25%"},
+                                                            {"if":{"column_id": "Maximo"},"width":"10%"},
+                                                            {"if":{"column_id": "Minimo"},"width":"10%"},
+                                                            {"if":{"column_id": "Media"},"width":"25%"},
+                                                            {"if":{"column_id": "Desvio Padrao"},"width":"30%"},
+                                                        ],
+                                                        style_data_conditional=[
+                                                            {
+                                                                'if': {'row_index': 'odd'},
+                                                                'backgroundColor': 'rgb(248, 248, 248)'
+                                                            }
+                                                        ],
+                                                        style_header={
+                                                            'backgroundColor': 'rgb(230, 230, 230)',
+                                                            'fontWeight': 'bold'
+                                                        },
+                                                    )
+                                                ]
                                             )
                                         ]
                                     )
@@ -719,7 +757,7 @@ app.layout = html.Div(children=[
                                                                                     type="number",
                                                                                     min=0,
                                                                                     id="input-div-distancia",
-                                                                                    value = 278
+                                                                                    value = 2000
                                                                                  )
                                                                                 ],
                                                                                 style={
@@ -948,28 +986,28 @@ def able_manual_division(value):
 @app.callback(
     [Output('index-page', 'style'),
      Output('main-page', 'style'),
-     Output('dropdown-analise-geral-Y', 'options'),
      Output('dropdown-analise-geral-X', 'options'),
      Output('upload-data-loading', 'children'),
      Output('upload-files-alert', 'is_open'),
-     Output('upload-files-alert', 'children')],
+     Output('upload-files-alert', 'children'),
+     Output('Y-Axis-Dropdown', 'children')],
     [Input('upload-data', 'contents')],
-    [State('upload-data', 'filename')]
+    [State('upload-data', 'filename'),
+     State('Y-Axis-Dropdown', 'children')]
 )
-def _read_file(list_of_contents, list_of_names):
-
+def _read_file(list_of_contents, list_of_names, y_axis_dropdown_children):
     leitura_de_arquivos._get_data(list_of_contents, list_of_names)
-
+    if(leitura_de_arquivos.file_flag):
+        leitura_de_arquivos._create_dropdown(y_axis_dropdown_children, leitura_de_arquivos.files_names)
     return [
         leitura_de_arquivos.index_page_style,
         leitura_de_arquivos.main_page_style,
-        leitura_de_arquivos.analise_Y_options,
         leitura_de_arquivos.analis_X_options,
         leitura_de_arquivos.upload_loading_children,
         leitura_de_arquivos.files_alert_open,
-        leitura_de_arquivos.files_alert_children
+        leitura_de_arquivos.files_alert_children,
+        leitura_de_arquivos.y_axis_dropdown
     ]
-
 # Callback do botão de plotagem de gráficos
 @app.callback(
     [Output('apply-adv-changes-loading', 'children'),
@@ -980,7 +1018,8 @@ def _read_file(list_of_contents, list_of_names):
      Output('config-ref-line', 'style'),
      Output('config-sobreposicao', 'style'),
      Output('lap-division-show-or-hide', 'style'),
-     Output("switches-destacar-voltas", "style")],
+     Output("switches-destacar-voltas", "style"),
+     Output("show-quick-report", "style")],
     [Input('plot-button', 'n_clicks_timestamp'),
      Input('apply-adv-changes-button', 'n_clicks_timestamp'),
      Input('switches-input-divisao', 'value'),
@@ -988,7 +1027,7 @@ def _read_file(list_of_contents, list_of_names):
      Input('input-voltas-button-distancia', 'n_clicks'),
      Input('sobreposicao-button', 'value'),
      Input("switches-destacar-voltas", "value")],
-    [State('dropdown-analise-geral-Y', 'value'),
+    [State({'type': 'dynamic-dropdown', 'index': ALL}, 'value'),
      State('dropdown-analise-geral-X', 'value'),
      State('filtros-checklist', 'value'),
      State('media-movel-input', 'value'),
@@ -1005,19 +1044,23 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
                 selected_columns_Y, selected_X, filters, filters_subseq,
                 identificador, bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly,
                 input_div_dist):
-
+    
+    Y_axis = {}
+    i = 0
+    if(leitura_de_arquivos.files_names):
+        for file_name in leitura_de_arquivos.files_names:
+            Y_axis[file_name] = selected_columns_Y[i]
+            i = i + 1
     if button_plot != 0 or button_apply != 0:
-
-        grafico._filters(button_plot, button_apply, selected_columns_Y, selected_X, filters, filters_subseq, identificador,
-                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.data)
-        grafico._plot(selected_columns_Y, selected_X)
-
-        if(1 in div_switches_value):
-            
-            grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, 
-                                   input_div_dist, set_div_dist, lap_highlight, Pos_Graphic.tempo_voltas)
-            grafico._overlap(sobreposicao_button, selected_columns_Y, 
-                             input_div_dist, selected_X)
+        grafico.show_quick_report_style = {}
+        grafico._filters(button_plot, button_apply, Y_axis, selected_X, filters, filters_subseq, identificador,
+                         bandpass_check, bandpass_inf, bandpass_sup, savitzky_check, savitzky_cut, savitzky_poly, leitura_de_arquivos.dataframe_collection, leitura_de_arquivos.files_names)
+        grafico._plot(Y_axis, selected_X, leitura_de_arquivos.files_names)
+        if(1 in div_switches_value):            
+            grafico._overlap_lines(div_radios_value, Y_axis, selected_X, 
+                                   input_div_dist, set_div_dist, lap_highlight, Pos_Graphic.tempo_voltas, leitura_de_arquivos.files_names)
+            grafico._overlap(sobreposicao_button, Y_axis, 
+                             input_div_dist, selected_X, leitura_de_arquivos.files_names)
             grafico.lap_highlight_style = {
                 'margin-top': '8px',
                 'margin-bottom': '8px',
@@ -1040,7 +1083,8 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
         grafico.ref_line_style,
         grafico.configuracao_sobreposicao_style,
         grafico.lap_division_show_or_hide_style,
-        grafico.lap_highlight_style
+        grafico.lap_highlight_style,
+        grafico.show_quick_report_style
     ]
 
 # Callback que adiciona linhas de referencia no gráfico (Horizontais e Verticais)
@@ -1058,13 +1102,13 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
     [State("add-line-button", "value"),
      State('horizontal-input', 'value'),
      State('dropdown-analise-geral-X', 'value'),
-     State('dropdown-analise-geral-Y', 'value')]
+     State({'type': 'dynamic-dropdown', 'index': ALL}, 'value'),]
 )
 def _display_reference_lines(clickData, checklist_horizontal, radios_value, n1, lap_highlight, div_radios_value, numero_voltas, sobreposicao_button,
                              add_line, input_value, selected_X, selected_columns_Y):
 
     Pos_Graphic._display_reference_lines(clickData, checklist_horizontal, radios_value, n1, add_line, input_value, lap_highlight, div_radios_value, 
-                                         numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, grafico.ploted_figure, grafico.n_voltas)
+                                         numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, grafico.ploted_figure, grafico.n_voltas, grafico.number_of_graphs)
 
     return(
         Pos_Graphic.figure_id_figure,
@@ -1113,5 +1157,24 @@ def _txt_creation(txt_button_n_clicks,txt_button_cancel_n_clicks, txt_button_ini
         leitura_de_arquivos.txt_alert_open
     )
 
+@app.callback(
+    [Output("quick-report-table", "style"),
+     Output("dash-table", "columns"),
+     Output("dash-table", "data")],
+    [Input("quick-report", "n_clicks_timestamp"),
+     Input('plot-button', 'n_clicks_timestamp'),],
+    [State({'type': 'dynamic-dropdown', 'index': ALL}, 'value')]    
+)
+def _generate_quick_report(quick_report_nclicks,plot_button_nclicks,selected_columns_Y):
+    
+    if quick_report_nclicks:
+        Pos_Graphic._generate_quick_report(quick_report_nclicks,plot_button_nclicks,selected_columns_Y, leitura_de_arquivos.files_names, grafico.data_copy)
+        return (
+            Pos_Graphic.quick_report_table_style,
+            Pos_Graphic.dash_table_columns,
+            Pos_Graphic.dash_table_data
+        )
+    else:
+        raise PreventUpdate
 if __name__ == '__main__':
     app.run_server(debug=True)

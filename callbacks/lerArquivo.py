@@ -13,6 +13,8 @@ import time
 import dash_bootstrap_components as dbc
 import os                                                                       
 import multiprocessing 
+import dash_core_components as dcc
+import dash_html_components as html
 #------------------------------------------#
 def comp(linha,arquivo):
     for i in range(0,7):
@@ -58,7 +60,6 @@ def sd_read():
 class lerArquivo:
 
     def __init__(self, data, num_dados):
-        self.data = data
         self.num_dados = num_dados
         self.index_page_style = []
         self.main_page_style = []
@@ -76,51 +77,58 @@ class lerArquivo:
         self.restriction = False
         self.txt_alert_children = []
         self.txt_alert_open = False
+        self.number_of_files = 0
+        self.file_flag = 0
+        self.y_axis_dropdown = []
+        self.files_names = []
+        self.dataframe_collection = {}
+        
 
     def _get_data(self, list_of_contents, list_of_names):
-
         if list_of_contents is not None:
+            if ('legenda.txt' in list_of_names):                
+                if (len(list_of_names)):
+                    if len(list_of_names) >= 2:
+                        self.number_of_files = len(list_of_names)
+                        files = dict(zip(list_of_names, list_of_contents))
+                        legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
+                        legenda = [name.split()[0][0].upper() + name.split()[0][1:]for name in legenda.columns.values]
+                        try:
+                            for  nome_do_arquivo in files:
+                                if(nome_do_arquivo != 'legenda.txt'):
+                                    data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), 
+                                                            delimiter='\t', names=legenda, index_col = False)
+                                               
+                                    nome_do_arquivo = str(nome_do_arquivo).replace(".txt", "")
+                                    nome_do_arquivo = str(nome_do_arquivo).replace(" ", "")
+                                    self.files_names.append(nome_do_arquivo)
+                                    self.dataframe_collection[nome_do_arquivo] = pd.DataFrame(data)
+                                    
+                        except:
+                            self.index_page_style = dash.no_update
+                            self.main_page_style = dash.no_update
+                            self.analise_Y_options = dash.no_update
+                            self.analis_X_options =  dash.no_update
+                            self.upload_loading_children = dash.no_update
+                            self.files_alert_open = True
+                            self.files_alert_children =  "Os arquivos de dados não são do tipo .txt"
+                            return
+                        options= []
+                        
+                        self.num_dados = len(legenda)
+                        
+                        for cont, column_name in enumerate(legenda):
+                            options.append({'label': column_name, 'value': column_name})
 
-            if ('legenda.txt' in list_of_names):
-            
-                if len(list_of_names) >= 2:
-            
-                    files = dict(zip(list_of_names, list_of_contents))
-                    legenda = pd.read_csv(io.StringIO(base64.b64decode(files['legenda.txt'].split(',')[1]).decode('utf-8')))
-
-                    legenda = [name.split()[0][0].upper() + name.split()[0][1:]for name in legenda.columns.values]
-
-                    try:
-                        for nome_do_arquivo in files:
-                            if(nome_do_arquivo != 'legenda.txt'):
-                                self.data = pd.read_csv(io.StringIO(base64.b64decode(files[nome_do_arquivo].split(',')[1]).decode('utf-8')), 
-                                                        delimiter='\t', names=legenda, index_col=False)
-                    except:
-                        self.index_page_style = dash.no_update
-                        self.main_page_style = dash.no_update
-                        self.analise_Y_options = dash.no_update
-                        self.analis_X_options =  dash.no_update
-                        self.upload_loading_children = dash.no_update
-                        self.files_alert_open = True
-                        self.files_alert_children =  "Os arquivos de dados não são do tipo .txt"
-
+                        self.index_page_style = {'display': 'none'}
+                        self.main_page_style = {'display': 'inline'}
+                        self.analise_Y_options = options
+                        self.analis_X_options =  options
+                        self.upload_loading_children = []
+                        self.files_alert_open = dash.no_update
+                        self.files_alert_children =  dash.no_update
+                        self.file_flag = 1
                         return
-
-                    options= []
-                    self.num_dados = len(legenda)
-
-                    for cont, column_name in enumerate(legenda):
-                        options.append({'label': column_name, 'value': column_name})
-
-                    self.index_page_style = {'display': 'none'}
-                    self.main_page_style = {'display': 'inline'}
-                    self.analise_Y_options = options
-                    self.analis_X_options =  options
-                    self.upload_loading_children = []
-                    self.files_alert_open = dash.no_update
-                    self.files_alert_children =  dash.no_update
-
-                    return
                 else:
                     self.index_page_style = dash.no_update
                     self.main_page_style = dash.no_update
@@ -142,6 +150,31 @@ class lerArquivo:
         else:
             raise PreventUpdate
     
+    def _create_dropdown(self,y_axis_dropdown_children, list_of_names):
+        for file_name in list_of_names: 
+            if (file_name == "legenda.txt"):
+                continue
+            else:
+                new_element = html.Div(
+                    children = [ 
+                        html.H6(
+                            style = {"color":"black"},
+                            children = [str(file_name)]
+                        ),
+                        dcc.Dropdown(
+                            id={
+                                'type': 'dynamic-dropdown',
+                                'index': file_name
+                            },
+                            className='',
+                            multi=True,
+                            placeholder='Selecione as grandezas do eixo Y',
+                            options = self.analise_Y_options
+                        )        
+                    ]
+                )
+                y_axis_dropdown_children.append(new_element)
+        self.y_axis_dropdown = y_axis_dropdown_children
 
     def _txt_create(self,txt_button_n_clicks,txt_button_cancel_n_clicks):
         if(self.restriction and (txt_button_n_clicks != self.txt_button_n_clicks)):
@@ -169,7 +202,6 @@ class lerArquivo:
         if(ports):
             self.restriction = False
             if(txt_button_init_n_clicks != self.txt_button_init_n_clicks):
-                print("a")
                 p = multiprocessing.Process(target = sd_read)
                 p.start()
                 self.txt_button_back_style = []

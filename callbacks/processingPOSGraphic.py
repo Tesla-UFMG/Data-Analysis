@@ -6,7 +6,49 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import numpy as np
 #------------------------------------------#
-
+unidades_dados_hash = {
+    'Intensidade_Frenagem': '%',
+    'Timer': 's',
+    'V_motor_D':'RPM',
+    'V_motor_E':'RPM',
+    'Volante': 'graus',
+    'Speed_LR': 'km/h',
+    'Speed_RR': 'km/h',
+    'Pedal': '%',
+    'AccelX': 'G',
+    'AccelY': 'G',
+    'AccelZ': 'G',
+    'GyroX': 'graus/s',
+    'GyroY': 'graus/s',
+    'GyroZ': 'graus/s',
+    'Temp_pack0_1': 'ºC',
+    'Temp_pack0_2': 'ºC',
+    'Temp_pack1_1': 'ºC',
+    'Temp_pack1_2': 'ºC',
+    'Temp_pack2_1': 'ºC',
+    'Temp_pack2_2': 'ºC',
+    'Temp_pack3_1': 'ºC',
+    'Temp_pack3_2': 'ºC',
+    'Temp_pack4_1': 'ºC',
+    'Temp_pack4_2': 'ºC',
+    'Temp_pack5_1': 'ºC',
+    'Temp_pack5_2': 'ºC',
+    'Tempmediabb': 'ºC',
+    'Tempmaxbb': 'ºC',
+    'TempInv_D1': 'ºC',
+    'TempInv_D2': 'ºC',
+    'TempInv_E1': 'ºC',
+    'TempInv_E2': 'ºC',
+    'TempInt2': 'ºC',
+    'TempInt': 'ºC',
+    'Temp': 'ºC',
+    'Tensao_GLV': 'mV',
+    'Volt_BAT': 'mV',
+    'Tensaototal': 'mV',
+    'Hodometro_P': 'm',
+    'Hodometro_T': 'm',
+    'Dist': 'm'
+}
 def _soma_lista(lista):
         
     if len(lista) == 1:
@@ -24,12 +66,13 @@ class processingPOSGraphic:
         self.time_division_style = {'display':'none'}
         self.distance_division_style =  {'display': 'none'}
         self.time_input_children = []
-    
+        self.quick_report_table_style = {"display":"none"}
+        self.dash_table_columns = []
+        self.dash_table_data = []
     def _display_reference_lines(self, clickData, checklist_horizontal, radios_value, n1, add_line, input_value, lap_highlight, div_radios_value, 
-                                 numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, ploted_figure, n_voltas):
+                                 numero_voltas, sobreposicao_button, selected_X, selected_columns_Y, ploted_figure, n_voltas, number_of_graphs):
         
         if clickData is not None:
-
             # HORIZONTAL
             if("Horizontal" in checklist_horizontal):
 
@@ -56,8 +99,7 @@ class processingPOSGraphic:
                                     yref = yref + str(new_curveNumber+1)
 
                             if (yref == "y0"):
-                                yref = "y"
-
+                                yref = "y"  
                             ploted_figure.add_shape(type="line",
                                                     xref="paper", yref=yref,
                                                     y0=clickData['points'][0]['y'], y1=clickData['points'][0]['y'],
@@ -68,9 +110,6 @@ class processingPOSGraphic:
                                                         width=1
                                                     ),
                                                 )
-
-                            ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-                            
                             self.figure_id_figure = ploted_figure
                             self.add_line_button_value = []
                         else:
@@ -89,9 +128,6 @@ class processingPOSGraphic:
                                                         width=1
                                                     ),
                                                 )
-
-                            ploted_figure['layout'].update(height=120*len(selected_columns_Y)+35, margin={'t':25, 'b':10, 'l':100, 'r':100}, uirevision='const')
-                            
                             self.figure_id_figure = ploted_figure
                             self.add_line_button_value = []
                         
@@ -190,3 +226,36 @@ class processingPOSGraphic:
                 self.tempo_voltas[len(tempo_div_voltas)-1] = _soma_lista(tempo_div_voltas)
                 
         return
+
+    def _generate_quick_report(self,quick_report_nclicks,plot_button_nclicks,selected_columns_Y, files_names, data):
+        columns = ["Dado","Maximo","Minimo","Media", "Desvio Padrao"]
+        Y_axis = {}
+        i = 0
+        row = {}
+        if(files_names):
+            for file_name in files_names:
+                Y_axis[file_name] = selected_columns_Y[i]
+                i = i + 1
+        if quick_report_nclicks > plot_button_nclicks:
+            self.dash_table_data = []
+            for file_name in files_names:
+                if(Y_axis[file_name]):
+                    for Y in Y_axis[file_name]:
+                        print(data[file_name][Y].mean())
+                        if Y in unidades_dados_hash:
+                            row = {"Dado":Y + " " + file_name}
+                            row.update({"Maximo":str(max(data[file_name][Y])) + " " + unidades_dados_hash[Y]})
+                            row.update({"Minimo": str(min(data[file_name][Y]))+ " " + unidades_dados_hash[Y]})
+                            row.update({"Media" : str(data[file_name][Y].mean())+ " " + unidades_dados_hash[Y]})
+                            row.update({"Desvio Padrao" : str(data[file_name][Y].std())+ " " + unidades_dados_hash[Y]})
+                        else:
+                            row = {"Dado":Y + " " + file_name}
+                            row.update({"Maximo":max(data[file_name][Y])})
+                            row.update({"Minimo": min(data[file_name][Y])})
+                            row.update({"Media" : data[file_name][Y].mean()})
+                            row.update({"Desvio Padrao" : data[file_name][Y].std()})
+                        self.dash_table_data.append(row)
+            self.quick_report_table_style = {}
+            self.dash_table_columns = [{"name":j, "id" : j}for j in columns]
+        else:
+            self.quick_report_table_style = {"display":"none"}
