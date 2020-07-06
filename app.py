@@ -963,7 +963,7 @@ def _plot_graph(button_plot, button_apply, div_switches_value, div_radios_value,
             grafico._overlap_lines(div_radios_value, selected_columns_Y, selected_X, overlap_manually,
                                    input_div_dist, set_div_dist, lap_highlight, Pos_Graphic.tempo_voltas)
             grafico._overlap(sobreposicao_button, selected_columns_Y, 
-                             input_div_dist, selected_X)
+                             input_div_dist, selected_X, overlap_manually)
             grafico.lap_highlight_style = {
                 'margin-top': '8px',
                 'margin-bottom': '8px',

@@ -332,37 +332,41 @@ class plotarGrafico():
             if ('Filtro Mediana' in filters) and ('Média Móvel' in filters):
 
                 for column in selected_columns_Y:
-                    self.data_copy[column] = _smooth(signal.medfilt(self.data_copy[column], filters_subseq), filters_subseq)
+                    if (column != 'Beacon'):
+                        self.data_copy[column] = _smooth(signal.medfilt(self.data_copy[column], filters_subseq), filters_subseq)
             elif 'Média Móvel' in filters:
 
                 for column in selected_columns_Y:
-                    self.data_copy[column] = _smooth(self.data_copy[column], filters_subseq)
+                    if (column != 'Beacon'):
+                        self.data_copy[column] = _smooth(self.data_copy[column], filters_subseq)
             elif 'Filtro Mediana' in filters:
 
                 for column in selected_columns_Y:
-                    self.data_copy[column] = signal.medfilt(self.data_copy[column], np.array(filters_subseq))
+                    if (column != 'Beacon'):
+                        self.data_copy[column] = signal.medfilt(self.data_copy[column], np.array(filters_subseq))
         
         elif(int(button_plot) < int(button_apply)):
 
             for cont, id in enumerate(identificador):
-                if('Passa-Banda' in bandpass_check[cont]):
+                if (id['index'] != 'Beacon'):
+                    if('Passa-Banda' in bandpass_check[cont]):
 
-                    self.data_copy[id['index']] = _element_bandpass_filter(self.data_copy[id['index']], 
-                                                                          bandpass_inf[cont],
-                                                                          bandpass_sup[cont],
-                                                                          fs=60
-                                                                         )
+                        self.data_copy[id['index']] = _element_bandpass_filter(self.data_copy[id['index']], 
+                                                                            bandpass_inf[cont],
+                                                                            bandpass_sup[cont],
+                                                                            fs=60
+                                                                            )
 
-                if('Filtro savitzky-golay' in savitzky_check[cont]):
+                    if('Filtro savitzky-golay' in savitzky_check[cont]):
 
-                    window_length = savitzky_cut[cont]
-                    if window_length % 2 == 0:
-                        window_length += 1
+                        window_length = savitzky_cut[cont]
+                        if window_length % 2 == 0:
+                            window_length += 1
 
-                    self.data_copy[id['index']] = signal.savgol_filter(self.data_copy[id['index']],
-                                                                       window_length = window_length,
-                                                                       polyorder = savitzky_poly[cont]
-                                                                      )
+                        self.data_copy[id['index']] = signal.savgol_filter(self.data_copy[id['index']],
+                                                                        window_length = window_length,
+                                                                        polyorder = savitzky_poly[cont]
+                                                                        )
 
         self.data_copy = _trata_dados(selected_X, selected_columns_Y, self.data_copy)
     
@@ -529,24 +533,54 @@ class plotarGrafico():
                                                 col=1
                                                 )
 
-    def _overlap(self, sobreposicao_button, selected_columns_Y, input_div_dist, selected_X):
+    def _overlap(self, sobreposicao_button, selected_columns_Y, input_div_dist, selected_X, overlap_manually):
 
         if (sobreposicao_button) :
 
             self.ploted_figure.data = []
-            
-            # Se for dividido por distancia   ?E se for dividido por tempo?
-            n_voltas = len(self.data_copy['Dist'])//input_div_dist
 
-            for cont, column_name in enumerate(selected_columns_Y):
-
-                aux = int(len(self.data_copy[column_name])/max(self.data_copy['Dist']) * input_div_dist)
-
-                dist_use = list(_chunks_overlap(self.data_copy[selected_X], aux))
-                data_use = list(_chunks_overlap(self.data_copy[column_name], aux))
+            if (overlap_manually):
                 
-                for i in range(0, n_voltas+1):
-                    self.ploted_figure.add_trace(
-                        go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
-                        row=cont+1, col=1
-                    )
+                # Se for dividido por distancia   ?E se for dividido por tempo?
+                n_voltas = len(self.data_copy['Dist'])//input_div_dist
+
+                for cont, column_name in enumerate(selected_columns_Y):
+
+                    aux = int(len(self.data_copy[column_name])/max(self.data_copy['Dist']) * input_div_dist)
+
+                    dist_use = list(_chunks_overlap(self.data_copy[selected_X], aux))
+                    data_use = list(_chunks_overlap(self.data_copy[column_name], aux))
+
+                    for i in range(0, n_voltas+1):
+                        self.ploted_figure.add_trace(
+                            go.Scatter(x=dist_use[0], y=data_use[i], name="Volta {}".format(i+1)),
+                            row=cont+1, col=1
+                        )
+            else:
+
+                laps_value = []
+            
+                laps = np.where(self.data_copy['Beacon'] == 1)[0]
+
+                for i in range(0, len(laps)-1):
+                    if (laps[i] + 1 != laps[i + 1]):
+                        laps_value.append(laps[i])
+
+                laps_value.insert(0, 0)
+                laps_value.insert(len(laps_value), len(self.data_copy[selected_X]))
+
+                for cont, column_name in enumerate(selected_columns_Y):
+
+                    dist_use = []
+                    data_use = []
+
+                    for i in range(0, len(laps_value)):
+                        if (i+1 < len(laps_value)):
+                            dist_use.append(list(_chunks(self.data_copy[selected_X], laps_value[i], laps_value[i+1])))
+                            data_use.append(list(_chunks(self.data_copy[column_name], laps_value[i], laps_value[i+1])))
+
+                    for i in range(0, len(laps_value)-1):
+                        self.ploted_figure.add_trace(
+                            go.Scatter(x=dist_use[0][0], y=data_use[i][0], name="Volta {}".format(i+1)),
+                            row=cont+1, col=1
+                        )
