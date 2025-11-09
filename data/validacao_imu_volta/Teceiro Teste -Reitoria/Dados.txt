@@ -1,0 +1,3 @@
+Raio: 7.27 metros
+Tempo: 12S
+Voltas: 2 voltas

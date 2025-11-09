@@ -1,0 +1,5 @@
+Para você pegar a medidas corretas, você precisa fazer os seguintes cálculos:
+
+Giroscópio: Valor*70/1000
+Acelerômetro: Valor*0.122/1000
+Temperatura: 25 + valor/16
