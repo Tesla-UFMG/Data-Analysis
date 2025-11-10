@@ -2,3 +2,4 @@ matplotlib
 ipykernel
 pandas
 numpy
+scipy
