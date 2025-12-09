@@ -34,3 +34,11 @@ To do all those things, do the following:
 
 
 python -m pyflowchart test.py -o test.html
+
+
+
+OU
+
+cd myEnv/bin/
+.\activate
+cd ../../
