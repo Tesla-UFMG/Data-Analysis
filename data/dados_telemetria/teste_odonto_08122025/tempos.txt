@@ -1,0 +1,25 @@
+teste4_0812 inclui aceleração 1610 da tarde
+
+teste5 inclui algo ao no meio, ver BMS, 1620 mais ou menos
+
+teste5 1640 inclui under voltage
+
+1642 ver shunt autocross
+
+ver todas células quando teve undervoltage 1640
+
+ver braking 1640
+
+teste7 1653 MIKE
+
+1719 ver stacks
+
+1722 autocross mike
+
+1730 autocross
+
+1750 mike
+
+teste8.csv: 1800 autocross Pedro
+
+Investigar falha 1803
