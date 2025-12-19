@@ -1,0 +1,44 @@
+\chapter{INTRODUÇÃO}
+
+O subsistema da Aquisição de Dados surgiu no final de 2018 com o objetivo de coletar e armazenar dados importantes para o estudo do carro e que podem guiar melhorias nos projetos de todos os outros subsistemas. Dessa forma, os demais projetos da equipe podem ser validados e é possível obter um maior entendimento do funcionamento do carro durante os testes e provas dinâmicos.
+
+Nesse sentido, o projeto do GNSS visa aquisitar as coordenadas geográficas do carro ao longo do tempo, de modo que as demais variáveis podem ser estudadas não somente em função do tempo, mas também em função da localização geográfica do carro. Assim, espera-se que perguntas como as abaixo podem ser respondidas:
+
+\begin{itemize}
+    \item Qual a curva que apresentou maior estresse mecânico nas estruturas? (Extensometria + GNSS)
+    \item Como está o perfil de descarga das células do acumulador a cada volta completa? (BMS + GNSS)
+    \item Se foi detectado um comportamento inesperado do carro pelo piloto em uma curva específica, é possível analisar as variáveis do carro exatamente durante essa curva, uma vez que as variáveis estão em função da coordenada geográfica.
+\end{itemize}
+
+Todas essas perguntas poderiam ser respondidas se for possível construir uma tabela como a Tabela \ref{tab:exemplo-tabela}:
+
+\begin{table}[h]
+    \centering
+    \caption{Uso das coordenadas geográficas na análise.}
+    \label{tab:exemplo-tabela}
+    \begin{tabular}{c|c|c|c|c|c|c}
+    \textbf{Timestamp} & \textbf{Latitude} & \textbf{Longitude}
+    & \textbf{Corrente} & \textbf{Tensão} & $\cdots$ & \textbf{Velocidade}  \\ 
+    & & & \textbf{Shunt (A)} & \textbf{Acumulador (V)} & & \textbf{(km/h)}\\ \hline
+    17855484156 & -19.244548 & -43.5658115 & 125 & 79.8 & $\cdots$ & 15.7 \\ 
+    17855484166 & -19.244548 & -43.5658115 & 119 & 79.8 & $\cdots$ & 14.5 \\ 
+    17855484176 & -19.244549 & -43.5658117 & 110 & 79.8 & $\cdots$ & 14.0 \\ 
+    17855484189 & -19.244549 & -43.5658119 & 110 & 79.7 & $\cdots$ & 13.9 \\ \hline
+    \end{tabular}
+\end{table}
+
+\chapter{REQUISITOS DE PROJETO}
+
+Nesse contexto, o objetivo do projeto é desenvolver uma PCB que extrai as coordenadas geográficas do carro e as escreva no barramento CAN com os seguintes requisitos:
+
+\begin{enumerate}[label=R\arabic*:]
+    \item Taxa de amostragem de de 5 a 10 Hz;
+    \item Erro máximo de medição de 5 metros;
+    \item Posicionamento protegido de água e fatores ambientais externos
+\end{enumerate}
+
+R1 surge da seguinte análise. Suponha que o carro está andando em linha reta a $V = 50 \un{km/h}$. Nesse caso, o carro percorre 14 metros a cada 1 segundo. Considerando que o carro tem aproximadamente 3 metros de comprimento, é interessante que seja extraído a posição no mínimo a cada um comprimento do carro. Assim, amostrando-se a 5 Hz, extrai-se a coordenada do carro a cada 2.8 metros, e é definido essa taxa como a frequência mínima de amostragem do GNSS.
+
+R2 vem do fato de que a pista em que o carro se desloca tem aproximadamente 4 metros de largura. Assim, com um erro de um raio de 5 metros ainda é possível posicionar o carro na pista, realizando a análise da motivação.
+
+Por fim, R3 surge da prova do rain test, e para a antena e PCB não estejam muito expostas ao vento e fatores ambientais quando o carro estiver se deslocando a altas velocidades.

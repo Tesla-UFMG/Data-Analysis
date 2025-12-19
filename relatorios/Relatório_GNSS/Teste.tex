@@ -1,0 +1,95 @@
+\chapter{Teste}
+
+A configuração do IMU encontra-se na Tabela \ref{tab:config-imu}.
+Os fatores de escala devem ser multiplicados pelos dados crus do IMU salvos nos CSVs (somente o giroscópio nesse caso).
+
+\begin{table}[h]
+    \centering
+    \caption{Configuração do IMU.}
+    \label{tab:config-imu}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Parâmetro} & \textbf{Valor} \\
+        \midrule
+        Fator de escala do acelerômetro & 0,244 / 1000 \\
+        Fator de escala do giroscópio & 70 / 1000 \\
+        Eixo de análise & Z (giroscópio) \\
+        Alimentação & GLV de Pilha (16V) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+O primeiro teste realizado foi na rotatória da INOVA, próximo do CPH. Nesse sentido, vale destacar que a via não era asfaltada o que gerou trepidações. Já o segundo teste foi realizado na rotatória da reitoria que é asfaltada. A Figura \ref{fig:rotatorias-teste} mostra o mapa das rotatórias de teste.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/rotatorias-teste.png} 
+    \caption{Rotatórias de teste: (a) primeiro teste próximo do INOVA (CPH) e (b) segundo teste próximo da reitoria .}
+    \label{fig:rotatorias-teste}
+\end{figure}
+
+Os dados dos testes estão apresentados na Tabela \ref{tab:resultados_rotatorias}. A distância total foi calculada utilizando a Equação \ref{eq:distancia_total} e a velocidade média a Equação \ref{eq:vel_media}.
+
+\begin{table}[h]
+    \centering
+    \caption{Resultados dos Testes nas Rotatórias.}
+    \label{tab:resultados_rotatorias}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{} & \textbf{INOVA} & \textbf{REITORIA} \\
+        \midrule
+        Raio (m) & 15 & 7,25 \\
+        Tempo (s) & 187 & 25 \\
+        Número de voltas & 5 & 2 \\
+        Distância total (m) & 565,4866 & 91,357 \\
+        Velocidade média (m/s) & 3,0239 & 3,654 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Os dados obtidos no teste podem ser acessados pelo Git da equipe Fórmula Tesla UFMG \url{https://github.com/Tesla-UFMG/Data-Analysis/tree/master/data/validacao_imu_volta}.
+
+\chapter{Resultados}
+
+A Tabela \ref{tab:calculo_taxa} mostra os valores de taxa de guinada e erro calculados nos testes.
+
+\begin{table}[h]
+    \centering
+    \caption{Cálculo da taxa de guinada e do erro}
+    \label{tab:calculo_taxa}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{} & \textbf{INOVA} & \textbf{REITORIA} \\
+        \midrule
+        Taxa de guinada teórico (graus/s) & 11,55 & 28,8 \\
+        Taxa de guinada IMU (graus/s) & 14,2 & 30,88 \\
+        erro (\%) & 22,9 & 7 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Vale destacar que o erro observado no teste realizado no INOVA pode ser atribuído ao grande número de voltas, uma vez que a velocidade tende a variar mais ao longo do percurso, além do pavimento, que introduz ruído adicional na medição. Ao considerar apenas uma janela correspondente a uma única volta e refazer os cálculos, obtém-se os dados da Tabela \ref{tab:volta_unica}
+
+\begin{table}[h]
+    \centering
+    \caption{Cálculo da taxa de guinada e erro considerando apenas uma volta}
+    \label{tab:volta_unica}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Parâmetro} & \textbf{INOVA (1 Volta)} \\
+        \midrule
+        Raio (m) & 15 \\
+        Tempo (s) & 26 \\
+        Número de voltas & 1 \\
+        Distância total (m) & 94,247 \\
+        Velocidade média (m/s) & 3,624 \\
+        Taxa de guinada teórico (graus/s) & 13,846 \\
+        Taxa de guinada IMU (graus/s) & 14,1 \\
+        erro (\%) & 1,83 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\chapter{Conclusão}
+
+O sensor da IMU mostrou-se bastante preciso e confiável. Vale destacar, porém, que a aplicação de um filtro sobre sua medição é recomendada para atenuar o ruído, uma vez que a componente integral do controlador da vetorização de torque tende a acumular esses erros ao longo do tempo.

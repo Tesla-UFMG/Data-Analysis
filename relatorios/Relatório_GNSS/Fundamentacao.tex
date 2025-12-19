@@ -1,0 +1,73 @@
+\chapter{Fundamentação Teórica}
+
+Sinais de GNSS são sinais de 1.5 GHz extraídos de antenas. Por serem de alta frequência, 
+temos que estudar práticas de circuitos de RF (Radio Frequency) para garantir o funcionamento correto do circuito.
+Além disso, sinais de GNSS são muito fracos, o que exige cuidados adicionais no projeto do circuito.
+
+Toda a fundamentação teórica está baseada nos seguintes documentos principais:
+
+\begin{itemize}
+    \item Manual do Hardware do Teseo-LIV3f da ST: \url{https://drive.google.com/file/d/1f-_5UErfYuVgv-IKlNlQNE1Cbe42LFDT/view?usp=drive_link}
+    \item White Paper de boas práticas para layout de circuitos de RF: \url{https://drive.google.com/file/d/17EAXY1Gev_J_ZbgDPay-ZY9WCtNQap2y/view?usp=drive_link}
+    \item Guia da ST para circuitos RF: \url{https://drive.google.com/file/d/15d90DjYcKHO8I-ajw5f05wGQfgVGjobQ/view?usp=drive_link}
+    \item Tese de análise de antenas de patch cerâmica: \url{https://drive.google.com/file/d/1AVxLt7DhbOgQ1vpqmCdnyk6QVYBsWJfR/view?usp=drive_link}
+\end{itemize}
+
+Um White Paper é um documento publicado por uma empresa que aborda os detalhes técnicos de como 
+um determinado produto é desenvolvido, sendo assim uma excelente fonte de informações 
+para a equipe.
+
+\section{Antenas Patch Cerâmicas}
+
+A antena patch cerâmica é um tipo de antena de microfita compacta, formada por um elemento metálico (patch) sobre um substrato cerâmico de alta permissividade dielétrica e um plano de terra na face oposta.
+A estrutura básica está exibida na Figura \ref{fig:antena_ceramica}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/antena_ceramica.png} 
+    \caption{Antena Patch Cerâmica.}
+    \label{fig:antena_ceramica}
+\end{figure}
+
+A partir dos valores da estrutura física da antena, ela apresenta uma determinada resposta em frequência, 
+de modo que ela consegue capturar e transmitir sinais em uma faixa de frequência específica.
+No caso do GNSS, a antena deve ser projetada para operar na faixa de 1.5 GHz, que é a frequência
+em que os sinais de satélites GNSS são transmitidos.
+
+A Figura \ref{fig:resposta_antena} mostra a resposta em frequência de uma antena patch cerâmica típica para GNSS.
+Note que ela opera apenas na faixa de interesse de 1.5 GHz em que os satélites 
+enviam os sinais. Além disso, esse comportamento evita interferência de outros sinais 
+em frequências diferentes, como o LoRa que opera em 900 MHz.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/resposta_antena.png} 
+    \caption{Resposta em frequência de uma antena patch cerâmica para GNSS.}
+    \label{fig:resposta_antena}
+\end{figure}
+
+Antenas de patch cerâmicas podem ainda ser classificadas como ativas ou passivas:
+
+\begin{itemize}
+    \item Ativas: apresentam amplificador LNA embutido na antena, de modo que o sinal 
+    enviado à placa já chega amplificado, e basta enviá-lo a um módulo GNSS (no nosso, caso, o 
+    Teseo-LIV3f) através de um filtro pi (será explicado mais a frente).
+    \item Passivas: não possuem amplificador embutido, de modo que o sinal deve ser 
+    amplificado na própria placa antes de chegar ao módulo GNSS.
+\end{itemize}
+
+O amplificador LNA comumente usado é o MAX2659 \url{https://www.digikey.com.br/pt/products/detail/analog-devices-inc-maxim-integrated/MAX2659ELT-T/2062078}.
+No seguinte link uma antena de patch cerâmica ativa é desmontada, exibindo o circuito interno 
+que amplifica o sinal \url{https://www.youtube.com/watch?v=s-jFprdDcM4}. 
+
+\section{Circuitos RF}
+
+Uma série de cuidados devem ser tomados no projeto de cirucitos RF, listados abaixo:
+
+\begin{itemize}
+    \item 
+\end{itemize}
+
+
+
+

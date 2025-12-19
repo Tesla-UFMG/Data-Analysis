@@ -1,0 +1,157 @@
+\documentclass[12pt,a4paper, oneside, chapter = TITLE, hidelinks]{abntex2}
+\usepackage[left=2cm,top=2cm,right=2cm,bottom=2cm]{geometry}
+\usepackage[brazil]{babel} %lingua do texto
+\usepackage[utf8]{inputenc} %permite caracteres como acentos e cedilhas
+\usepackage{times} %usa a fonte times 
+
+\setlength{\parindent}{1.25cm} %identação do parágrafo
+\usepackage{indentfirst} % identa primeiro parágrafo 
+\usepackage{graphicx} %incluir figuras
+\usepackage{lastpage} %para obter o número da última página   
+\pagenumbering{arabic} %Numeração de página
+\usepackage{longtable}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{pdfpages}
+\usepackage{multirow}
+\usepackage{url}
+
+% Código 
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+  language=C++,
+  basicstyle=\ttfamily\footnotesize,  % Fonte monoespaçada e menor
+  numbers=left,                       % Números de linha à esquerda
+  numberstyle=\tiny\color{gray},     % Estilo dos números de linha
+  stepnumber=1,                       % Numera todas as linhas
+  numbersep=10pt,                     % Espaço entre código e números
+  backgroundcolor=\color{white},     % Fundo branco
+  keywordstyle=\color{blue},         % Palavras-chave em azul
+  commentstyle=\color{gray},         % Comentários em cinza
+  stringstyle=\color{red},           % Strings em vermelho
+  breaklines=true,                   % Quebra de linha automática
+  frame=single                       % Caixa ao redor do código
+}
+
+
+% Corrigir títulos
+\addto \captionsbrazil {\renewcommand{\listfigurename}{\normalsize LISTA DE ILUSTRAÇÕES}}
+\addto \captionsbrazil {\renewcommand{\listtablename}{\normalsize LISTA DE TABELAS}}
+\renewcommand{\listadesiglasname}{\normalsize LISTA DE ABREVIATURAS E SIGLAS}
+\addto \captionsbrazil {\renewcommand{\contentsname}{\normalsize SUMÁRIO}}
+
+\renewcommand{\ABNTEXchapterfontsize}{\normalfont\normalsize} 
+\renewcommand{\cftchapterfont}{\normalfont}
+
+\renewcommand{\ABNTEXsectionfontsize}{\normalsize\normalfont}
+\renewcommand{\cftsectionfont}{\normalfont} 
+
+\renewcommand{\ABNTEXsubsectionfontsize}{\normalfont\normalsize}
+\renewcommand{\cftsubsectionfont}{\normalfont} 
+
+\renewcommand{\ABNTEXsubsubsectionfontsize}{\normalfont\normalsize}
+\renewcommand{\cftsubsubsectionfont}{\normalfont} 
+
+\newcommand{\un}[1]{\;\textrm{#1}}
+
+
+% Múltiplos Autores
+\makeatletter
+\renewcommand{\imprimirautor}{
+    \begin{tabular}{l}
+    \@author
+    \end{tabular}
+}
+\let\ps@abntexheadings\ps@plain % Carrega o estilo básico
+\makeatother
+
+% Cor padrão para as linhas
+\definecolor{Tesla}{HTML}{08d45c}
+
+\setlength{\arrayrulewidth}{1pt}  
+\fancypagestyle{abntexheadings}{
+  \fancyhf{} % Limpa todos os cabeçalhos e rodapés
+  \fancyhead[R]{\thepage} % Número da página
+  \fancyhead[L]{\nouppercase{\leftmark}} % Capítulo no lado esquerdo  
+  \renewcommand{\headrulewidth}{1pt} % Espessura da linha
+  \renewcommand{\headrule}{\color{Tesla}\hrule width\headwidth height\headrulewidth} % Linha colorida
+   \renewcommand{\footnoterule}{\begingroup \color{Tesla}\hrule width\headwidth height\headrulewidth \endgroup}
+  \fancyfoot[C]{} % Rodapé central vazio
+  \setlength{\headheight}{1cm}
+}
+% Nova capa
+\renewcommand{\imprimircapa}{
+	\begin{capa}
+            {\centering
+            \begin{tabular}{c c c}
+                \begin{tabular}{c}
+                    \includegraphics[width=0.15\textwidth]{logos/logo_tesla.png}\\ \vspace{2.3cm}
+                \end{tabular} 
+                & 
+                \begin{tabular}{c}
+                    {\large UNIVERSIDADE FEDERAL DE MINAS GERAIS}\\
+                    {\large FÓRMULA TESLA}  \vspace{2cm}
+                \end{tabular} & 
+               \includegraphics[width=0.12\textwidth]{logos/logo_engenharia.png}
+            \end{tabular}
+            \vspace{3cm}\\
+		{\Large\imprimirtitulo}\\\vspace{1cm}
+            {\large\imprimirpreambulo}\\}
+            \vfill
+            {\imprimirautor}\\
+            \vfill
+		{\center {\normalsize\imprimirlocal}\\
+		{\normalsize\imprimirdata}\\}
+		
+	\end{capa}
+}
+
+
+\title{Relatório: GNSS}
+\date{19/12/2025}
+\local{Belo Horizonte}
+\preambulo{Primeira Versão} % Versão
+\author{
+    \textit{\large Autores:}\\
+    Raphael Henrique Braga Leivas
+}
+
+\begin{document}
+        
+	\imprimircapa
+
+	\tableofcontents*  \thispagestyle{empty} % Retira a numeração da página
+    
+        \mainmatter % Inicia a numeração das páginas
+        \pagestyle{abntexheadings}
+        \include{Introducao} 
+        \include{Fundamentacao} 
+        \include{Metodologia} 
+        \include{Teste}
+        % \include{Bibliografia}
+        \include{Apendice}
+        
+            
+    %     \chapter{HISTÓRICO DE VERSÕES}
+    %         \begin{center}
+    %             \begin{longtable}{lllp{8cm}}
+    %                 \arrayrulecolor{Tesla} 
+    %                 \textbf{Data} & \textbf{Versão} & \textbf{Autor} & \textbf{Descrição} \\ \hline
+    %                 \endfirsthead
+                    
+    %                 11/12/2025 & Primeira versão & João Megali & Primeira versão (Docs) \\ 
+    %                 14/12/2025 & Primeira versão & Raphael Leivas  & Primeira versão (LaTeX) \\ 
+    %             \end{longtable}
+    %             \addtocounter{table}{-1}
+    %         \end{center}
+	\chapter*{}
+            \begin{figure}
+                \centering
+                \vfill
+                \includegraphics[width=0.7\linewidth]{logos/senóide verde 2024.png}
+                \vfill
+            \end{figure}
+\end{document}
