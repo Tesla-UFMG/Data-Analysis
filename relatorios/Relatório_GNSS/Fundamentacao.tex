@@ -62,12 +62,63 @@ que amplifica o sinal \url{https://www.youtube.com/watch?v=s-jFprdDcM4}.
 
 \section{Circuitos RF}
 
-Uma série de cuidados devem ser tomados no projeto de cirucitos RF, listados abaixo:
+Condutores que transportam sinais de alta frequência (RF) devem tomar uma série de cuidados especiais, 
+uma vez que nessa frequência capacitâncias e indutâncias parasitas podem afetar significativamente 
+o desempenho do circuito.
+
+\subsection{Impedância Característica de Trilhas}
+
+A impedância caracterísitica de uma trilha é dada pela Equação (\ref{eq:impedancia_trilha}):
+
+\begin{equation} \label{eq:impedancia_trilha}
+    Z_0 = \frac{87}{\sqrt{\epsilon_r + 1.41}} \ln \left( \frac{5.98h}{0.8w + t} \right) 
+\end{equation}
+
+\noindent onde:
 
 \begin{itemize}
-    \item 
+    \item $Z_0$: Impedância característica da trilha (Ohms)
+    \item $\epsilon_r$: Permissividade relativa do material da PCB
+    \item $h$: Espessura do dielétrico (distância entre a trilha e o plano de terra) (mm)
+    \item $w$: Largura da trilha (mm)
+    \item $t$: Espessura da trilha (mm)
 \end{itemize}
 
+Para circuitos GNSS, é ideal que as trilhas de RF possuam 
+$Z_0 = 50 \, \Omega$. Como exemplo, considera uma trilha padrão usada pela equipe com o 
+fabricante que nos patrocina. Temos os seguintes valores das constantes:
 
+\begin{itemize}
+    \item $\epsilon_r = 4.5$: varia entre 3.5 e 5.5, então assumimos a média
+    \item $h = 1.5 \un{mm}$: é altura da PCB, pois o fabricante só nos fornece PCBs de duas layers
+    \item $w = 0.254 \un{mm}$: largura de trilha default, podemos ajustar no EasyEDA
+    \item $t = 0.35 \mu \un{m}$: valor padrão
+\end{itemize}
+
+\noindent o que resulta em $Z_0 = 129.78 \, \Omega$.
+
+É por esse motivo que PCBs de quatro layers são recomendadas: a distância entre 
+as trilhas de RF e o plano de terra $h$ abaixo é menor, de modo que é mais fácil obter 
+$Z_0 = 50 \, \Omega$.
+
+Além disso, para que não exista mudanças na impedância da trilha, é recomendado que 
+os pads dos componentes de RF sejam do mesmo tamanho da trilha, evitando descontinuidades
+na largura da trilha. Para isso, use 0402 ou 0603 para que a largura dos pads e trilha seja  
+a mais próxima possível.
+
+\subsection{Plano de Terra}
+
+Como visto na Equação (\ref{eq:impedancia_trilha}), a impedância característica de uma trilha depende
+do plano de terra abaixo. Portanto, é essencial que o plano de terra seja contínuo,
+sem cortes, fendas ou trilhas passando imediatamente por baixo das trilhas de RF,
+para que a impedância característica não varie ao longo da trilha. 
+
+Outro ponto essencial são as conexões do plano de terra. Devem ser usadas várias
+vias conectando o plano de terra superior ao inferior, de modo que a impedância 
+entre os planos seja minimizada. 
+
+O plano de terra na camada das trilhas de RF também não pode estar muito próximo 
+das trilhas de RF. Uma boa regra é manter uma distância entre o plano de GND e a trilha 
+no mínimo igual à largura da trilha.
 
 

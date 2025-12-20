@@ -1,0 +1,69 @@
+\chapter{Projeto}
+
+\section{Esquemático}
+
+A Figura \ref{fig:aquisicao_rf} mostra o circuito de aquisição do sinal da antena.
+O sinal entra pelo conector H6, um conector IPEX padrão para antenas GNSS. Em seguida, ele 
+passa pelo filtro LC composto por L3 e C12, cujos valores estão especificados no manual do hardware da ST.
+O sinal VCC\_RF vem do Teseo, e RF\_IN é o que entra no Teseo para ser processado pelo módulo GNSS.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/aquisicao_rf.png} 
+    \caption{Circuito de aquisição do sinal da antena.}
+    \label{fig:aquisicao_rf}
+\end{figure}
+
+Note que a antena é ativa, logo ela precisa de alimentação. Tanto a alimentação quanto o sinal
+passam pelo mesmo pino CONT (2) em H6. O capacitor C11 bloqueia a componente DC do sinal,
+de modo que apenas o sinal RF é enviado ao Teseo. O indutor L3 bloqueia a componente RF,
+de modo que apenas a componente DC é enviada à antena para alimentá-la.
+
+A Figura \ref{fig:teseo_circuito} mostra o circuito do Teseo projetado. Novamente ele segue quase à risca o que está 
+no manual do hardware.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/teseo_circuito.png} 
+    \caption{Circuito do Teseo projetado.}
+    \label{fig:teseo_circuito}
+\end{figure}
+
+As principais interfaces da Figura \ref{fig:teseo_circuito} estão listadas abaixo:
+
+\begin{itemize}
+    \item VCC\_RF: alimentação do sinal RF.
+    \item RF\_IN: sinal RF que entra no Teseo.
+    \item SDA\_GNSS: linha de dados I2C entre o STM e o Teseo.
+    \item SCL\_GNSS: linha de clock I2C entre o STM e o Teseo.
+    \item RX / TX \_GNSS: linhas de UART entre o STM e o Teseo.
+    \item PPS: onda quadrada com período de 1 segundo emitida pelo módulo. Usada para piscar um LED, indicando que o 
+    Teseo está vivo.
+    \item WAKEUP\_GNSS: pino usado para acordar o módulo de um estado de baixo consumo. (ativo em 5 V)
+    \item RESET\_GNSS: pino para resetar o Teseo. (ativo em 0 V)
+\end{itemize}
+
+Note que não é necessário resistores pull-up no I2C uma vez que eles já 
+estão presentes internamentes no Teseo. Os filtros de 56 pF estão especificados 
+no manual. 
+
+A alimentação do Teseo usa o 3.3 V da placa, passando por um filtro pi exibido na 
+Figura \ref{fig:filtro_pi}, especificado no manual do hardware da ST.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/filtro_pi.png} 
+    \caption{Filtro para alimentação do Teseo.}
+    \label{fig:filtro_pi}
+\end{figure}
+
+Os demais circuito da placa: alimentação GLV, comunicação CAN e circuitos 
+auxiliares do STM (capacitores de acoplamento, botões de reset / boot, programação)
+são iguais às demais placas da equipe, em particular o IMU que também usa o 
+STM32U5. Assim, esses circuitos não serão detalhados aqui.
+
+\section{PCB}
+
+
+\section{Posicionamento e Encapsulamento}
+

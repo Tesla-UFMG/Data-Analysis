@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.24)  14 DEC 2025 10:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.24)  20 DEC 2025 06:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**c:/dev/tesla/latex/Relatório_IsoCAN/main.tex
-(c:/dev/tesla/latex/Relatório_IsoCAN/main.tex
+**c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex
+(c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex
 LaTeX2e <2022-11-01> patch level 1
 L3 programming layer <2023-02-22> (C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex/latex/abntex2\abntex2.cls
 Document Class: abntex2 2018/11/24 v-1.9.7 abnTeX2
@@ -679,7 +679,7 @@ Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
 \bigstrutjot=\dimen267
 )
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:19: LaTeX Error: Option clash for package url.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:19: LaTeX Error: Option clash for package url.
 
 See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
@@ -726,7 +726,7 @@ File: lstlang1.sty 2023/02/27 1.9 listings language file
 File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
 )
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:39: LaTeX Error: Option clash for package hyperref.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:39: LaTeX Error: Option clash for package hyperref.
 
 See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
@@ -746,7 +746,8 @@ Try typing  <return>  to proceed.
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 121.
 (C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
-) (main.aux)
+)
+No file main.aux.
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 121.
@@ -770,7 +771,6 @@ LaTeX Font Info:    ... okay on input line 121.
 Package hyperref Info: Link coloring OFF on input line 121.
 \myptabbox=\box69
 \myptabboxwidth=\skip273
-
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -1063,7 +1063,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 75--80
  []
 
 ) [8]
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:137: Undefined control sequence.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:137: Undefined control sequence.
 <argument> ...rtpbox {\@nextchar }\insert@pcolumn 
                                                   \@endpbox \do@row@strut \o...
 l.137                 \begin{longtable}{lllp{8cm}}
@@ -1074,7 +1074,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:137: Missing # inserted in alignment preamble.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:137: Missing # inserted in alignment preamble.
 <to be read again> 
                    \cr 
 l.137                 \begin{longtable}{lllp{8cm}}
@@ -1083,7 +1083,7 @@ There should be exactly one # between &'s, when an
 \halign or \valign is being set up. In this case you had
 none, so I've put one in; maybe that will work.
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:140: Undefined control sequence.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:140: Undefined control sequence.
 \LT@@hline ... \tag_mc_end: \tbl_gdecr_row_count: 
                                                   }\cr \CT@LT@sep \multispan...
 l.140                     \endfirsthead
@@ -1094,7 +1094,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:140: Undefined control sequence.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:140: Undefined control sequence.
 \LT@@hline ... \tag_mc_end: \tbl_gdecr_row_count: 
                                                   }\cr \noalign {\penalty \@...
 l.140                     \endfirsthead
@@ -1105,7 +1105,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-c:/dev/tesla/latex/Relatório_IsoCAN/main.tex:140: Missing # inserted in alignment preamble.
+c:/dev/tesla/Data-Analysis/relatorios/Relatório_IsoCAN/main.tex:140: Missing # inserted in alignment preamble.
 <to be read again> 
                    \cr 
 l.140                     \endfirsthead
@@ -1158,13 +1158,13 @@ Package lastpage Warning: Rerun to get the references right on input line 156.
 
  ) 
 Here is how much of TeX's memory you used:
- 18306 strings out of 476334
- 295664 string characters out of 5787971
+ 18304 strings out of 476334
+ 295839 string characters out of 5787971
  1865382 words of memory out of 5000000
  38415 multiletter control sequences out of 15000+600000
  529721 words of font info for 62 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,18n,104p,760b,576s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,18n,104p,779b,576s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/rapha/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
 Output written on main.pdf (11 pages, 257008 bytes).
 PDF statistics:

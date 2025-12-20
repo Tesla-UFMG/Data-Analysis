@@ -1,6 +1,6 @@
-PWD c:\dev\tesla\latex\Relatório_IsoCAN
+PWD c:\dev\tesla\Data-Analysis\relatorios\Relatório_IsoCAN
 INPUT C:\Users\rapha\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\dev\tesla\latex\Relatório_IsoCAN\main.tex
+INPUT c:\dev\tesla\Data-Analysis\relatorios\Relatório_IsoCAN\main.tex
 OUTPUT main.log
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\latex\abntex2\abntex2.cls
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\latex\abntex2\abntex2.cls
@@ -876,9 +876,6 @@ INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ptm.fd
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ptm.fd
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ptm.fd
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\times\ptmr7t.tfm
-INPUT .\main.aux
-INPUT main.aux
-INPUT main.aux
 OUTPUT main.aux
 OUTPUT main.pdf
 INPUT C:\Users\rapha\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
