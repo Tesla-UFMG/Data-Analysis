@@ -159,9 +159,6 @@ Trilhas de alimentação possuem largura de 20 mils (0.508 mm), enquanto as dema
 trilhas de sinal (exceto as de RF) possuem largura de 10 mils (0.254 mm). Note que a alimentação 
 do Teseo é de 10 mils pois é de baixa potência.
 
-\section{Posicionamento e Encapsulamento}
-
-
 \section{Software}
 
 \subsection{STM32U5}
@@ -206,5 +203,89 @@ Os comandos acima devem ser enviados via UART para o Teseo. Eles ainda não fora
 Se o Teseo parar de funcionar após enviar esses comandos, é possível resetar os parâmetros
 para os valores de fábrica com o comando: \$PSTMRESTOREPAR (não testado ainda).
 
+\section{Posicionamento no Carro}
 
+Devido aos componentes no bottom layer, o encapsulamento deve prever um ressalto de 5 mm 
+nos 4 cantos onde são passados os parafusos (ou fitas-trava). 
+
+Em relação ao posicionamento no carro, é planejado posicionar a placa no bico do carro, perto 
+de onde atualmente fica a placa de freio. Assim, tanto a placa quanto a antena ficarão embaixo do bico, 
+que segundo nossos estudos, não afetará o sinal de GNSS por ser de fibra de vidro.
+
+A Figura \ref{fig:posicionamento} a localização da placa no chassi.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/posicionamento.png} 
+    \caption{Planejamento inicial do posicionamento da placa no carro.}
+    \label{fig:posicionamento}
+\end{figure}
+
+Dessa forma, o chicotes entram pelo canto esquerdo e a antena fica à direita na 
+Figura \ref{fig:posicionamento}. Ainda é necessário realizar testes em bancada para verificar 
+experimentalmente se a fibra de vidro do bico efetivamente não atenua o sinal GNSS.
+
+\section{Bill of Materials}
+
+A BOM do projeto está exibida na Tabela \ref{tab:componentes}.   
+O custo total previsto é de R\$ 97,00, sem contar os componentes patrocinados (STM32U5, Teseo e antenas).
+e sem considerar os custos que serão diluídos na compra em conjunto com outras placas.
+
+\begin{table}[htbp]
+\centering
+\caption{Bill of Materials do projeto.}
+\label{tab:componentes}
+\begin{tabular}{llrr}
+\toprule
+\textbf{Nome} & \textbf{Especificação} & \textbf{Qtd.} & \textbf{Preço Total (\$)} \\ 
+\midrule
+LED & LED-RED & 6 & 0,006 \\
+Choke & CHOKE-SRF4532-1 & 1 & 0,6 \\
+Regulador 3V3 & LM1117MPX-3.3v & 1 & 0,4 \\
+Regulador 5V & Module\_MP1584EN & 1 & 3,41 \\
+Diodo & RS1M & 1 & 0,57 \\
+Conversor CAN & MCP2515-I/SO & 1 & 1,57 \\
+Fusível & 500 mA Fuse 2410 & 1 & 0,12 \\
+Cristal & 8 MHz & 1 & 0,07 \\
+BJT & MUN2214T1G & 1 & 0,03 \\
+C0805 & 1uF & 5 & 0,046 \\
+C0805 & 10uF & 1 & 0,01 \\
+C0805 & 22uF & 1 & 0,02 \\
+C0805 & 100nF & 11 & 0,044 \\
+C0805 & 10nF & 1 & 0,006 \\
+C0805 & 56pF & 4 & 0,02 \\
+C0805 & 4.7uF & 1 & 0,02 \\
+C0805 & 22pF & 2 & 0,02 \\
+Cap Eletrolítico & 100uF / 35V & 1 & 0,06 \\
+C0402 & 120pF & 1 & 0,002 \\
+C0402 & 56pF & 1 & 0,001 \\
+C0603 & 120pF & 1 & 0,004 \\
+C0603 & 56pF & 1 & 0,003 \\
+L0805 & 27nH & 1 & 0,135 \\
+L0402 & 47nH & 1 & 0,05 \\
+L0603 & 47nH & 1 & 0,04 \\
+R0805 & 4k7 & 5 & 0,01 \\
+R0805 & 60R & 2 & 0,004 \\
+R0805 & 10k & 7 & 0,014 \\
+R0805 & 5k1 & 2 & 0,004 \\
+R0805 & 0R & 1 & 0,002 \\
+Conector & TYPE-C 6PIN & 1 & 0,05 \\
+Antena Conector & KH-IPEX & 3 & 0,21 \\
+Botao SMD & K2-3.6$\times$6.1 & 2 & 0,14 \\
+Jumper & PTH 2 vias & 5 & \\
+Jumper & PTH 3 vias & 1 & \\
+Header & PTH 2 vias & 2 & \\
+Nanofit 2 x 1 90 graus & GLV & 1 & \\
+Microfit 2 x 2 90 graus & CAN & 1 & \\
+Nanofit 3 x 02 & PROGG & 1 & \\
+Header & PTH 3 x 02 vias & 1 & \\
+STM32U5 & & & (patrocínio) \\
+Teseo-LIV3f & & & (patrocínio) \\
+Antena & BT-580 & & 24,69 \\
+Antena & BT-0001 & & 35,00 \\
+\midrule
+Total & & & R\$ 97,00 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
