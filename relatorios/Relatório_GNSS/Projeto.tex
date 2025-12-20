@@ -1,5 +1,20 @@
 \chapter{Projeto}
 
+A Figura \ref{fig:blocos_pcb} mostra um diagram de blocos com os principais componentes 
+do projeto e sua função básica.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/blocos_pcb.png} 
+    \caption{Diagrama de blocos dos principais componentes da placa.}
+    \label{fig:blocos_pcb}
+\end{figure}
+
+Em essência, a antena capta o sinal GNSS, que é filtrado e enviado ao módulo Teseo. O Teseo processa o sinal
+e envia os dados de posição ao microcontrolador STM32U5 via UART usando o protocolo 
+NMEA. O STM32U5 pode então enviar esses dados
+via CAN para o restante do carro através do MCP2515 conectado ao barramento CAN.
+
 \section{Esquemático}
 
 A Figura \ref{fig:aquisicao_rf} mostra o circuito de aquisição do sinal da antena.
@@ -64,6 +79,132 @@ STM32U5. Assim, esses circuitos não serão detalhados aqui.
 
 \section{PCB}
 
+\subsection{Circuitos RF}
+
+A Figura \ref{fig:layout_rf} (a) mostra o layout das trilhas de RF usadas no projeto,
+comparada com o layout recomendado pela ST na Figura \ref{fig:layout_rf} (b).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/layout_rf.png} 
+    \caption{Layout das trilhas de RF na placa (a) implementado e (b) recomendado pela ST.}
+    \label{fig:layout_rf}
+\end{figure}
+
+Algumas observações importantes sobre a Figura \ref{fig:layout_rf}:
+
+\begin{itemize}
+    \item Os componentes das trilhas de RF são 0603 para terem a mesma largura da trilha 
+    \item L3 está posicionado em T com a trilha, como sugerido no manual 
+    \item A largura das trilhas de RF é 0.762 mm (30 mils). Isso resulta em 
+    $Z_0 = 94.2 \, \Omega$ para uma PCB de duas layers (nosso caso) e 
+    $Z_0 = 55.47 \, \Omega$ para quatro layers com 0.508 mm entre as layers externas e
+    intermediárias (cenário ideal, que não é o nosso caso pois o patrocinador só imprime PCBs de 
+    duas layers)
+    \item Note que não há trilhas passando embaixo do Teseo, conforme recomendado
+    \item O posicionamento das múltiplas vias segue o layout recomendado
+\end{itemize}
+
+A Figura \ref{fig:layout_rf_gnd} mostra o layout com ambos planos de GND exibidos.
+Mais observações importantes sobre a Figura \ref{fig:layout_rf_gnd} estão listadas
+abaixo:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/layout_rf_gnd.png} 
+    \caption{Layout das trilhas de RF na placa com os planos de GND exibidos.}
+    \label{fig:layout_rf_gnd}
+\end{figure}
+
+\begin{itemize}
+    \item Não há trilhas passando embaixo do Teseo e embaixo dos circuitos de RF, conforme recomendado 
+    \item O plano de GND no bottom layer cobre toda a área abaixo do circuito de RF de forma 
+    contínua
+    \item A distância entre as trilhas RF e o plano de terra no top layer é 0.508 mm 
+    \item A "isolação" no pino 1 do Teseo no canto inferior direito é feita com somente 
+    uma via (manual diz que pode ser feito com uma ou duas), manualmente adicionando uma região 
+    sólida de keep-out depois que o plano de GND é feito no EasyEDA
+\end{itemize}
+
+Note que as trilhas no canto direito do Teseo não são de alta frequência, e 
+portanto possuem largura default de 0.254 mm e não precisam seguir as 
+diversas recomendações do manual.
+
+
+\subsection{Demais Circuitos}
+
+O posicionamento do restante do circuito é feito em duas layers, ao contrário das
+demais placas da equipe que em geral posicionam componentes apenas no top layer. 
+Componentes "altos" estão no top layer para não atrapalharem o encapsulamento,
+enquanto componentes pequenos e de baixa relevância estão no bottom layer para minimizar o tamanho da placa.
+Todos os conectores estão no top layer no canto direito para facilitar o acesso dos chicotes
+quando a placa estiver no carro.
+
+A Figura \ref{fig:top_bottom_layer} destaca os top e bottom layers da placa.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/top_bottom_layer.png} 
+    \caption{Top (vermelho) e bottom (azul) layers da placa.}
+    \label{fig:top_bottom_layer}
+\end{figure}
+
+Em suma, no top layer estão posicionados: todos os conectores,
+regulador 5 V do GLV, todo o circuito RF, 
+LEDs indicadores, maior parte dos circuitos do STM32U5, todos os jumpers. 
+No bottom layer estão posicionados: regulador 3.3 V, parte do circuito da CAN,
+alguns capacitores de acoplamento do STM32U5 e capacitores de filtro da alimentação.
+
+Trilhas de alimentação possuem largura de 20 mils (0.508 mm), enquanto as demais 
+trilhas de sinal (exceto as de RF) possuem largura de 10 mils (0.254 mm). Note que a alimentação 
+do Teseo é de 10 mils pois é de baixa potência.
 
 \section{Posicionamento e Encapsulamento}
+
+
+\section{Software}
+
+\subsection{STM32U5}
+
+O código executado pelo STM32U5 deve executar as seguintes funções.
+
+\begin{enumerate}
+    \item Salvar as strings NMEA recebidas do Teseo via UART em um buffer
+    \item Processar as strings NMEA para extrair os dados de posição (latitude, longitude)
+    \item Atualizar uma estrutura de dados (struct) global com os dados de posição 
+    \item Enviar os dados struct através do periférico FDCAN para o restante do carro
+\end{enumerate}
+
+Usando freeRTOS, é possível que uma thread processe as strings NMEA e atualize
+a estrutura de dados global, enquanto outra thread sempre pega a estrutura de dados 
+atual e a escreve no CAN. É importante que a thread de processamento da UART opera na mesma taxa de amostragem 
+em que o Teseo está configurado. 
+
+As strings NMEA enviadas pelo Teseo tem o formato exibido na Figura \ref{fig:strings_nmea}.
+Basta criar um código em C que as processa e extrai as variáveis de latitude e longitude, 
+bem como se o fix é válido - se o fix é inválido, deve-se descartar a mensagem.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/strings_nmea.png} 
+    \caption{Strings NMEA enviadas pelo Teseo via UART.}
+    \label{fig:strings_nmea}
+\end{figure}
+
+\subsection{Configurações do Teseo-LIV3f}
+
+O Teseo possui uma memória interna configurável onde é possível salvar diversas
+parâmetros de operação como explicado na seção 2.2.2 do manual do software.
+Em particular, duas configurações são importantes para atender aos requisitos do projeto 
+
+\begin{enumerate}
+    \item Aumentar baud rate para 115200: \$PSTMSETPAR,3102,0x9
+    \item Aumentar taxa de amostragem para 5 Hz: \$PSTMSETPAR,1303,0.2
+\end{enumerate}
+
+Os comandos acima devem ser enviados via UART para o Teseo. Eles ainda não foram testados.
+Se o Teseo parar de funcionar após enviar esses comandos, é possível resetar os parâmetros
+para os valores de fábrica com o comando: \$PSTMRESTOREPAR (não testado ainda).
+
+
 
