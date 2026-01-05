@@ -2,6 +2,18 @@
 Fórmula Tesla UFMG's data analysis software and repository
 
 
+## 🏗️ Estrutura do Repositório
+
+```
+📂 Data-Analysis/
+├── 📂 2020_data_analysis/         # Software em JS feito pela equipe em 2020 para análise de dados. Não usado.
+├── 📂 data/                       # Arquivos CSV com os dados coletados
+│   ├── 📂 dados_telemetria/       # CSVs coletados de testes de rua do carro
+├── 📂 misc/                       # Arquivos python e Jupyter gerais
+├── 📂 notebooks/                  # Notebooks Jupyer para analise dos dados da telemtria (testes de rua do carro)
+└── 📂 relatorios/                 # Arquivos LaTeX para relatórios gerais da equipe
+```
+
 # Setting Up Development Environment (Python)
 
 - install python 3.12.4 https://www.python.org/downloads/release/python-3124/
