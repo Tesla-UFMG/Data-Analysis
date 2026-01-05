@@ -1,0 +1,106 @@
+\chapter{Descrição dos Dados}
+
+\section{Variáveis}
+
+Cada arquivo CSV é composto de 61 colunas representando as 61 variáveis coletadas durante o teste. 
+Cada uma delas está descrita na Tabela \ref{tab:variaveis}:
+
+\begin{table}[h]
+    \centering
+    \footnotesize 
+    \caption{Variáveis presentes nos CSVs.}
+    \label{tab:variaveis}
+    \begin{tabular}{l|c|l}
+        \textbf{Variável} & \textbf{Unidade} & \textbf{Descrição} \\ 
+        \hline
+        timestamp & ms &  UNIX timestamp indicando o número de milissegundos de 1970 \\ 
+        t & ms & milissegundos passados desde a primeira medição recebida no dia \\ 
+        THROTTLE & 0 - 1000 & faixa de 0 a 1000 indicando o nível de aceleração do piloto \\ 
+        BRAKE & 0 - 1 & faixa de 0 a 1000 indicando o nível de aceleração do piloto \\ 
+        ECU\_MODE\_ID & 0 - 4 & valor 1 indica modo Enduro, valor 2 indica Arrancada \\ 
+        TORQUE\_GAIN & \% & ganho de torque configurado na ECU \\ 
+        TORQUE\_REF\_LEFT\_MOTOR &  &  \\ 
+        TORQUE\_REF\_RIGHT\_MOTOR & & \\
+        LEFT\_MOTOR\_RPM & rpm & RPM medido no motor esquerdo pelo inversor \\
+        LEFT\_MOTOR\_TORQUE & Nm & Torque em Nm medido no motor esquerdo pelo inversor \\
+        LEFT\_MOTOR\_POWER &  & Potência medida no motor esquerdo pelo inversor \\
+        LEFT\_MOTOR\_CURRENT & A & Corrente em A medida no motor esquerdo pelo inversor \\
+        RIGHT\_MOTOR\_RPM & rpm & RPM medido no motor direito pelo inversor \\
+        RIGHT\_MOTOR\_TORQUE & Nm & Torque em Nm medido no motor direito pelo inversor \\
+        RIGHT\_MOTOR\_POWER &  & Potência medida no motor direito pelo inversor \\
+        RIGHT\_MOTOR\_CURRENT & A & Corrente em A medida no motor direito pelo inversor \\
+        REAR\_LEFT\_WHEEL\_SPEED &  &  \\
+        FRONT\_LEFT\_WHEEL\_SPEED &  &  \\
+        REAR\_RIGHT\_WHEEL\_SPEED &  &  \\
+        FRONT\_RIGHT\_WHEEL\_SPEED &  &  \\
+        ACCEL\_LONGITUDINAL & G & Aceleração longitudinal do carro em G \\
+        ACCEL\_LATERAL & G & Aceleração lateral do carro em G \\
+        ACCEL\_NORMAL & G & Aceleração normal (vertical) do carro em G \\
+        VEL\_ANGULAR\_YAW & ° / s & velocidade angular do ângulo de guinada (yaw) \\
+        VEL\_ANGULAR\_ROLL & ° / s & velocidade angular do ângulo de rolagem (roll, bank angle) \\
+        VEL\_ANGULAR\_PITCH & ° / s & velocidade angular do ângulo de arfagem (pitch) \\
+        ELETROBUILD\_TEMPERATURE & °C & Temperatura em Celsius do eletrobuild medida pelo IMU \\
+        STACK\_i\_CELL\_j & V & Tensão em Volts da célula $j$ na stack $i$ \\
+        MAX\_VOLTAGE & V & Tensão da célula com maior tensão em Volts medido pelo BMS \\
+        MIN\_VOLTAGE & V & Tensão da célula com menor tensão em Volts medido pelo BMS \\
+        TOTAL\_VOLTAGE & V & Tensão total do acumulador (soma de todas as células) \\ 
+        SHUNT\_CURRENT & A & corrente medida no shunt, sem subtrair offset \\
+        BMS\_MODE\_ID &  & ID do modo do BMS \\ 
+        BMS\_ERROR\_ID &  & ID do erro do BMS \\
+        AIR\_P & 0 - 1 & status do AIR positivo (0 aberto, 1 fechado) \\
+        AIR\_N & 0 - 1 & status do AIR negativo (0 aberto, 1 fechado) \\
+        VEHICLE\_SPEED & km/h & Velocidade do carro, tomada a partir da média dos RPMs dos motores \\
+        HODOMETRO & m & Distância em metros percorrida desde o início do teste \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Arquivos}
+
+A Tabela \ref{tab:arquivos} mostra o conteúdo de cada arquivo, para facilitar 
+a identificação.
+
+\begin{table}[h]
+\centering
+\footnotesize 
+\caption{Conteúdo de cada arquivo CSV.}
+\label{tab:arquivos}
+\begin{tabularx}{\textwidth}{l|c|c|l}
+\textbf{Arquivo} & \textbf{Intervalo de tempo} & \textbf{Distância (m)} & \textbf{Contexto Adicional} \\
+\hline
+miguelito1\_enduro1.csv & 11:31:30 - 11:33:50 & 409  & Sem erros \\
+miguelito1\_enduro2.csv & 11:43:00 - 11:43:45 & 24   & Arrancou e parou logo em seguida: falha de subtensão \\
+miguelito1\_enduro3.csv & 11:45:15 - 11:47:45 & 322  & Falha de subtensão no final \\
+miguelito1\_enduro4.csv & 11:58:15 - 12:01:00 & 427  & Falha de subtensão no final \\
+miguelito1\_enduro5.csv & 12:02:50 - 12:04:30 & 328  & Carro rodou no final \\
+miguelito1\_enduro6.csv & 12:05:50 - 12:11:30 & 1465 & Sem erros \\
+miguelito1\_enduro7.csv & 12:15:20 - 12:16:30 & 230  & Falha no pinhão da corrente no final \\
+mike1\_enduro1.csv      & 13:25:20 - 13:32:00 & 1622 & Sem erros \\
+mike1\_enduro2.csv      & 13:40:00 - 13:42:00 & 459  & Falha de subtensão no final \\
+mike1\_enduro3.csv      & 13:42:30 - 13:43:00 & 65   & Arrancou e teve falha de subtensão \\
+mike1\_enduro4.csv      & 13:44:10 - 13:46:15 & 388  & Falha de subtensão no final \\
+miguelito2\_enduro1.csv & 17:03:30 - 17:06:15 & 425  & Falha no final (sem leituras do BMS) \\
+miguelito2\_enduro2.csv & 17:10:45 - 17:11:45 & 217  & Falha no final (sem leituras do BMS) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Hodômetro}
+
+\section{Considerações Finais}
+
+A ECU está escrevendo velocidade em km/h igual a zero tanto da leitura do inversor quanto das rodas fônicas quando o piloto tira o pé do acelerador. 
+Por consequência, a velocidade oscila bastante entre a velocidade real e zero quando o piloto para de acelerar
+medições do IMU continuam corretas, então ainda é possível ter uma noção da velocidade sem o piloto acelerar
+vamos olhar uma solução para isso ainda
+
+
+Processamos os dados para sincronizar os pacotes entre si, e removemos os intervalos de tempo em que o carro estava parado / em falha de subtensão (mas os instantes que levaram às falhas estão todos ainda). Se precisarem de mais intervalos de tempo podem falar que olhamos aqui na base completa
+
+Se tiverem interesse, dados puros, binários e segregados por pacote podem ser encontrados no repositório, junto com os scripts em Python que processaram eles para gerar o arquivo zip https://github.com/Tesla-UFMG/Data-Analysis
+
+Se notarem algum resultado inesperado em uma prova, teste as outras provas também para ver se o padrão se repete. se acontecer em todos, pode ser consequência da medição e fale com a gente
+
+\vspace{2cm}
+
+\noindent go tesla 
