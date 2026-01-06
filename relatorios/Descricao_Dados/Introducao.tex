@@ -19,8 +19,8 @@ Cada uma delas está descrita na Tabela \ref{tab:variaveis}:
         BRAKE & 0 - 1 & faixa de 0 a 1000 indicando o nível de aceleração do piloto \\ 
         ECU\_MODE\_ID & 0 - 4 & valor 1 indica modo Enduro, valor 2 indica Arrancada \\ 
         TORQUE\_GAIN & \% & ganho de torque configurado na ECU \\ 
-        TORQUE\_REF\_LEFT\_MOTOR &  &  \\ 
-        TORQUE\_REF\_RIGHT\_MOTOR & & \\
+        TORQUE\_REF\_LEFT\_MOTOR & 0 - 1000 & Faixa indicando a referência de torque no motor esquerdo \\ 
+        TORQUE\_REF\_RIGHT\_MOTOR & 0 - 1000 & Faixa indicando a referência de torque no motor direito \\
         LEFT\_MOTOR\_RPM & rpm & RPM medido no motor esquerdo pelo inversor \\
         LEFT\_MOTOR\_TORQUE & Nm & Torque em Nm medido no motor esquerdo pelo inversor \\
         LEFT\_MOTOR\_POWER &  & Potência medida no motor esquerdo pelo inversor \\
@@ -29,10 +29,10 @@ Cada uma delas está descrita na Tabela \ref{tab:variaveis}:
         RIGHT\_MOTOR\_TORQUE & Nm & Torque em Nm medido no motor direito pelo inversor \\
         RIGHT\_MOTOR\_POWER &  & Potência medida no motor direito pelo inversor \\
         RIGHT\_MOTOR\_CURRENT & A & Corrente em A medida no motor direito pelo inversor \\
-        REAR\_LEFT\_WHEEL\_SPEED &  &  \\
-        FRONT\_LEFT\_WHEEL\_SPEED &  &  \\
-        REAR\_RIGHT\_WHEEL\_SPEED &  &  \\
-        FRONT\_RIGHT\_WHEEL\_SPEED &  &  \\
+        REAR\_LEFT\_WHEEL\_SPEED & rpm & Velocidade em RPM pela roda fônica traseira esquerda \\
+        REAR\_RIGHT\_WHEEL\_SPEED & rpm & Velocidade em RPM pela roda fônica traseira direita  \\
+        FRONT\_LEFT\_WHEEL\_SPEED & km/h & Velocidade em km/h medida pela roda fônica dianteira esquerda \\
+        FRONT\_RIGHT\_WHEEL\_SPEED & km/h & Velocidade em km/h medida pela roda fônica dianteira direita \\
         ACCEL\_LONGITUDINAL & G & Aceleração longitudinal do carro em G \\
         ACCEL\_LATERAL & G & Aceleração lateral do carro em G \\
         ACCEL\_NORMAL & G & Aceleração normal (vertical) do carro em G \\
@@ -85,14 +85,15 @@ miguelito2\_enduro2.csv & 17:10:45 - 17:11:45 & 217  & Falha no final (sem leitu
 \end{tabularx}
 \end{table}
 
-\section{Hodômetro}
-
 \section{Considerações Finais}
 
 A ECU está escrevendo velocidade em km/h igual a zero tanto da leitura do inversor quanto das rodas fônicas quando o piloto tira o pé do acelerador. 
 Por consequência, a velocidade oscila bastante entre a velocidade real e zero quando o piloto para de acelerar
 medições do IMU continuam corretas, então ainda é possível ter uma noção da velocidade sem o piloto acelerar
-vamos olhar uma solução para isso ainda
+vamos olhar uma solução para isso ainda.
+
+Além disso, esse efeito fez com que a distância total calculada pela integração numérica do hodômetro seja menor que a real.
+No entanto, estimamos que não seja uma diferença muito grande.
 
 
 Processamos os dados para sincronizar os pacotes entre si, e removemos os intervalos de tempo em que o carro estava parado / em falha de subtensão (mas os instantes que levaram às falhas estão todos ainda). Se precisarem de mais intervalos de tempo podem falar que olhamos aqui na base completa

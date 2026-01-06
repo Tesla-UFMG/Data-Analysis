@@ -73,20 +73,25 @@ frequências, capacitâncias e indutâncias parasitas podem afetar significativa
 
 \subsection{Impedância característica de trilhas}
 
-A impedância característica de uma trilha é dada pela Equação (\ref{eq:impedancia_trilha}):
+No caso de uma PCB com duas camadas e planos de GND em ambas camadas, as linhas 
+de transmissão de RF se comportam como Coplanar Waveguide (CPW), exibida 
+na Figura \ref{fig:cpw}.
 
-\begin{equation} \label{eq:impedancia_trilha}
-    Z_0 = \frac{87}{\sqrt{\epsilon_r + 1.41}} \ln \left( \frac{5.98h}{0.8w + t} \right) 
-\end{equation}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/cpw.png} 
+    \caption{Coplanar Waveguide (CPW).}
+    \label{fig:cpw}
+\end{figure}
 
-\noindent onde:
+Na Figura \ref{fig:cpw}, temos  
 
 \begin{itemize}
-    \item $Z_0$: impedância característica da trilha ($\Omega$)
-    \item $\epsilon_r$: permitividade relativa do material da PCB
-    \item $h$: espessura do dielétrico (distância entre a trilha e o plano de terra) (mm)
-    \item $w$: largura da trilha (mm)
-    \item $t$: espessura da trilha (mm)
+    \item W: distância entre a trilha de RF e os planos de GND adjacentes 
+    \item S: largura da trlha de RF
+    \item h: distância entre a trilha e o plano de GND na camada inferior
+    \item $\epsilon_r$: constante dielétrica do material da PCB. Normalmente usamos FR-4 como 
+    dielétrico, que possui $\epsilon_r = 4.5$
 \end{itemize}
 
 Para circuitos GNSS, é desejável que as trilhas de RF apresentem $Z_0 = 50 \, \Omega$.
@@ -94,14 +99,17 @@ Como exemplo, consideremos uma trilha padrão usada pela equipe, fornecida pelo 
 Temos os seguintes valores adotados:
 
 \begin{itemize}
-    \item $\epsilon_r = 4.5$: varia entre 3,5 e 5,5; assumimos a média.
+    \item $\epsilon_r = 4.5$ por usar FR-4
     \item $h = 1.5\,\un{mm}$: altura do dielétrico para placas de duas camadas (fornecidas pelo fabricante).
-    Se a placa fosse de quatro camadas, poderia ser $h = 0.508\,\un{mm}$.
-    \item $w = 0.254\,\un{mm}$: largura de trilha padrão; pode ser ajustada no roteador (EasyEDA).
-    \item $t = 0.35\, \mu \un{ m}$: espessura do condutor (valor padrão informado).
+    Se a placa fosse de quatro camadas, com uma camada de GND imediatamente abaixo da camada onde está as trilhas de RF ,
+    poderia ser $h = 0.508\,\un{mm}$.
+    \item $W = S = 0.254\,\un{mm}$: largura de trilha padrão; pode ser ajustada no roteador (EasyEDA).
 \end{itemize}
 
-\noindent Isso resulta em $Z_0 = 129,78 \, \Omega$.
+\noindent Isso resulta em $Z_0 = 86,9 \, \Omega$ usando uma calculadora de impedância 
+disponível em \url{https://chemandy.com/calculators/coplanar-waveguide-with-ground-calculator.htm}.
+A expressão que calcula a impedância de uma CPW vem de integrais elípticas, sendo mais fácil só usar 
+uma calculadora online.
 
 Por esse motivo, placas de circuito impresso (PCBs) de quatro camadas são recomendadas: a distância
 $h$ entre as trilhas de RF e o plano de terra é menor, facilitando a obtenção de $Z_0 = 50 \, \Omega$.
