@@ -33,6 +33,9 @@ passam pelo mesmo pino CONT (2) em H6. O capacitor C11 bloqueia a componente DC 
 de modo que apenas o sinal RF é enviado ao Teseo. O indutor L3 bloqueia a componente RF,
 fazendo com que apenas a componente DC seja enviada à antena para alimentá-la.
 
+Além disso, o Teseo opera apenas na faixa de frequência de 1575 MHz (1.5 GHz - 1.6 GHz). Utilizar antenas que recebem sinais fora dessa faixa,
+proveninentes de constelações de GNSS L2 mais modernas que operam em 1.2 GHz, não irão funcionar com esse circuito.
+
 A Figura \ref{fig:teseo_circuito} mostra o circuito do Teseo projetado; novamente, ele segue quase à risca o que está
 prescrito no manual do hardware.
 
