@@ -174,6 +174,18 @@ Com o FreeRTOS, uma tarefa pode processar as strings NMEA e atualizar a estrutur
 tarefa periodicamente lê essa estrutura atual e a escreve no CAN. É importante que a tarefa de processamento da UART opere
 na mesma taxa de amostragem em que o Teseo está configurado.
 
+Uma outra possibilidade é usar uma máquina de estados dentro do \verb|while(1)|,
+removendo a necessidade do FreeRTOS. Pode haver dois estados:
+
+\begin{enumerate}
+    \item \verb|STATE_RECEIVE_UART|: chamado quando a interrupção da UART (com DMA) indicar que novos dados cheagaram. 
+    Esse estado processa as strings NMEA e atualiza a struct global.
+    \item \verb|STATE_SEND_UART|: envia os dados da struct global via CAN (ou via outro módulo UART conectado ao computador, para testes).
+    Esse estado é chamado periodicamente
+    usando um TIMER configurado para gerar uma interrupção a cada 200 ms (5 Hz).
+\end{enumerate}
+
+
 As strings NMEA enviadas pelo Teseo têm o formato exibido na Figura \ref{fig:strings_nmea}.
 Basta criar um código em C que as processe e extraia as variáveis de latitude e longitude, bem como verifique
 se o fix é válido; caso contrário, a mensagem deve ser descartada.
@@ -185,6 +197,21 @@ se o fix é válido; caso contrário, a mensagem deve ser descartada.
     \label{fig:strings_nmea}
 \end{figure}
 
+Caso seja necessário usar algum módulo TIMER para executar uma função a um intervalo 
+de tempo constante, use a expressão em (\ref{eq:timer}) para calcular o período do TIMER:
+
+\begin{equation}\label{eq:timer}
+    T = \frac{(ARR + 1)(PSC + 1)}{f_{clock}}
+\end{equation}
+
+\noindent onde:
+
+\begin{itemize}
+    \item ARR: valor do auto-reload register (ARR) do TIMER
+    \item PSC: valor do prescaler (PSC) do TIMER
+    \item $f_{clock}:$ frequência de clock do TIMER, veja na aba Clock Configuration do IOC
+\end{itemize}
+
 \subsection{Configurações do Teseo-LIV3f}
 
 O Teseo possui uma memória interna configurável onde é possível salvar diversos
@@ -192,15 +219,70 @@ parâmetros de operação, como explicado na seção 2.2.2 do manual do software
 Em particular, duas configurações são importantes para atender aos requisitos do projeto:
 
 \begin{enumerate}
-    \item Aumentar baud rate para 115200: \$PSTMSETPAR,3102,0x9
-    \item Aumentar taxa de amostragem para 5 Hz: \$PSTMSETPAR,1303,0.2
+    \item Aumentar baud rate para 115200: PSTMSETPAR,3102,0xA
+    \item Aumentar taxa de amostragem para 5 Hz: PSTMSETPAR,1303,0.2
 \end{enumerate}
 
-Os comandos acima devem ser enviados via UART para o Teseo. Eles ainda não foram testados.
-Se o Teseo parar de funcionar após enviar esses comandos, é possível resetar os parâmetros
-para os valores de fábrica com o comando: \$PSTMRESTOREPAR (não testado ainda).
+Os comandos acima devem ser enviados via UART para o Teseo. Eles podem ser enviados 
+usando o \verb|HAL\_UART\_Transmit()| do STM na seguinte sequência:
 
-\section{Posicionamento no Carro}
+{\tiny
+\begin{verbatim}
+    uint8_t change_baud[MAX_NMEA_LEN] = "$PSTMSETPAR,3102,0xA*12\r\n";
+    uint8_t change_sample_rate[MAX_NMEA_LEN] = "$PSTMSETPAR,1303,0.2*36\r\n";
+
+    uint8_t save_par[MAX_NMEA_LEN] = "$PSTMSAVEPAR*58\r\n";
+    uint8_t reset[MAX_NMEA_LEN] = "$PSTMSRR*49\r\n";
+
+    HAL_UART_Transmit(&huart1, change_sample_rate, MAX_NMEA_LEN, 1000);
+    HAL_UART_Transmit(&huart1, save_par, MAX_NMEA_LEN, 1000);
+    HAL_UART_Transmit(&huart1, reset, MAX_NMEA_LEN, 1000);
+
+    HAL_UART_Transmit(&huart1, change_baud, MAX_NMEA_LEN, 1000);
+    HAL_UART_Transmit(&huart1, save_par, MAX_NMEA_LEN, 1000);
+    HAL_UART_Transmit(&huart1, reset, MAX_NMEA_LEN, 1000);
+\end{verbatim}
+}
+
+Note que ao mudar o baud rate, é necessário reconfigurar o periférico UART do STM
+para o novo baud rate.
+
+As mensagens têm a seguinte estrutura:
+
+\begin{verbatim}
+    $ {command},{param},...,{param} * {checksum} \r\n
+\end{verbatim}
+
+\noindent onde:
+
+\begin{itemize}
+    \item \verb|$|: início da mensagem
+    \item \verb|{command}|: comando a ser enviado, veja no manual do software do Teseo
+    \item \verb|{params}|: parâmetros do comando, veja no manual do software do Teseo
+    \item \verb|*|: separador entre os parâmetros e o checksum
+    \item \verb|{checksum}|: soma XOR de todos os bytes entre o caractere \$ e o caractere * (não incluindo esses caracteres)
+    \item \verb|\r\n|: carriage return e nova linha
+\end{itemize}
+
+É possível usar um código simples em python para calcular o checksum de qualquer comando:
+
+\begin{verbatim}
+    def nmea_checksum(sentence):
+        cs = 0
+        for c in sentence:
+            cs ^= ord(c)
+        return f"{cs:02X}"
+
+    cmd = "PSTMSETPAR,3102,0xA"
+    print(nmea_checksum(cmd))  # 0x12
+\end{verbatim}
+
+
+Se for necessário voltar para a configuração padrão do Teseo, envie o comando
+\verb|$PSTMRESTOREPAR| com o devido checksum e estrutura acima.
+
+
+\section{Posicionamento no Carro (completar após teste)}
 
 Devido aos componentes na camada inferior, o encapsulamento deve prever um ressalto de 5 mm
 nos quatro cantos, onde são colocados os parafusos (ou fitas-trava).
