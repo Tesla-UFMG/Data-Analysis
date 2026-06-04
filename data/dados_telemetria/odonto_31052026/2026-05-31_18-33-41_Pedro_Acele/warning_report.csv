@@ -1,0 +1,3 @@
+﻿Data/Hora,Variavel,Arquivo,Valor Atingido,Condicao,Descricao
+2026-05-31 18:32:56,MIN_VOLTAGE,ACCUMULADOR_PARAMS,0.79,Menor que 2.600000,
+2026-05-31 18:33:00,MIN_VOLTAGE,ACCUMULADOR_PARAMS,0.79,Menor que 2.600000,
