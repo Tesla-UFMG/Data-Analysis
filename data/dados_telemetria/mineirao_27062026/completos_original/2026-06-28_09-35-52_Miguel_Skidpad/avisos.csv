@@ -1,0 +1,4 @@
+﻿index,date,Igual a,Fora da Faixa,Dentro da Faixa,Maior que,Menor que
+0,1782590195645,,,,,GVL de AIR_GVL_CURRENT atingiu 10.960000
+1,1782590842356,,,,,GVL de AIR_GVL_CURRENT atingiu 12.800000
+2,1782591296074,,,,,MIN_CELL_VOLTAGE de ACCUMULATOR_PARAMS atingiu 2.480000
