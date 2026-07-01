@@ -1,0 +1,31 @@
+1000 arrancada
+1002 segundo skidpad
+1003 acabou
+1011 ajuste roda fonica FR
+1012 segundo skidpad
+1014 parou
+1016 comecou
+1019 terminou
+1020 comecou
+1021 dificuldades acelerar
+1023 comecou
+1024 acabou
+1025
+1027
+1030
+1033
+1039
+1040 barulho feio na transmissao, parada
+
+
+1359 comeca boson skidpad
+1412
+1419
+1427
+1430 adicionando vetorização
+1448 começando vetorização
+1450 10km/h mais rápido?
+1458 -> skidpad bem rapido
+1501 bom teste
+
+1628 arrancada
